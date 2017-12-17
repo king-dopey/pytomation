@@ -26,7 +26,7 @@ class PytoWebSocketApp(WebSocketApplication):
 
     def on_message(self, message):
         if message:
-            self.ws.send(self._api.get_response(data=message, type=self._api.WEBSOCKET))
+            self.ws.send(self._api.get_response(data=message, type=self._api.WEBSOCKET).encode('UTF-8'))
 
     def on_close(self, reason):
         print("WebSocket Client disconnected: ")
@@ -79,8 +79,8 @@ class PytoWebSocketServer(HAInterface):
         else:
             data = None
         start_response("200 OK", [("Content-Type", "text/html"), ('Access-Control-Allow-Origin', '*')])
-        return self._api.get_response(path='/'.join(environ['PATH_INFO'].split('/')[2:]), source=PytoWebSocketServer,
-                                      method=method, data=data)
+        return [self._api.get_response(path='/'.join(environ['PATH_INFO'].split('/')[2:]), source=PytoWebSocketServer,
+                                      method=method, data=data).encode('UTF-8')]
 
     def http_file_app(self, environ, start_response):
         path_info = environ['PATH_INFO']
@@ -101,21 +101,21 @@ class PytoWebSocketServer(HAInterface):
                         location = protocol + self._address + ':' + str(self._port) + '/' + path_info + '/'
                     start_response("302 Found",
                                    [("Location", location), ('Access-Control-Allow-Origin', '*')])
-                    return ''
+                    return [b'']
 
             mime = mimetypes.guess_type(http_file)
             start_response("200 OK", [("Content-Type", mime[0]), ('Access-Control-Allow-Origin', '*')])
             return open(http_file, "rb")
         else:
             start_response("404 Not Found", [("Content-Type", "text/html"), ('Access-Control-Allow-Origin', '*')])
-            return "404 Not Found"
+            return [b"404 Not Found"]
 
     def broadcast_state(self, state, source, prev, device):
         # TODO: add queue system and separate thread to avoid blocking on long network operations
         if self.ws:
             for client in list(self.ws.clients.values()):
                 message = self._api.get_state_changed_message(state, source, prev, device)
-                client.ws.send(message)
+                client.ws.send(message.encode('UTF-8'))
 
 
 def auth_hook(web_socket_handler):
@@ -128,7 +128,7 @@ def auth_hook(web_socket_handler):
                                                    ('Access-Control-Allow-Origin', '*')])
             else:
                 web_socket_handler.start_response("401 Unauthorized", [('WWW-Authenticate', 'Basic realm=\"Pytomation\"'), ('Access-Control-Allow-Origin', '*')])
-        elif auth != 'Basic ' + base64.b64encode(config.admin_user + ":" + config.admin_password):
+        elif auth != 'Basic ' + base64.urlsafe_b64encode((config.admin_user + ":" + config.admin_password).encode('UTF-8')).decode('ascii'):
             web_socket_handler.start_response("401 Unauthorized", [('WWW-Authenticate', 'Basic realm=\"Pytomation\"'), ('Access-Control-Allow-Origin', '*')])
         else:
             return False
