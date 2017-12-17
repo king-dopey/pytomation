@@ -51,7 +51,7 @@ Versions and changes:
 import threading
 import time
 import re
-from Queue import Queue
+from queue import Queue
 from binascii import unhexlify
 from phue import Bridge
 
@@ -75,15 +75,15 @@ class PhillipsHue(HAInterface):
                 
         # get the ip address and connect to the bridge
         self._ip = kwargs.get('address', None)
-        print "Phillips HUE Bridge address -> {0}".format(self._ip)
+        print("Phillips HUE Bridge address -> {0}".format(self._ip))
         try:
             self.interface = Bridge(self._ip)
             self.interface.connect()
             self._logger.debug("[Hue] Connected to interface at {0}...\n".format(self._ip))
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('[Hue] Could not connect to bridge: {0}'.format(str(ex)))
-            print "\nCouldn't connect to HUE bridge, please press the LINK button\n"
-            print "on the bridge and restart Pytomation within 30 seconds..."
+            print("\nCouldn't connect to HUE bridge, please press the LINK button\n")
+            print("on the bridge and restart Pytomation within 30 seconds...")
             sys.exit()
                         
         # Get the initial configuration of the Bridge so we can see models of lights etc
@@ -119,7 +119,7 @@ class PhillipsHue(HAInterface):
                             contact = (Command.LEVEL, bri)
                             self._logger.debug('Light {0} status -> {1}'.format(d.address, contact))
                             self._onCommand(address="{0}".format(d.address),command=contact)    
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.error('Could not process data from bridge: '+ str(ex))
 
         else:
@@ -182,7 +182,7 @@ class PhillipsHue(HAInterface):
             for i in level:
                 if isinstance(i, int):    #classic pytomation brightness
                     i = 'bri:{0}'.format(i)
-                cmd = dict(self._build_hue_command(i).items() + cmd.items())
+                cmd = dict(list(self._build_hue_command(i).items()) + list(cmd.items()))
             #print cmd    
             if address[:1] == 'L':
                 result = self.interface.set_light(int(address[1:]), cmd)
@@ -292,7 +292,7 @@ class PhillipsHue(HAInterface):
     def update_status(self):
         lights = self.interface.get_light_objects('id')
         for d in self._devices:
-            print "Getting status for HUE -> ", d.address
+            print("Getting status for HUE -> ", d.address)
             if lights[int(d.address[1:])].on == True:
                 bri = int(round(int(lights[int(d.address[1:])].brightness) / 255.0 * 100))                        
                 contact = (Command.LEVEL, bri)

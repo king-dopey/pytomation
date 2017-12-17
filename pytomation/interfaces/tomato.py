@@ -27,7 +27,7 @@ class TomatoInterface(HAInterface):
         
         try:
             self._host = self._interface.host
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('Could not find host address: ' + str(ex))
 
         
@@ -75,7 +75,7 @@ f_block_all:on
 f_block_http:
 _http_id:
 """
-        print str(args) + ":" + str(kwargs)
+        print(str(args) + ":" + str(kwargs))
         fdata = {
                 "f_desc": args[0],
                 "f_enabled": "On" if args[1] else "Off",
@@ -90,7 +90,7 @@ _http_id:
         try:
             status = json.loads(response)
             temp = status['temp']
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('HW Thermostat couldnt decode status json: ' + str(ex))
         if temp and temp != self._last_temp:
             self._onCommand(command=(Command.LEVEL, temp),address=self._host)

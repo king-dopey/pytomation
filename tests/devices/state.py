@@ -60,7 +60,7 @@ class StateTests(TestCase):
                                              m=mins,
                                              s=secs,
                                                  )
-        print 'Trigger Time' + trigger_time1
+        print('Trigger Time' + trigger_time1)
         secs = (secs + 2) % 60
         mins += (secs + 2) / 60
         trigger_time2 = '{h}:{m}:{s}'.format(
@@ -68,7 +68,7 @@ class StateTests(TestCase):
                                              m=mins,
                                              s=secs,
                                                  )
-        print 'Trigger Time' + trigger_time2
+        print('Trigger Time' + trigger_time2)
         device = StateDevice(
                               time={
                                     
@@ -78,12 +78,12 @@ class StateTests(TestCase):
                               )
         self.assertEqual(device.state, State.UNKNOWN)
         time.sleep(3)
-        print datetime.now()
+        print(datetime.now())
         self.assertEqual(device.state, State.OFF)
         device.on()
         time.sleep(3)
-        print datetime.now()
-        print device._times
+        print(datetime.now())
+        print(device._times)
         self.assertEqual(device.state, State.OFF)
         
     def test_time_cron_off(self):
@@ -756,9 +756,9 @@ class StateTests(TestCase):
                                      }
                              )
             self.assertTrue(False)
-        except AssertionError, ex:
+        except AssertionError as ex:
             raise ex
-        except Exception, ex:
+        except Exception as ex:
             pass
         
 

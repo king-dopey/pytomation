@@ -119,7 +119,7 @@ d395e51a11bb096e20f9ae84b47f8884
 
     def _insteon_receive_status_callback(self, *args, **kwargs):
         command = kwargs.get('command', None)
-        print 'command:' + command
+        print('command:' + command)
         self._result = command
 
     def test_insteon_status(self):

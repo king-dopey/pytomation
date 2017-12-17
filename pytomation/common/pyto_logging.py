@@ -4,9 +4,9 @@ from logging.handlers import TimedRotatingFileHandler
 try:
     from ..common import config
 except ImportError:
-    print " "
-    print ">>>> Missing or error in pytomation/common/config.py <<<<"
-    print " "
+    print(" ")
+    print(">>>> Missing or error in pytomation/common/config.py <<<<")
+    print(" ")
     raise
 
 
@@ -31,7 +31,7 @@ class PytoLogging(object):
                                                                  when=config.logging_rotate_when,
                                                                  interval=config.logging_rotate_interval,
                                                                  backupCount=config.logging_rotate_backup )
-            except Exception, ex:
+            except Exception as ex:
                 th = TimedRotatingFileHandler(filename=default_log_file,
                                                                  when=config.logging_rotate_when,
                                                                  interval=config.logging_rotate_interval,

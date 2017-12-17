@@ -23,5 +23,5 @@ class HarmonyHubTests(TestCase):
         result = self.interface.off('Doesnt matter')
         
     def test_get_config(self):
-        print str(self.interface.get_config())
+        print(str(self.interface.get_config()))
         

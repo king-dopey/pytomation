@@ -125,7 +125,7 @@ s_movietime = Scene(address="00.00.03", devices=(insteon,), update=False, name="
 
 
 #Update Insteon Status
-print "Updating status..."
+print("Updating status...")
 insteon.update_status()
 
 #Update LED status for a KeypadLinc

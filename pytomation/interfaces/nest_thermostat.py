@@ -15,7 +15,7 @@ import re
 import time
 try:
     from pyjnest import Connection
-except Exception, ex:
+except Exception as ex:
     pass
 
 from .ha_interface import HAInterface
@@ -45,7 +45,7 @@ class NestThermostat(HAInterface):
         self.interface = Connection(self._user_name, self._password)
         try:
             self.interface.login()
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('Could not login: ' + str(ex))
         
         
@@ -57,14 +57,14 @@ class NestThermostat(HAInterface):
             #check to see if there is anything we need to read
             try:
                 self.interface.update_status()
-                for device in self.interface.devices.values():
-                    print device
+                for device in list(self.interface.devices.values()):
+                    print(device)
                     c_temp = device.current_temperature
                     temp = int(9.0/5.0 * c_temp + 32)
                     if self._last_temp != temp:
                         self._last_temp = temp
                         self._onCommand((Command.LEVEL, temp), device.device_id)
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.error('Could not process data from API: '+ str(ex))
 
         else:
@@ -75,7 +75,7 @@ class NestThermostat(HAInterface):
         self._fan = True
         try:
             self.interface.devices[address].fan_mode = 'on'
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('Could not toggle fan' + str(ex))
 
     def still(self, address, *args, **kwargs):
@@ -96,7 +96,7 @@ class NestThermostat(HAInterface):
         self._set_point = level
         try:
             self.interface.devices[address].change_temperature(level)
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('Error setting temperature {0} for device= {1},{2}: {3} '.format(
                                                                                         level,
                                                                                         address[0],

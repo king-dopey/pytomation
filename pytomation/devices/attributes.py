@@ -7,5 +7,5 @@ class Attributes(object):
         self.time = None
         self.secs = None
         
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             setattr(self, k, v)

@@ -10,7 +10,7 @@ def get_instances():
 
 def get_instances_detail():
     details = {}
-    for object in PytomationObject.instances.itervalues():
+    for object in PytomationObject.instances.values():
         object_detail = {'instance': object,
                          'name': object.name,
                          'type_name': object.type_name,
@@ -19,7 +19,7 @@ def get_instances_detail():
             object_detail.update({'commands': object.COMMANDS})
             object_detail.update({'state': object.state})
             object_detail.update({'devices': object.device_list()})
-        except Exception, ex:
+        except Exception as ex:
             # Not a state device
             pass
         details.update({
@@ -38,7 +38,7 @@ def get_instance_detail(object_id):
         object_detail.update({'commands': object.COMMANDS})
         object_detail.update({'state': object.state})
         object_detail.update({'devices': object.device_list()})
-    except Exception, ex:
+    except Exception as ex:
         # Not a state device
         pass
 

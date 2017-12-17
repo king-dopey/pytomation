@@ -38,7 +38,7 @@ class Light(InterfaceDevice):
                                                             name=self.name,
                                                             source=source.name if source else str(source)
                                                                                     ))
-        except AttributeError, ex:
+        except AttributeError as ex:
             pass
         super(Light, self).command(command, *args, **kwargs)
 
@@ -60,7 +60,7 @@ class Light(InterfaceDevice):
                                                                                          command=command,
                                                                                          source=source.name,
                                                                                                                ))
-        except AttributeError, ex:
+        except AttributeError as ex:
             pass #source is not a state device
         return (m_state, m_command)
         

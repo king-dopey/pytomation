@@ -1,6 +1,6 @@
 from datetime import datetime
 import gc
-import thread
+import _thread
 
 from pytomation.common import PytomationObject
 from pytomation.interfaces import Command
@@ -44,7 +44,7 @@ class CommandStateMap(object):
         State.CLOSED: Command.CLOSE
     }
 
-    command_to_state = {v: k for k, v in state_to_command.items()}
+    command_to_state = {v: k for k, v in list(state_to_command.items())}
 
 class Attribute(object):
     MAPPED = 'mapped'
@@ -70,7 +70,7 @@ class StateDevice(PytomationObject):
     _delegates_state_change = []
     
     def __init__(self, *args, **kwargs):
-        self._command_lock = thread.allocate_lock()
+        self._command_lock = _thread.allocate_lock()
         super(StateDevice, self).__init__(*args, **kwargs)
         if not kwargs.get('devices', None) and len(args)>0:
             kwargs.update({'devices': args[0]})
@@ -307,7 +307,7 @@ class StateDevice(PytomationObject):
             for attribute in dir(State):
                 if getattr(State, attribute) == primary:
                     return command
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug("{name} Could not find command to state for {command}".format(
                                                                             name=self.name,
                                                                             command=command,                                                                                                                 
@@ -332,7 +332,7 @@ class StateDevice(PytomationObject):
                 if getattr(Command, attribute) == primary:
                     return state
             return command
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug("{name} could not map state {state} to command".format(
                                                                         name=self.name,
                                                                         state=state,
@@ -345,7 +345,7 @@ class StateDevice(PytomationObject):
         if kwargs.get('devices', None):
             try:
                 getattr(self, 'devices')( **kwargs['devices'])
-            except Exception, ex:
+            except Exception as ex:
                 getattr(self, 'devices')( kwargs['devices'])
 
         if kwargs.get('commands', None):
@@ -355,7 +355,7 @@ class StateDevice(PytomationObject):
             self.COMMANDS = kwargs.get('states')
 
         # run through the rest
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             if k.lower() not in ('devices','commands','states'):
                 attribute = getattr(self, k)
                 if not attribute:
@@ -363,15 +363,15 @@ class StateDevice(PytomationObject):
                 else:
                     try:
                         attribute(**v)
-                    except ValueError, ex:
+                    except ValueError as ex:
                         raise ex
-                    except Exception, ex:
+                    except Exception as ex:
                         if callable(attribute):
                             if isinstance(v, tuple):
                                 for v1 in v:
                                     try:
                                         attribute(**v1)
-                                    except Exception, ex:
+                                    except Exception as ex:
                                         attribute(v1)
                             else:
                                     attribute(v)
@@ -389,7 +389,7 @@ class StateDevice(PytomationObject):
                                                 maps=str(self._maps),
                                                             ))
 
-        for (c, s), (target, timer) in self._maps.iteritems():
+        for (c, s), (target, timer) in self._maps.items():
             commands = []
             sources = []
             if isinstance(s, tuple):
@@ -469,7 +469,7 @@ class StateDevice(PytomationObject):
         command = kwargs.get('command', State.UNKNOWN)
         
         if times:
-            if not isinstance( times, tuple) or (isinstance(times, tuple) and isinstance(times[0], (long, int))):
+            if not isinstance( times, tuple) or (isinstance(times, tuple) and isinstance(times[0], int)):
                 times = (times, )
             for time in times:
                 timer = CronTimer()
@@ -532,7 +532,7 @@ class StateDevice(PytomationObject):
                           prev=kwargs.get('prev', None),
                           source=kwargs.get('source',None),
                           device=self)
-            except Exception, ex:
+            except Exception as ex:
                 pass
         for _delegate in StateDevice._delegates_state_change:
             try:
@@ -540,7 +540,7 @@ class StateDevice(PytomationObject):
                           prev=kwargs.get('prev', None),
                           source=kwargs.get('source',None),
                           device=self)
-            except Exception, ex:
+            except Exception as ex:
                 pass
 
 
@@ -638,7 +638,7 @@ class StateDevice(PytomationObject):
     
     def _cancel_delays(self, command, source, original=None, source_property=None):
         if not self._get_delay(command, source, original) and source_property != Property.IDLE:
-            for c, timer in self._delay_timers.iteritems():
+            for c, timer in self._delay_timers.items():
                 self._logger.debug("{name} stopping an existing delay timer of '{interval}' secs for command: '{command}' because the same non-delayed command was now processed. From {source} original command {original}".format(
                                                                                            name=self.name,
                                                                                            command=command,

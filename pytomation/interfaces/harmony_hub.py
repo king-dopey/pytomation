@@ -29,10 +29,10 @@ class HarmonyHub(HAInterface):
             with timeout(15, exception=RuntimeError):
                 self._token = login(self._user, self._password)
                 self._conn = HarmonyClient(self._token)
-                print "he" +str(self._ip) + ":"  + str(self._port)
+                print("he" +str(self._ip) + ":"  + str(self._port))
                 self._conn.connect(address=(self._ip, self._port),
                            use_tls=False, use_ssl=False)
-                print 'adf'
+                print('adf')
                 self._conn.process(block=False)
         
                 while not self._conn.sessionstarted:
@@ -45,7 +45,7 @@ class HarmonyHub(HAInterface):
         return True
 
     def on(self, *args, **kwargs):
-        print str(args, **kwargs)
+        print(str(args, **kwargs))
 #        self._conn.start_activity('7174686')
         self._conn.start_activity(args[0])
         

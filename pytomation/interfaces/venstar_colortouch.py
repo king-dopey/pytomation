@@ -11,7 +11,7 @@ which was reused from:
  George Farris <farrisg@gmsys.com>
 """
 
-import json,urllib,time
+import json,urllib.request,urllib.parse,urllib.error,time
 
 from .ha_interface import HAInterface
 from .common import Interface, Command
@@ -53,7 +53,7 @@ class VenstarThermostat(HAInterface):
         
         try:
             self._host = self._interface.host
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('[Venstar Thermostat] Could not find host address: ' + str(ex))
 
 
@@ -62,7 +62,7 @@ class VenstarThermostat(HAInterface):
         try:
             status = json.loads(response)
 
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error("Venstar Thermostat couldn't decode status json: " + str(ex))
 
 
@@ -138,7 +138,7 @@ class VenstarThermostat(HAInterface):
                     if fan and int(fan) != self._fan:
                         _fan = int(fan)
 
-                except Exception, ex:
+                except Exception as ex:
                     self._logger.error('Could not decode status request' + str(ex))
             else:
                 self._logger.debug("No response")
@@ -150,20 +150,20 @@ class VenstarThermostat(HAInterface):
         return self._interface.read(data)
 
     def _send_state(self):
-        modes = dict(zip([Command.OFF, Command.HEAT, Command.COOL, Command.AUTOMATIC],
-                         range(0,4)))
+        modes = dict(list(zip([Command.OFF, Command.HEAT, Command.COOL, Command.AUTOMATIC],
+                         list(range(0,4)))))
         try:
             attributes = {}
-            if self._mode <> None:
+            if self._mode != None:
                 attributes['mode'] = modes[self._mode]
-            if self._fan <> None:
+            if self._fan != None:
                 attributes['fan'] = 1 if self._fan else 0
-            if self._set_point <> None:
+            if self._set_point != None:
                     attributes['heattemp'] = self._HeatSetpoint
                     attributes['cooltemp'] = self._CoolSetpoint
 
-            command = ('control', urllib.urlencode(attributes),)
-        except Exception, ex:
+            command = ('control', urllib.parse.urlencode(attributes),)
+        except Exception as ex:
             self._logger.error('Could not formulate command to send: ' + str(ex))
 
         commandExecutionDetails = self._sendInterfaceCommand(command)
@@ -177,7 +177,7 @@ class VenstarThermostat(HAInterface):
               self._away_type: self._away,
               'schedule': self._schedule
             }
-            command = ('settings', urllib.urlencode(attributes),)
+            command = ('settings', urllib.parse.urlencode(attributes),)
         except:
             self._logger.error('Could not formulate command to send: ' + str(ex))
 

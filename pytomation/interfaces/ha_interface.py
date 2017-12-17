@@ -81,7 +81,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
             try:
                 self._readInterface(self._lastPacketHash)
                 self._writeInterface()
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.error("Problem with interface: " + str(ex))
                 
         self._interfaceRunningEvent.clear()
@@ -128,7 +128,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                                        address=address,
                                        source=self,
                                        )
-                except Exception, ex:
+                except Exception as ex:
                     device.command(
                                    command=command,
                                    source=self,
@@ -143,7 +143,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                                        address=address,
                                        source=self,
                                        )
-                except Exception, ex:
+                except Exception as ex:
                     self._logger.debug('Could not set state for device: {device}'.format(device=device.name))
                     
                     
@@ -155,7 +155,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         try:
             if self._interface.disabled == True:
                 return returnValue
-        except AttributeError, ex:
+        except AttributeError as ex:
             pass
 
         try:
@@ -182,8 +182,8 @@ class HAInterface(AsynchronousInterface, PytomationObject):
 
                 if extraCommandDetails != None:
                     basicCommandDetails = dict(
-                                       basicCommandDetails.items() + \
-                                       extraCommandDetails.items())
+                                       list(basicCommandDetails.items()) + \
+                                       list(extraCommandDetails.items()))
 
                 self._outboundCommandDetails[commandHash] = basicCommandDetails
 
@@ -197,8 +197,8 @@ class HAInterface(AsynchronousInterface, PytomationObject):
 
             self._commandLock.release()
 
-        except Exception, ex:
-            print traceback.format_exc()
+        except Exception as ex:
+            print(traceback.format_exc())
 
         finally:
 
@@ -218,7 +218,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
 
             try:
                 commandExecutionDetails = self._outboundCommandDetails[commandHash]
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.error('Could not find execution details: {command} {error}'.format(
                                                                                                 command=commandHash,
                                                                                                 error=str(ex))
@@ -237,7 +237,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 del self._outboundCommandDetails[commandHash]
         try:
             self._commandLock.release()
-        except Exception, te:
+        except Exception as te:
             self._logger.debug("Error trying to release unlocked lock %s" % (str(te)))
 
     def _writeInterfaceFinal(self, data):
@@ -249,7 +249,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         if self._interface:
             try:
                 response = self._interface.read()
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.debug("Error reading from interface {interface} exception: {ex}".format(
                                                                                      interaface=str(self._interface),
                                                                                      ex=str(ex)
@@ -265,7 +265,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 #X10 is slow.  Need to adjust based on protocol sent.  Or pay attention to NAK and auto adjust
                 #time.sleep(0.1)
                 time.sleep(0.5)
-        except TypeError, ex:
+        except TypeError as ex:
             pass
 
     def _resend_failed_command(self, commandHash, commandDetails):

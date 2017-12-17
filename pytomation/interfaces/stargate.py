@@ -33,7 +33,7 @@ Versions and changes:
 """
 import threading
 import time
-from Queue import Queue
+from queue import Queue
 from binascii import unhexlify
 
 from .common import *
@@ -63,7 +63,7 @@ class Stargate(HAInterface):
 
         self._modemResponse = {
                                }
-        self.d_inverted = [False for x in xrange(16)]
+        self.d_inverted = [False for x in range(16)]
         self.echoMode()
 	self._logger.error('Startgggg')
 
@@ -106,7 +106,7 @@ class Stargate(HAInterface):
             last_input_map = self._last_input_map_high 
         
 
-        for i in xrange(8):
+        for i in range(8):
             i_value = io_map & (2 ** i)
             i_prev_value = last_input_map & (2 ** i)
             if i_value != i_prev_value or first_time:
@@ -148,7 +148,7 @@ class Stargate(HAInterface):
         foundCommandHash = None
 
         #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
             if commandDetails['modemCommand'] == self._modemCommands['read_register']:
                 #Looks like this is our command.  Lets deal with it
                 self._commandReturnData[commandHash] = response[4:]

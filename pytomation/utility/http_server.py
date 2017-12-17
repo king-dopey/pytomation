@@ -1,6 +1,6 @@
-import BaseHTTPServer
+import http.server
 
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler
 import pytomation.common.config 
 from pytomation.common.pyto_logging import PytoLogging
 from pytomation.common.pytomation_api import PytomationAPI
@@ -74,10 +74,10 @@ class PytomationHTTPServer(object):
         server_address = (self._address, self._port)
         
         PytomationHandlerClass.protocol_version = self._protocol
-        httpd = BaseHTTPServer.HTTPServer(server_address, PytomationHandlerClass)
+        httpd = http.server.HTTPServer(server_address, PytomationHandlerClass)
         
         sa = httpd.socket.getsockname()
-        print "Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "..."
+        print("Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "...")
         httpd.serve_forever()
         #BaseHTTPServer.test(HandlerClass, ServerClass, protocol)
 

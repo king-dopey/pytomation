@@ -1,4 +1,4 @@
-import Queue
+import queue
 from pytomation.interfaces import Conversions
 from pytomation.interfaces.common import *
 
@@ -27,7 +27,7 @@ class Mock_Interface(object):
         return True
     
     def put_read_data(self, data):
-        print 'Adding data: ' + hex_dump(data) + ":"
+        print('Adding data: ' + hex_dump(data) + ":")
         self._read_data += data
     
     def query_write_data(self):

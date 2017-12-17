@@ -27,7 +27,7 @@
 
 
 import curses, time, sys, math, datetime
-import json, os, socket, httplib
+import json, os, socket, http.client
 
 from phue import Bridge
 from colorpy import colormodels
@@ -116,20 +116,17 @@ class Hue():
         b =  X * 0.026 - Y * 0.072 + Z * 0.962
 
         # Apply reverse gamma correction.
-        r, g, b = map(
-            lambda x: (12.92 * x) if (x <= 0.0031308) else ((1.0 + 0.055) * pow(x, (1.0 / 2.4)) - 0.055),
-            [r, g, b]
-        )
+        r, g, b = [(12.92 * x) if (x <= 0.0031308) else ((1.0 + 0.055) * pow(x, (1.0 / 2.4)) - 0.055) for x in [r, g, b]]
 
         # Bring all negative components to zero.
-        r, g, b = map(lambda x: max(0, x), [r, g, b])
+        r, g, b = [max(0, x) for x in [r, g, b]]
 
         # If one component is greater than 1, weight components by that value.
         max_component = max(r, g, b)
         if max_component > 1:
-            r, g, b = map(lambda x: x / max_component, [r, g, b])
+            r, g, b = [x / max_component for x in [r, g, b]]
 
-        r, g, b = map(lambda x: int(x * 255), [r, g, b])
+        r, g, b = [int(x * 255) for x in [r, g, b]]
 
         return (r, g, b)
 
@@ -205,7 +202,7 @@ class Hue():
 
 
     def request(self, scn, mode='GET', address=None, data=None):
-        connection = httplib.HTTPConnection(self.ip, timeout=10)
+        connection = http.client.HTTPConnection(self.ip, timeout=10)
 
         try:
             if mode == 'GET' or mode == 'DELETE':
@@ -617,7 +614,7 @@ class Hue():
                         llist.append(int(l))
                     result = hub.create_group(name, llist)
 
-                    if result[0].has_key('success'):
+                    if 'success' in result[0]:
                         return
                     else:
                         self.popup_error(scn, "     Could not create group     ")

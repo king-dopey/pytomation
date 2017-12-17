@@ -66,7 +66,7 @@ Versions and changes:
 import threading
 import time
 import re
-from Queue import Queue
+from queue import Queue
 from binascii import unhexlify
 
 from .common import *
@@ -93,7 +93,7 @@ class Wtdio(HAInterface):
         self._modemResponse = {
                                }
         # for inverting the I/O point 
-        self.d_inverted = [False for x in xrange(14)]
+        self.d_inverted = [False for x in range(14)]
                 
         self.echoMode()	 #set echo off
 
@@ -135,7 +135,7 @@ class Wtdio(HAInterface):
         foundCommandHash = None
 
         #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
             if commandDetails['modemCommand'] == self._modemCommands['read_register']:
                 #Looks like this is our command.  Lets deal with it
                 self._commandReturnData[commandHash] = response[4:]

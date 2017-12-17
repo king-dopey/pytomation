@@ -1,8 +1,8 @@
 from .pytomation_object import PytomationObject
 #from .pytomation_system import *
-import pytomation_system
+from . import pytomation_system
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 #from collections import OrderedDict
 
 class PytomationAPI(PytomationObject):
@@ -60,7 +60,7 @@ class PytomationAPI(PytomationObject):
         if type == self.WEBSOCKET:
             try:
                 data = json.loads(data)
-            except Exception, ex:
+            except Exception as ex:
                 pass
             
             path = data['path']
@@ -69,13 +69,13 @@ class PytomationAPI(PytomationObject):
                 data = data['command']
                 if path != 'voice':
                     data = 'command=' + data if data else None
-            except Exception, ex:
+            except Exception as ex:
                 #If no command just send back data being requested
                 data = None
                 type = self.JSON
             method = "post" if data else "get"
         elif path == 'voice':
-            data = urllib.unquote(data).replace('&', '').replace('+', ' ').split("command[]=")
+            data = urllib.parse.unquote(data).replace('&', '').replace('+', ' ').split("command[]=")
             
         method = method.lower()
         levels = path.split('/')
@@ -84,10 +84,10 @@ class PytomationAPI(PytomationObject):
             if isinstance(data, list):
                 tdata = []
                 for i in data:
-                    tdata.append(urllib.unquote(i).decode('utf8'))
+                    tdata.append(urllib.parse.unquote(i).decode('utf8'))
                 data = tdata
             else:
-                data = urllib.unquote(data).decode('utf8')
+                data = urllib.parse.unquote(data).decode('utf8')
 
         f = self.get_map().get((method, levels[0]), None)
         if f:
@@ -95,7 +95,7 @@ class PytomationAPI(PytomationObject):
         elif levels[0].lower() == 'device':
             try:
                 response = self.update_device(command=method, levels=levels, source=source)
-            except Exception, ex:
+            except Exception as ex:
                 pass
         if type == self.JSON:
             return json.dumps(response)
@@ -121,7 +121,7 @@ class PytomationAPI(PytomationObject):
         Returns all devices and status in JSON.
         """
         devices = []
-        for (k, v) in pytomation_system.get_instances_detail().iteritems():
+        for (k, v) in pytomation_system.get_instances_detail().items():
             try:
                 v.update({'id': k})
                 a = v['instance']
@@ -129,7 +129,7 @@ class PytomationAPI(PytomationObject):
                 del v['instance']
 #                devices.append({k: v})
                 devices.append(v)
-            except Exception, ex:
+            except Exception as ex:
                 pass
 #        f = OrderedDict(sorted(devices.items()))
 #        odevices = OrderedDict(sorted(f.items(), key=lambda k: k[1]['type_name'])
@@ -187,7 +187,7 @@ class PytomationAPI(PytomationObject):
             device = detail['instance']
             device.command(command=command, source=source)
             response = PytomationAPI.get_device(levels)
-        except Exception, ex:
+        except Exception as ex:
             pass
 #        print 'res['+ str(response)
         return response

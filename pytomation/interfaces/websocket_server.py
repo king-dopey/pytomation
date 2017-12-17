@@ -22,7 +22,7 @@ class PytoWebSocketApp(WebSocketApplication):
     _api = PytomationAPI()
 
     def on_open(self):
-        print "WebSocket Client connected"
+        print("WebSocket Client connected")
 
     def on_message(self, message):
         if message:
@@ -68,7 +68,7 @@ class PytoWebSocketServer(HAInterface):
                 Resource(resource),
                 pre_start_hook=auth_hook)
 
-        print "Serving WebSocket Connection on", self._address, "port", self._port, "..."
+        print("Serving WebSocket Connection on", self._address, "port", self._port, "...")
         StateDevice.onStateChangedGlobal(self.broadcast_state)
         self.ws.serve_forever()
 
@@ -113,7 +113,7 @@ class PytoWebSocketServer(HAInterface):
     def broadcast_state(self, state, source, prev, device):
         # TODO: add queue system and separate thread to avoid blocking on long network operations
         if self.ws:
-            for client in self.ws.clients.values():
+            for client in list(self.ws.clients.values()):
                 message = self._api.get_state_changed_message(state, source, prev, device)
                 client.ws.send(message)
 

@@ -37,7 +37,7 @@ class HW_Thermostat(HAInterface):
 
         try:
             self._host = self._interface.host
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('[HW Thermostat] Could not find host address: ' + str(ex))
         
     def _readInterface(self, lastPacketHash):
@@ -53,7 +53,7 @@ class HW_Thermostat(HAInterface):
                     status = []
                     try:
                         status = json.loads(response)
-                    except Exception, ex:
+                    except Exception as ex:
                         self._logger.error('Could not decode status request' + str(ex))
                     self._process_mode(status)
         else:
@@ -101,7 +101,7 @@ class HW_Thermostat(HAInterface):
         try:
             status = json.loads(response)
             temp = status['temp']
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('HW Thermostat couldnt decode status json: ' + str(ex))
         if temp and temp != self._last_temp:
             self._onCommand(command=(Command.LEVEL, temp),address=self._host)
@@ -124,25 +124,25 @@ class HW_Thermostat(HAInterface):
             self._onCommand(command=command,address=self._host)
 
     def _send_state(self):
-        modes = dict(zip([Command.OFF, Command.HEAT, Command.COOL, Command.SCHEDULE],
-                         range(0,4)))
+        modes = dict(list(zip([Command.OFF, Command.HEAT, Command.COOL, Command.SCHEDULE],
+                         list(range(0,4)))))
         try:
             attributes = {}
-            if self._set_point <> None:
+            if self._set_point != None:
                 if self._mode == Command.HEAT or self._mode == None:
                     attributes['t_heat'] = self._set_point
                 elif self._mode == Command.COOL:
                     attributes['t_cool'] = self._set_point
-            if self._fan <> None:
+            if self._fan != None:
                 attributes['fmode'] = 2 if self._fan else 1
-            if self._mode <> None:
+            if self._mode != None:
                 attributes['tmode'] = modes[self._mode]
-            if self._hold <> None:
+            if self._hold != None:
                 attributes['hold'] = 1 if self._hold or self._mode != Command.SCHEDULE else 0
                 
             command = ('tstat', json.dumps(attributes),
                     )
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('Could not formulate command to send: ' + str(ex))
 
         commandExecutionDetails = self._sendInterfaceCommand(command)

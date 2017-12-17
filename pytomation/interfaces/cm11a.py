@@ -121,7 +121,7 @@ Versions and changes:
 import threading
 import time
 import re
-from Queue import Queue
+from queue import Queue
 from binascii import unhexlify
 
 from .common import *

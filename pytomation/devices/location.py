@@ -82,14 +82,14 @@ class Location(StateDevice):
         time_now = self.local_time.replace(second=0, microsecond=0)
         if (self._sunrise > self._sunset and self._sunset != time_now) or \
             self._sunrise == time_now:
-            if self.state <> Command.LIGHT:
+            if self.state != Command.LIGHT:
                 self.light()
             else:
                 self._logger.info("{name} Location did not flip state as it already is light".format(
                                                                                                      name=self.name
                                                                                                      ))
         else:
-            if self.state <> Command.DARK:
+            if self.state != Command.DARK:
                 self.dark()
             else:
                 self._logger.info("{name} Location did not flip state as it already is dark".format(

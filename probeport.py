@@ -74,7 +74,7 @@ spports = []
 # ------------- End of user modifiable settings -----------------------
 
 def test():
-	print "This is a test run...."
+	print("This is a test run....")
 
 
 #-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ def test():
 #-----------------------------------------------------------------------------
 def probe_plm():
 	for myport in SERIAL_PORTS:
-		print "Probing for Insteon PLM port -> " + myport
+		print("Probing for Insteon PLM port -> " + myport)
 		
 		try:
 			id = SERIAL_PORTS.index(myport)
@@ -92,7 +92,7 @@ def probe_plm():
 
 			ser.write(binascii.a2b_hex("0273"))
 			s2 = binascii.b2a_hex(ser.read(8))
-			print s2
+			print(s2)
 			if s2[0:4] == "0273":
 				#print "linking " + myport + " to /dev/sp_insteon_plm"
 				spports.append("linking " + myport + " to /dev/sp_insteon_plm")
@@ -104,7 +104,7 @@ def probe_plm():
 			ser.close()
 
 		except:
-			print "Error - Could not open serial port..."
+			print("Error - Could not open serial port...")
 
 #-----------------------------------------------------------------------------
 # Probe for the Weeder WTDIO-M 14 channel digital IO board
@@ -112,14 +112,14 @@ def probe_plm():
 #-----------------------------------------------------------------------------
 def probe_wtdio():
 	for myport in SERIAL_PORTS:
-		print "Probing for Weeder WTDIO-M IO board port -> " + myport
+		print("Probing for Weeder WTDIO-M IO board port -> " + myport)
 		
 		try:
 			id = SERIAL_PORTS.index(myport)
 			ser = serial.Serial(myport, WEEDER_IO_BAUD_RATE, timeout=2)
 			ser.write(WEEDER_BOARD_ADDRESS)
 			s2 = ser.read(5)
-			print s2
+			print(s2)
 			if s2[0:2] == WEEDER_BOARD_ADDRESS + '?':
 				spports.append("linking " + myport + " to /dev/sp_weeder_wtdio")
 				command = "/bin/ln -sf " + myport + " /dev/sp_weeder_wtdio"
@@ -130,7 +130,7 @@ def probe_wtdio():
 			ser.close()
 
 		except:
-			print "Error - Could not open serial port..."
+			print("Error - Could not open serial port...")
 
 #-----------------------------------------------------------------------------
 # Probe for the W800RF32 x10 RF receiver
@@ -138,14 +138,14 @@ def probe_wtdio():
 #-----------------------------------------------------------------------------
 def probe_w800():
 	for myport in SERIAL_PORTS:
-		print "Probing for W800RF32 port -> " + myport
+		print("Probing for W800RF32 port -> " + myport)
 		
 		try:
 			id = SERIAL_PORTS.index(myport)
 			ser = serial.Serial(myport, W800RF32_BAUD_RATE, timeout=2)
 			ser.write(binascii.a2b_hex("F029"))
 			s2 = binascii.b2a_hex(ser.read(8))
-			print s2
+			print(s2)
 			if s2[0:2] == "29":
 				spports.append("linking " + myport + " to /dev/sp_w800rf32")
 				command = "/bin/ln -sf " + myport + " /dev/sp_w800rf32"
@@ -156,7 +156,7 @@ def probe_w800():
 			ser.close()
 
 		except:
-			print "Error - Could not open serial port..."
+			print("Error - Could not open serial port...")
 
 #-----------------------------------------------------------------------------
 # Probe for the Arduino Uno with the Pytomation firmware
@@ -164,7 +164,7 @@ def probe_w800():
 #-----------------------------------------------------------------------------
 def probe_uno():
 	for myport in SERIAL_PORTS:
-		print "Probing for Arduino Uno port -> " + myport
+		print("Probing for Arduino Uno port -> " + myport)
 		
 		try:
 			id = SERIAL_PORTS.index(myport)
@@ -173,7 +173,7 @@ def probe_uno():
 			ser.read(100)	#clear buffer
 			ser.write('?')
 			s2 = ser.read(9)
-			print s2
+			print(s2)
 			if s2[0:7] == "PYARUNO":
 				spports.append("linking " + myport + " to /dev/sp_pyaruno")
 				command = "/bin/ln -sf " + myport + " /dev/sp_pyaruno"
@@ -184,13 +184,13 @@ def probe_uno():
 			ser.close()
 
 		except:
-			print "Error - Could not open serial port..."
+			print("Error - Could not open serial port...")
 
 def show():
-	print '\n\n'
-	print 'Report\n--------------------------------------------------'
+	print('\n\n')
+	print('Report\n--------------------------------------------------')
 	for line in spports:
-		print line
+		print(line)
 
 if __name__ == "__main__":
 	for device in PROBE_DEVICES:
@@ -199,5 +199,5 @@ if __name__ == "__main__":
 	show ()
 
 
-	print "Goodbye..."
+	print("Goodbye...")
 

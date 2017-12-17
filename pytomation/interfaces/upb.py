@@ -37,7 +37,7 @@ Versions and changes:
 """
 import threading
 import time
-from Queue import Queue
+from queue import Queue
 from binascii import unhexlify
 
 from .common import *
@@ -222,7 +222,7 @@ class UPB(HAInterface):
         foundCommandHash = None
 
         #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
             if commandDetails['modemCommand'] == self._modemCommands['send_upb']:
                 #Looks like this is our command.  Lets deal with it
                 self._commandReturnData[commandHash] = True
@@ -247,7 +247,7 @@ class UPB(HAInterface):
         foundCommandHash = None
 
         #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
             if commandDetails['modemCommand'] == self._modemCommands['read_register']:
                 #Looks like this is our command.  Lets deal with it
                 self._commandReturnData[commandHash] = response[4:]
@@ -274,7 +274,7 @@ class UPB(HAInterface):
         incoming = UPBMessage()
         try:
             incoming.decode(response)
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error("UPB Error decoding message -Incoming message: " + response +"=="+ str(ex))
         self._logger.debug('UPBN:' + str(incoming.network) + ":" + str(incoming.source) + ":" + str(incoming.destination) + ":" + Conversions.int_to_hex(incoming.message_did))
         address = (incoming.network, incoming.source)

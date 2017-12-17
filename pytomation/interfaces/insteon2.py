@@ -130,7 +130,7 @@ class InsteonPLM2(HAInterface):
     
     def _findPendingCommand(self, message):
         # check if any commands are looking for this message
-        for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
             command = commandDetails['command']
             if (command.isAck(message)):
                 self._commandReturnData[commandHash] = True
@@ -179,7 +179,7 @@ class InsteonPLM2(HAInterface):
                 extraCommandDetails={'destinationDevice': deviceId, 'command' : haCommand})
             
             return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)
-        except Exception, ex:
+        except Exception as ex:
             self._logger.exception('Error executing command: ' + str(ex))
             return None
         

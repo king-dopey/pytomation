@@ -19,7 +19,7 @@ class AllMatch(set):
 allMatch = AllMatch()
 
 def conv_to_set(obj):  # Allow single integer to be provided
-    if isinstance(obj, (int,long)):
+    if isinstance(obj, int):
         return set([obj])  # Single item
     if not isinstance(obj, set):
         obj = set(obj)
@@ -122,7 +122,7 @@ class CronTimer(object):
                 '*',
                 )
         
-        except Exception, e:
+        except Exception as e:
             try: # Hours / Minutes / Seconds
                 try:
                     date_object = datetime.strptime(string, '%I:%M:%S%p')
@@ -139,8 +139,8 @@ class CronTimer(object):
                     '*',
                     '*',
                     )
-            except Exception, ex:
-                print '\nError in to_cron, check your date formats...\n'
+            except Exception as ex:
+                print('\nError in to_cron, check your date formats...\n')
                 raise ex
                 
         return None

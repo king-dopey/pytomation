@@ -14,9 +14,9 @@ class NamedPipe(Interface):
     def _create_named_pipe(self, path_name):
         try:
             os.mkfifo(path_name)
-        except OSError, ex:
+        except OSError as ex:
             self._logger.warning("Failed to create FIFO: %s" % ex)
-        except Exception, ex:
+        except Exception as ex:
             self._logger.critical("Unknown exception: %s" % ex)
             return
         if self._is_read:
@@ -32,9 +32,9 @@ class NamedPipe(Interface):
         result = ''
         try:
             result = os.read(self._pipe, bufferSize)
-        except OSError, ex:
+        except OSError as ex:
             self._logger.debug('Nothing to read in pipe: %s' % ex)
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('Error reading pipe %s' % ex)
             raise ex
         return result.strip()

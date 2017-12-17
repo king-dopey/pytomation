@@ -35,7 +35,7 @@ class InterfaceDevice(StateDevice):
         if not match:
             try:
                 match = self.address.lower() == address.lower()
-            except Exception, ex:
+            except Exception as ex:
                 pass
         return match
             
@@ -50,7 +50,7 @@ class InterfaceDevice(StateDevice):
                                                                                interface=device.name,
                                                                                ))
             return True
-        except Exception, ex:
+        except Exception as ex:
             return super(InterfaceDevice, self)._add_device(device)
 
     def _delegate_command(self, command, *args, **kwargs):
@@ -76,7 +76,7 @@ class InterfaceDevice(StateDevice):
 #                             else:
 # #                                getattr(interface, command)(self._address)
 #                                 self._send_command_to_interface(interface, self._address, command)
-                        except Exception, ex:
+                        except Exception as ex:
                             self._logger.error("{name} Could not send command '{command}' to interface '{interface}.  Exception: {exc}'".format(
                                                                                                 name=self.name,
                                                                                                 command=command,

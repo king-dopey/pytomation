@@ -12,11 +12,11 @@ class Manhole(object):
     be converted to underscore _ .
     """    
     def createShellServer(self, user='pyto', password='mation', port=2000, instances={}):
-        print 'Creating shell server instance'
+        print('Creating shell server instance')
         factory = telnet.ShellFactory()
         listen_port = reactor.listenTCP( port, factory)
 #        for instance_id, instance_detail in get_instances_detail().iteritems():
-        for instance_id, instance_detail in instances.iteritems():
+        for instance_id, instance_detail in instances.items():
             name = re.sub('[\s]','_', instance_detail['name'].lower())
             factory.namespace.update(
                 {
@@ -26,7 +26,7 @@ class Manhole(object):
                 )
         factory.username = user
         factory.password = password
-        print 'Listening on port '  + str(port)
+        print('Listening on port '  + str(port))
         return listen_port
 
     def start(self, user='pyto', password='mation', port=2000, instances={}):

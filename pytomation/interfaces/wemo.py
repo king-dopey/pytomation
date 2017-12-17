@@ -27,7 +27,7 @@ class WeMo(HAInterface):
                                 'urn:Belkin:service:basicevent:1', 
                                 'http://{0}:{1}/upnp/control/basicevent1'.format(self._ip, self._port), 
              'SetBinaryState', {'BinaryState': (state, 'Boolean')})
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('Error trying to send command: '+ str(ex))
             
         return resp

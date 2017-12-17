@@ -15,7 +15,7 @@ jason@sharpee.com
 import json
 import re
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from .ha_interface import HAInterface
 from .common import *
@@ -30,7 +30,7 @@ class SparkIO(HAInterface):
 
         try:
             self._host = self._interface.host
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('Could not find host address: ' + str(ex))
         
     def _readInterface(self, lastPacketHash):
@@ -46,7 +46,7 @@ class SparkIO(HAInterface):
                     status = []
                     try:
                         status = json.loads(response)
-                    except Exception, ex:
+                    except Exception as ex:
                         self._logger.error('Could not decode status request' + str(ex))
                     self._process_mode(status)
         else:
@@ -73,7 +73,7 @@ class SparkIO(HAInterface):
         attributes['level'] = pin_state[command]
 
 #        command = (url, json.dumps(attributes))
-        command = (url, urllib.urlencode(attributes))
+        command = (url, urllib.parse.urlencode(attributes))
         
         commandExecutionDetails = self._sendInterfaceCommand(command)
         return True

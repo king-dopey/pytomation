@@ -102,7 +102,7 @@ class InsteonInterface2Tests(TestCase):
 
     def _insteon_receive_status_callback(self, *args, **kwargs):
         command = kwargs.get('command', None)
-        print 'command:' + command
+        print('command:' + command)
         if command == Command.ON:
             self._result = True
 

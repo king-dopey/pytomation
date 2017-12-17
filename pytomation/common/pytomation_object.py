@@ -26,7 +26,7 @@ class PytomationObject(object):
                                                                      name=self._name,
                                                                      obj=str(self))
                                )
-        except Exception, ex:
+        except Exception as ex:
             pass
         
     @property

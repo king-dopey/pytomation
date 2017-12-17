@@ -79,7 +79,7 @@ class InsteonHub(HAInterface):
             #Only write one command at a time
             if (len(self._pendingCommandDetails) != 0):
                 #Don't allow a stale command to sit, wait for a while, then retry, then fail
-                for commandHash, commandDetails in self._pendingCommandDetails.items():
+                for commandHash, commandDetails in list(self._pendingCommandDetails.items()):
                     if (commandHash == self._previous_command_hash):
                         if (self._command_wait_count < 4):
                             self._command_wait_count += 1
@@ -145,7 +145,7 @@ class InsteonHub(HAInterface):
                         try:
                             self._commandLock.acquire()
                             #Acknowledge a successful status request, if we got the status back
-                            for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+                            for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
                                 if (commandDetails['modemCommand'] == '62' and
                                     commandDetails['commandId1'] == '19' and
                                     commandDetails['destinationDevice'] == address):
@@ -176,7 +176,7 @@ class InsteonHub(HAInterface):
                 try:
                     self._commandLock.acquire()
                     #Acknowledge a successful status request, if we got the status back
-                    for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+                    for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
                         if (commandDetails['modemCommand'] == '62' and
                             commandDetails['commandId1'] == '19' and
                             commandDetails['destinationDevice'] == address):
@@ -207,7 +207,7 @@ class InsteonHub(HAInterface):
         try:
             self._commandLock.acquire()
             #Set anything necessary for waiting commands
-            for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+            for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
                 if (commandDetails['modemCommand'] == modem_command and
                     commandDetails['commandId1'] == cmd and
                     commandDetails['commandId2'] == cmd2 and

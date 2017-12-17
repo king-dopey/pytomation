@@ -61,15 +61,15 @@ class XMPP_Client(StateDevice):
             message.setAttr('type', 'chat')
             try:
                 self._xmpp.send(message )
-            except IOError, ex:
+            except IOError as ex:
                 try:
                     self.connect()
                     self._xmpp.send(message )
-                except IOError, ex1:
+                except IOError as ex1:
                     self._logger.error('Could not reconnect:' + str(ex1))
-                except Exception, ex1:
+                except Exception as ex1:
                     self._logger.error('Could not reconnect error:' + str(ex1))
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.error('Unknown Error: ' + str(ex))
                 
 #            time.sleep(5)

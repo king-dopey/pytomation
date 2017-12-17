@@ -34,7 +34,7 @@ class Open_zwave(HAInterface):
 
     def louie_value_update(self, network, node, value):
         self._logger.debug('>>>>>>> Hello from value : {}'.format(value))
-        for lockvalue in self.get_door_locks(node.node_id).values():
+        for lockvalue in list(self.get_door_locks(node.node_id).values()):
             if lockvalue.value_id == value.value_id:
                 if value.data:
                     self._onCommand(address=str(node.node_id), command=Command.LOCK)
@@ -50,7 +50,7 @@ class Open_zwave(HAInterface):
             if val == value.value_id:
                 #Poll dimmer to ensure ramp up/down completes
                 level = value.data
-                if self.dimmer_polled_value.has_key(val):
+                if val in self.dimmer_polled_value:
                     self._logger.debug('>>>>>>> Hello from level : {} {}'.format(level, self.dimmer_polled_value[val]))
                     if level == self.dimmer_polled_value[val]:
                         del self.dimmer_polled_value[val]
@@ -120,7 +120,7 @@ class Open_zwave(HAInterface):
             node.neighbors))
         self._logger.info("{} - Can sleep : {}".format(node.node_id,
             node.can_wake_up()))
-        for value in self.get_door_locks(node.node_id, 'All').values():
+        for value in list(self.get_door_locks(node.node_id, 'All').values()):
             self._logger.debug("{} - {} : {}".format(node.node_id,value.label,value.data))
 
     def _readInterface(self, lastPacketHash):
@@ -156,13 +156,13 @@ class Open_zwave(HAInterface):
         
     def lock(self, address):
         node = int(address)
-        for value in self.get_door_locks(node).values():
+        for value in list(self.get_door_locks(node).values()):
             self._logger.debug("Lock")
             value.data = True
     
     def unlock(self, address):
         node = int(address)
-        for value in self.get_door_locks(node).values():
+        for value in list(self.get_door_locks(node).values()):
             self._logger.debug("Unlock")
             value.data = False
 
@@ -208,7 +208,7 @@ class Open_zwave(HAInterface):
                 self._onState(address=address, state=State.ON)
             else:
                 self._onState(address=address, state=(State.LEVEL,level))
-        for value in self.get_door_locks(node).values():
+        for value in list(self.get_door_locks(node).values()):
             if value.data:
                 self._onState(address=address, state=State.LOCKED)
             else:

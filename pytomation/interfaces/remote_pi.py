@@ -36,7 +36,7 @@ class RemotePi(HAInterface):
                 if p != gpioID:
                     
                     values.append(self.gpioPi.read(p))
-                    print self.gpioPi.read(p)        
+                    print(self.gpioPi.read(p))        
 
         for device in self._devices:
             #print device
@@ -52,7 +52,7 @@ class RemotePi(HAInterface):
 
         
 
-        print ("My state is equal to still %s" % (myState==State.STILL))
+        print(("My state is equal to still %s" % (myState==State.STILL)))
         if any(values) & (myState != State.MOTION):
             #print "sending motion"
             self._onCommand(Command.MOTION  ,myAddress)

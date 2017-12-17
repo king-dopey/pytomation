@@ -68,9 +68,9 @@ class LightTests(TestCase):
     def test_photocell_triggered(self):
         photo = Photocell('D1', initial=State.LIGHT)
         light = Light('D1', devices=photo)
-        self.assertEquals(light.state, State.OFF)
+        self.assertEqual(light.state, State.OFF)
         photo.dark()
-        self.assertEquals(light.state, State.ON)
+        self.assertEqual(light.state, State.ON)
         
         
     def test_light_restricted(self):
@@ -206,7 +206,7 @@ class LightTests(TestCase):
         light = Light('a2',
                       time={
                             Attribute.COMMAND: Command.OFF,
-                            Attribute.TIME:(0, 30, range(0,5), 0, 0)
+                            Attribute.TIME:(0, 30, list(range(0,5)), 0, 0)
                             })
         self.assertIsNotNone(light)
         

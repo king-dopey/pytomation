@@ -43,7 +43,7 @@ class HoneywellWebsite(Interface):
         self._logger.debug('Created object for user> ' + str(username))
         try:
             self._login()
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('Error logging in> ' + str(username)
                                + 'exception: ' + str(ex))
 
@@ -103,8 +103,8 @@ class HoneywellWebsite(Interface):
     def write(self, address, request, *args, **kwargs):
         self._login()
         self._logger.debug('Writing to thermostat> ')
-        print "Write called!"
-	print "address",address
+        print("Write called!")
+	print("address",address)
         t = datetime.datetime.now()
         utc_seconds = (time.mktime(t.timetuple()))
         utc_seconds = int(utc_seconds * 1000)
@@ -116,10 +116,10 @@ class HoneywellWebsite(Interface):
 
 	#print "response:",r4.status,rawj,address
         if (r.status_code != 200): 
-            print "Bad R4 status ", r.status_code, r.reason
+            print("Bad R4 status ", r.status_code, r.reason)
             return False
 
-	print "Okay!"
+	print("Okay!")
 	self._logger.debug('Done >')
 
         return True
@@ -227,7 +227,7 @@ class HoneywellThermostat(HAInterface):
             self._StatusHeat = uiData["StatusHeat"]
             self._TemporaryHoldUntilTime = uiData["TemporaryHoldUntilTime"]
 	    
-            print j
+            print(j)
             #self._WeatherTemp = j['weather']['Temperature']
 
             if j['communicationLost'] == "True":
@@ -306,13 +306,13 @@ class HoneywellThermostat(HAInterface):
 
     def circulate(self, *args, **kwargs):
         self._fan(mode="On")
-	print "Circ Devid: " + self._address, self._request
+	print("Circ Devid: " + self._address, self._request)
         return self._interface.write(address=self._address,
                                          request=self._request)
 
     def still(self, *args, **kwargs):
         self._fan(mode="Auto")
-	print "Still Devid: " + self._address, self._request
+	print("Still Devid: " + self._address, self._request)
         return self._interface.write(address=self._address,
                                          request=self._request)
         

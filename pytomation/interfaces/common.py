@@ -36,10 +36,11 @@ import binascii
 import serial
 import hashlib
 import sys
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import requests
 
 from pytomation.common.pytomation_object import PytomationObject
+from functools import reduce
 
 
 class Lookup(dict):
@@ -54,14 +55,14 @@ class Lookup(dict):
     def get_key(self, value):
         """find the key as a list given a value"""
         if type(value) == type(dict()):
-            items = [item[0] for item in self.items() if item[1][value.items()[0][0]] == value.items()[0][1]]
+            items = [item[0] for item in list(self.items()) if item[1][list(value.items())[0][0]] == list(value.items())[0][1]]
         else:
-            items = [item[0] for item in self.items() if item[1] == value]
+            items = [item[0] for item in list(self.items()) if item[1] == value]
         return items[0]
 
     def get_keys(self, value):
         """find the key(s) as a list given a value"""
-        return [item[0] for item in self.items() if item[1] == value]
+        return [item[0] for item in list(self.items()) if item[1] == value]
 
     def get_value(self, key):
         """find the value given a key"""
@@ -155,7 +156,7 @@ class TCP(Interface):
     def __init__(self, host, port):
         super(TCP, self).__init__()
         self.__s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print "connect %s:%s" % (host, port)
+        print("connect %s:%s" % (host, port))
         self.__s.connect((host, port))
 
     def write(self,data):
@@ -168,10 +169,10 @@ class TCP(Interface):
         data = ''
         try:
             data = self.__s.recv(bufferSize, socket.MSG_DONTWAIT)
-        except socket.error, ex:
+        except socket.error as ex:
             pass
-        except Exception, ex:
-            print "Exception:", type(ex) 
+        except Exception as ex:
+            print("Exception:", type(ex)) 
             pass
 #            print traceback.format_exc()
         return data
@@ -185,13 +186,13 @@ class TCP_old(Interface):
     def __init__(self, host, port):
         super(TCP_old, self).__init__()
         self.__s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print"connect %s:%s" % (host, port)
+        print("connect %s:%s" % (host, port))
         self.__s.connect((host, port))
         self.start()
 
     def send(self, dataString):
         "Send raw HEX encoded String"
-        print "Data Sent=>" + dataString
+        print("Data Sent=>" + dataString)
         data = binascii.unhexlify(dataString)
         self.__s.send(data)
         return None
@@ -228,7 +229,7 @@ class UDP(AsynchronousInterface):
         while 1:
 #            data = self.__srecv.recv(2048)
             data = self.__ssend.recv(2048)
-            print "received stuff", data
+            print("received stuff", data)
             if self.c != None:
                 self.c(data)
 
@@ -239,12 +240,12 @@ class UDP(AsynchronousInterface):
 class Serial(Interface):
     def __init__(self, serialDevicePath, serialSpeed=19200, serialTimeout=0.1, xonxoff=True, rtscts=False, dsrdtr=True):
         super(Serial, self).__init__()
-        print "Using %s for serial communication" % serialDevicePath
+        print("Using %s for serial communication" % serialDevicePath)
 #       self.__serialDevice = serial.Serial(serialDevicePath, 19200, timeout = 0.1) 
         try:
             self.__serialDevice = serial.Serial(serialDevicePath, serialSpeed, timeout = serialTimeout)
             self.__serialDevice._writeTimeout = serialTimeout
-        except serial.serialutil.SerialException, ex:
+        except serial.serialutil.SerialException as ex:
             self._disabled = True
             self.__serialDevice = None
             self._logger.critical("{name} Could not open serial port.  Interface disabled".format(
@@ -450,8 +451,8 @@ def hex_dump(src, length=8):
             s = s.translate(FILTER)
             result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
             N+=length
-    except Exception, ex:
-        print 'Exception in Hexdump: ' + str(ex)
+    except Exception as ex:
+        print('Exception in Hexdump: ' + str(ex))
         result = src
     return result
 
@@ -512,8 +513,8 @@ def pylog(src, s):
                 fp = open(logfile, "a")
             else:
                 fp = open(logfile, "w")
-        except Exception, ex:
-            print "Log:" + t+ s + "\n"
+        except Exception as ex:
+            print("Log:" + t+ s + "\n")
 #            print "ERROR Can't open log file..." + str(ex) + "=>"
 #            try:
 #                fp = open("/tmp/pylog.txt", "a")
@@ -524,7 +525,7 @@ def pylog(src, s):
             fp.write(t + s + "\n")
             fp.close()
     else:
-        print t + s
+        print(t + s)
 
 
 class Conversions(object):
@@ -587,13 +588,13 @@ class Conversions(object):
                 s = s.translate(FILTER)
                 result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
                 N+=length
-        except Exception, ex:
+        except Exception as ex:
             pass
         return result
 
     @staticmethod
     def checksum2(data):
-        return reduce(lambda x,y:x+y, map(ord, data)) % 256    
+        return reduce(lambda x,y:x+y, list(map(ord, data))) % 256    
 
     @staticmethod
     def checksum(data):

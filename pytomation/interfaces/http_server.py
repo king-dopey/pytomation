@@ -1,8 +1,8 @@
-import BaseHTTPServer
+import http.server
 import base64
 import threading
-from SocketServer import ThreadingMixIn
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+from socketserver import ThreadingMixIn
+from http.server import SimpleHTTPRequestHandler
 from pytomation.common import config
 #import pytomation.common.config 
 from pytomation.common.pyto_logging import PytoLogging
@@ -29,13 +29,13 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         return path
 
     def do_HEAD(self):
-        print "send header"
+        print("send header")
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
     def do_AUTHHEAD(self):
-        print "send header"
+        print("send header")
         self.send_response(401)
         self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
         self.send_header('Content-type', 'text/html')
@@ -112,7 +112,7 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         else:
             getattr(SimpleHTTPRequestHandler, "do_" + self.command.upper())(self)
 
-class ThreadedHTTPServer(ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class ThreadedHTTPServer(ThreadingMixIn, http.server.HTTPServer):
     '''
     classdocs
     '''
@@ -140,7 +140,7 @@ class HTTPServer(HAInterface):
         httpd = ThreadedHTTPServer(server_address, PytoHandlerClass)
         
         sa = httpd.socket.getsockname()
-        print "Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "..."
+        print("Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "...")
         httpd.serve_forever()
         #BaseHTTPServer.test(HandlerClass, ServerClass, protocol)
 

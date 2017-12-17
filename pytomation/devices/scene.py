@@ -61,14 +61,14 @@ class Scene(InterfaceDevice):
     def _updateState(self):
         #set our state based on what the state of all responders are.
         state = State.ON
-        for d,s in self._responders.items():
+        for d,s in list(self._responders.items()):
             state = State.OFF if d.state != s['state'] else state
         if state != self.state:
             self.state = state
             
     def _updateResponders(self, state):
         #set the state of our responders based upon the scene state.
-        for d,s in self._responders.items():
+        for d,s in list(self._responders.items()):
             d.state = State.OFF if state == State.OFF else s['state']
 
     def _processResponders(self, responders):

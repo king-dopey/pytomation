@@ -333,8 +333,8 @@ l_backdoor = Light(address='12.B8.73',
 
 
 
-print "Current daylight state is -> ", ph_standard.state
-print "Updating status..."
+print("Current daylight state is -> ", ph_standard.state)
+print("Updating status...")
 insteon.update_status()
 
 # My mainloop is set at 30 seconds
@@ -346,7 +346,7 @@ def MainLoop(startup=False,*args, **kwargs):
         
         ticcount = 0
         sofaOn = True
-        print "Startup..."
+        print("Startup...")
 
     ticcount += 1   # right now every 30 seconds
 
@@ -377,16 +377,16 @@ def MainLoop(startup=False,*args, **kwargs):
         
     #print "Recroom Lamp   -> ", l_recroom_lamp.state
     #print "Recroom Light  -> ", l_recroom_light.state
-    print (time.strftime('%H:%M:%S'))
+    print((time.strftime('%H:%M:%S')))
     #print "Ticcount ----> ", ticcount
     #print "Here --------> ", here.state
     #print "Bathroom Light -> ", l_bathroom.state
-    print "Hallway Light  -> ", l_hallway.state
+    print("Hallway Light  -> ", l_hallway.state)
     #print "Carport outlet -> ", l_carport.state
     #print "Bedroom Light  -> ", l_bedroom.state
     #print "Stair Light    -> ", l_stair_up.state
     #print "Test Light     -> ", test.state
     #print "Spin Time -> ",insteon.spinTime
-    print "Status Request -> ",insteon.statusRequest
-    print '--------------------------'
+    print("Status Request -> ",insteon.statusRequest)
+    print('--------------------------')
     

@@ -109,10 +109,10 @@ class Thermostat(InterfaceDevice):
         elif value in [State.OFF, State.COOL, State.HEAT, State.AUTOMATIC]:
             self._thermostat_states['mode'] = value
         else:
-            status = self._thermostat_states.items()
+            status = list(self._thermostat_states.items())
             status.append(value)
             return super(Thermostat, self)._set_state(status, *args, **kwargs)
-        return super(Thermostat, self)._set_state(self._thermostat_states.items(), *args, **kwargs)
+        return super(Thermostat, self)._set_state(list(self._thermostat_states.items()), *args, **kwargs)
 
     def automatic_delta(self, value):
         self._automatic_delta = value
