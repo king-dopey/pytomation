@@ -115,7 +115,7 @@ class PytoWebSocketServer(HAInterface):
         if self.ws:
             for client in list(self.ws.clients.values()):
                 message = self._api.get_state_changed_message(state, source, prev, device)
-                client.ws.send(message.encode('UTF-8'))
+                client.ws.send(message)
 
 
 def auth_hook(web_socket_handler):

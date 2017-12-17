@@ -84,10 +84,10 @@ class PytomationAPI(PytomationObject):
             if isinstance(data, list):
                 tdata = []
                 for i in data:
-                    tdata.append(urllib.parse.unquote(i).decode('utf8'))
+                    tdata.append(urllib.parse.unquote(i))
                 data = tdata
             else:
-                data = urllib.parse.unquote(data).decode('utf8')
+                data = urllib.parse.unquote(data)
 
         f = self.get_map().get((method, levels[0]), None)
         if f:
