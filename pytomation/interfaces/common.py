@@ -495,12 +495,12 @@ def convertStringFrequencyToSeconds(textFrequency):
 
 
 def hashPacket(packetData):
-    hash = None
+    myHash = None
     try:
-        hash = hashlib.md5(packetData).hexdigest()
+        myHash = hashlib.md5(packetData.encode('utf-8')).hexdigest()
     except:
-        hash = hashlib.md5(str(packetData)).hexdigest()
-    return hash
+        myHash = hashlib.md5(str(packetData).encode('utf-8')).hexdigest()
+    return myHash
 
 # pylog replaces the "print" keyword to enable debugging and logging
 def pylog(src, s):
