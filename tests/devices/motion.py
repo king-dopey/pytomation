@@ -7,7 +7,7 @@ from pytomation.devices import Motion, State, Attribute, StateDevice, Light
 from pytomation.interfaces import Command
 
 class MotionTests(TestCase):
-    
+
     def setUp(self):
         self.interface = Mock()
         self.interface.state = State.UNKNOWN
@@ -37,11 +37,11 @@ class MotionTests(TestCase):
         self.device.command(Command.MOTION, source=self.interface)
 #        self.device._on_command('D1', State.OFF, self.interface)
         self.assertEqual(self.device.state, State.MOTION)
-        
+
     def test_motion_on(self):
         m = Motion()
         m.command(command=Command.ON, source=None)
-        self.assertEqual(m.state, State.MOTION)        
+        self.assertEqual(m.state, State.MOTION)
 
     def test_motion_delay_from_interface(self):
         i = Mock()
@@ -76,7 +76,7 @@ class MotionTests(TestCase):
         time.sleep(3)
         m.command(command=Command.ON, source=i)
         self.assertEqual(s.state, State.ON)
-        
+
 
 if __name__ == '__main__':
-    main() 
+    main()

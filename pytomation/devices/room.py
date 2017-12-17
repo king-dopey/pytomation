@@ -4,7 +4,7 @@ from pytomation.interfaces import Command
 class Room(StateDevice):
     STATES = [State.UNKNOWN, State.OCCUPIED, State.VACANT]
     COMMANDS = [Command.OCCUPY, Command.VACATE]
-    
+
     def _initial_vars(self, *args, **kwargs):
         super(Room, self)._initial_vars(*args, **kwargs)
         self._restricted = False

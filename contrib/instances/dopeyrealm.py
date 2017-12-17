@@ -58,25 +58,25 @@ l_kitchen_recessed = Light(address='2A3166',
                            name="Kitchen Recessed Light")
 
 l_kitchen_back = Light(address='2A746D',
-		devices=(insteon),
-		name="Kitchen Light")
+                devices=(insteon),
+                name="Kitchen Light")
 
 l_kitchen_faucet = Light(address='2A81FD',
-		devices=(insteon),
-		name="Kitchen Faucet Light")
+                devices=(insteon),
+                name="Kitchen Faucet Light")
 
 l_bathroom = Light(address='2A3F9F',
-		devices=(insteon),
-		on_level = 30,
-		name="Bathroom Light")
+                devices=(insteon),
+                on_level = 30,
+                name="Bathroom Light")
 
 f_bathroom = Light(address='218DF5',
-		devices=(insteon),
-		name="Bathroom Fan")
+                devices=(insteon),
+                name="Bathroom Fan")
 
 l_foyer = Light(address='2A57E7',
-		devices=(insteon),
-		name="Foyer Light")
+                devices=(insteon),
+                name="Foyer Light")
 
 l_hallway = Light(address='2AB8F8',
         devices=(insteon),
@@ -94,7 +94,7 @@ l_master_faucet = Light(address='2A9CD9',
                 devices=(insteon),
                 name="Master Faucet Light")
 
-#Rooms (Device Grouping shouldn't add default command mappings, but does. Ignoring devices works-around. Fix under construction) 
+#Rooms (Device Grouping shouldn't add default command mappings, but does. Ignoring devices works-around. Fix under construction)
 r_backporch = Room(name='Back Porch', devices=l_backporch)
 r_frontporch = Room(name='Front Porch', devices=l_frontporch)
 r_kitchen = Room(name='Kitchen', ignore={Attribute.COMMAND: Command.LEVEL, Attribute.SOURCE: hall_thermostat}, source=l_kitchen_back, devices=(l_kitchen_recessed, l_kitchen_back, l_kitchen_faucet, hall_thermostat))
@@ -115,7 +115,7 @@ def MainLoop(startup=False, *args, **kwargs):
     def kitchen_back_onStateChanged(state, source, prev, device):
         if type(source) is InsteonHub:
             l_kitchen_faucet.set_state(state)
-    
+
     def hallway_onStateChanged(state, source, prev, device):
         if l_hallway_switch._state != state:
             try:
@@ -129,7 +129,7 @@ def MainLoop(startup=False, *args, **kwargs):
                     l_hallway_switch.off()
             except:
                 pass
-    
+
     def hallway_switch_onStateChanged(state, source, prev, device):
         if l_hallway._state != state:
             try:
@@ -143,13 +143,13 @@ def MainLoop(startup=False, *args, **kwargs):
                     l_hallway.off()
             except:
                 pass
-        
+
     if startup:
         time.sleep(5)
         #Insteon Controlled linked devices, three-way switch, ensure state gets changed
         l_hallway.onStateChanged(hallway_onStateChanged)
         l_hallway_switch.onStateChanged(hallway_switch_onStateChanged)
-        
+
         #Get status individually, to prevent door sensor request from blocking (doesn't accept status)
         l_backporch.status(timeout=10)
         l_frontporch.status(timeout=10)
@@ -162,6 +162,6 @@ def MainLoop(startup=False, *args, **kwargs):
         l_hallway.status(timeout=10)
         l_master_bathroom.status(timeout=10)
         l_master_faucet.status(timeout=10)
-        
+
         #Insteon Controlled linked devices, ensure state gets changed
         l_kitchen_back.onStateChanged(kitchen_back_onStateChanged)

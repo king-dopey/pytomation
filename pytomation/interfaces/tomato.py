@@ -15,7 +15,7 @@ from .common import *
 
 class TomatoInterface(HAInterface):
     VERSION = '1.0.0'
-    
+
     def _init(self, *args, **kwargs):
         self._user = kwargs.get('user', None)
         self._password = kwargs.get('password', None)
@@ -24,13 +24,13 @@ class TomatoInterface(HAInterface):
         self._poll_secs = 60;
 
         super(TomatoInterface, self)._init(*args, **kwargs)
-        
+
         try:
             self._host = self._interface.host
         except Exception as ex:
             self._logger.debug('Could not find host address: ' + str(ex))
 
-        
+
     def _readInterface(self, lastPacketHash):
         # We need to dial back how often we check the thermostat.. Lets not bombard it!
         if not self._iteration < self._poll_secs:
@@ -50,7 +50,7 @@ class TomatoInterface(HAInterface):
         else:
             self._iteration+=1
             time.sleep(1) # one sec iteration
-    
+
     def restriction(self, *args, **kwargs):
         """
 _nextpage:restrict.asp
@@ -83,8 +83,8 @@ _http_id:
                 }
 #        self._sendInterfaceCommand("tomato.cgi", fdata)
         response = self._interface.write(path="tomato.cgi", data=fdata, verb="POST")
-        self._logger.debug("Response:" + str(response))       
-    
+        self._logger.debug("Response:" + str(response))
+
     def _process_current_temp(self, response):
         temp = None
         try:
@@ -98,10 +98,9 @@ _http_id:
     def _process_mode(self, response):
         command = Command.ON
         self._onCommand(command=command,address=self._host)
-        
+
     def _send_state(self):
         command = Command.ON
         commandExecutionDetails = self._sendInterfaceCommand(command)
         return True
         #return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
-        

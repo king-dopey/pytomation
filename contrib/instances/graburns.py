@@ -19,7 +19,7 @@ upb = UPB(Serial('/dev/ttyMI0', 4800))
 #insteon = InsteonPLM(TCP('192.168.13.146', 9761))
 insteon = InsteonPLM(Serial('/dev/ttyMI1', 19200, xonxoff=False))
 
-w800 = W800rf32(Serial('/dev/ttyMI3', 4800)) 
+w800 = W800rf32(Serial('/dev/ttyMI3', 4800))
 
 sg = Stargate(Serial('/dev/ttyMI4', 9600))
 # invert the DIO channels for these contact sensors
@@ -40,8 +40,8 @@ sg.dio_invert(12)
 pipe_front_yard_motion = StateInterface(NamedPipe('/tmp/front_yard_motion'))
 
 thermostat_upstairs = Thermostat(
-                                 devices=HW_Thermostat(HTTP(host='192.168.13.211'), 
-                                                       poll=60), 
+                                 devices=HW_Thermostat(HTTP(host='192.168.13.211'),
+                                                       poll=60),
                                  name='Thermostat Upstairs',
                                  automatic_delta=2,
                                  time = (
@@ -54,7 +54,7 @@ thermostat_upstairs = Thermostat(
 
 thermostat_downstairs = Thermostat(
                                    devices=HW_Thermostat(HTTP(host='192.168.13.210'),
-                                                         poll=60), 
+                                                         poll=60),
                                    name='Thermostat Downstairs',
                                    automatic_delta=2
                                    )
@@ -75,7 +75,7 @@ d_crawlspace = Door('D10', sg, name='Crawlspace Door')
 d_pool = Door('D11', sg, name='Pool Door')
 
 relay_garage_overhead = Generic(address="23.d2.be",
-                                devices=insteon, 
+                                devices=insteon,
                                 name='Garage Overhead Relay')
 
 xmpp.add_device(d_garage)
@@ -91,7 +91,7 @@ i_laser_perimeter = Generic('D12', sg, name='Laser Perimeter')
 
 #motion
 # Motion sensor is hardwired and immediate OFF.. Want to give it some time to still detect motion right after
-m_family = Motion(address='D8', 
+m_family = Motion(address='D8',
                   devices=(sg),
                   delay={
                          Attribute.COMMAND: Command.STILL,
@@ -171,27 +171,27 @@ k_master = Generic(
 s_all_indoor_off = StateDevice()
 
 #photocell
-ph_standard = Location('35.2269', '-80.8433', 
-                       tz='US/Eastern', 
-                       mode=Location.MODE.STANDARD, 
+ph_standard = Location('35.2269', '-80.8433',
+                       tz='US/Eastern',
+                       mode=Location.MODE.STANDARD,
                        is_dst=True,
                        name='Standard Photocell')
-ph_civil = Location('35.2269', '-80.8433', 
-                    tz='US/Eastern', 
-                    mode=Location.MODE.CIVIL, 
+ph_civil = Location('35.2269', '-80.8433',
+                    tz='US/Eastern',
+                    mode=Location.MODE.CIVIL,
                     is_dst=True,
                     name='Civil Photocell')
 
 # Rooms
 r_foyer = Room(name='Foyer', devices=(m_foyer))
 r_den = Room(name='Den', devices=(m_den, r_foyer))
-r_family = Room(name='Family', 
-		devices=(m_family, r_foyer),
-		trigger={ Attribute.COMMAND: Command.OCCUPY,
-			  Attribute.MAPPED: Command.VACATE,
-			  Attribute.SECS: 2*60*60,
-			},
-		)
+r_family = Room(name='Family',
+                devices=(m_family, r_foyer),
+                trigger={ Attribute.COMMAND: Command.OCCUPY,
+                          Attribute.MAPPED: Command.VACATE,
+                          Attribute.SECS: 2*60*60,
+                        },
+                )
 r_kitchen = Room(name='Kitchen', devices=(m_kitchen, r_foyer))
 r_foyer.add_device(r_den)
 r_foyer.add_device(r_family)
@@ -225,7 +225,7 @@ l_foyer = Light(
                          Attribute.MAPPED: Command.OFF,
                          Attribute.SECS: 15*60,
                          },
-		 name='Foyer Light',
+                 name='Foyer Light',
                 )
 
 l_front_porch = Light(
@@ -255,8 +255,8 @@ l_front_porch = Light(
 
 
 l_front_flood = Light(
-                      address="24.6f.17", 
-                      devices=(insteon, d_garage, d_garage_overhead, 
+                      address="24.6f.17",
+                      devices=(insteon, d_garage, d_garage_overhead,
                                d_foyer, m_front_garage, m_front_camera, ph_standard),
                       delay=({
                              Attribute.COMMAND: Command.OFF,
@@ -287,7 +287,7 @@ l_front_flood = Light(
 # Cron Format
 #  secs=allMatch, min=allMatch, hour=allMatch, day=allMatch, month=allMatch, dow=allMatch
 l_front_outlet = Light(
-                      address=(49, 21), 
+                      address=(49, 21),
                       devices=(upb, ph_standard),
                       initial=ph_standard,
                         time = (
@@ -300,8 +300,8 @@ l_front_outlet = Light(
                       )
 
 l_front_garage = Light(
-                      address="24.9d.7c", 
-                      devices=(insteon, d_garage, d_garage_overhead, 
+                      address="24.9d.7c",
+                      devices=(insteon, d_garage, d_garage_overhead,
                                m_front_garage, m_front_camera, ph_standard),
                       delay=({
                              Attribute.COMMAND: Command.OFF,
@@ -325,9 +325,9 @@ l_front_garage = Light(
                       )
 
 l_garage = Light(
-	              address='20.8b.40',    
-                      devices=(insteon, m_garage, d_garage, d_garage_overhead, d_laundry, 
-                               #ph_standard, 
+                      address='20.8b.40',
+                      devices=(insteon, m_garage, d_garage, d_garage_overhead, d_laundry,
+                               #ph_standard,
                                s_all_indoor_off),
 #                      trigger={
 #                               Attribute.COMMAND: Command.ON,
@@ -354,7 +354,7 @@ l_garage = Light(
                       )
 
 l_family_lamp = Light(
-                address=(49, 6), 
+                address=(49, 6),
 #                devices=(upb, ph_standard, r_family),
                 devices=(upb, ph_standard),
                 mapped={
@@ -376,16 +376,16 @@ l_family_lamp = Light(
                        Attribute.SECS: 15*60,
                        Attribute.SOURCE: r_family,
                        },
-		time={
-			Attribute.COMMAND: Command.OFF,
-			Attribute.TIME: '11:59pm',
-			},
+                time={
+                        Attribute.COMMAND: Command.OFF,
+                        Attribute.TIME: '11:59pm',
+                        },
 
                 name='Family Lamp Light',
                 )
 
 l_family = Light(
-                 address='19.05.7b',    
+                 address='19.05.7b',
                  devices=(insteon, m_family, ph_standard),
                  name='Family Light',
                 mapped={
@@ -399,12 +399,12 @@ l_family = Light(
                  )
 
 l_bed_hallway = Light(
-                 address='19.0d.1b',    
+                 address='19.0d.1b',
                  devices=(insteon,),
                  name='Bed Hallway Light',
                  )
 
-l_playroom = Light(devices = WeMo('192.168.13.141', '49153'), 
+l_playroom = Light(devices = WeMo('192.168.13.141', '49153'),
                   name = 'Playroom')
 
 ##################### USER CODE ###############################
@@ -435,9 +435,3 @@ def MainLoop(startup=False, *args, **kwargs):
 #    else:
 #        l_foyer.on()
     pass
-        
-
-
-
-
-

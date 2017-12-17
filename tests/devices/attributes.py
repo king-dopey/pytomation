@@ -13,4 +13,3 @@ class AttributesTest(TestCase):
                        command=Command.OFF
                        )
         self.assertEqual(a.command, Command.OFF)
-        

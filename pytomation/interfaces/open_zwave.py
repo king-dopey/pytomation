@@ -149,17 +149,17 @@ class Open_zwave(HAInterface):
         self._logger.info("Use openzwave library : {}".format(self._network.controller.ozw_library_version))
         self._logger.info("Use python library : {}".format(self._network.controller.python_library_version))
         self._logger.info("Use ZWave library : {}".format(self._network.controller.library_description))
-        
+
     def get_door_locks(self, node, datatype = 'Bool'):
         return self._network.nodes[node].get_values(class_id=0x62, genre='User', \
             type=datatype, readonly=False, writeonly=False)
-        
+
     def lock(self, address):
         node = int(address)
         for value in list(self.get_door_locks(node).values()):
             self._logger.debug("Lock")
             value.data = True
-    
+
     def unlock(self, address):
         node = int(address)
         for value in list(self.get_door_locks(node).values()):

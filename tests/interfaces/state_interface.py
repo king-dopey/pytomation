@@ -15,14 +15,14 @@ class StateIntefaceTests(TestCase):
         mi.read = self.response
         interface = StateInterface(mi)
         device = InterfaceDevice(address=None,
-                                 devices=interface, 
+                                 devices=interface,
                                  initial_state=State.UNKNOWN)
         self.assertEqual(device.state, State.UNKNOWN)
         self._response = State.ON
         time.sleep(2)
         self.assertEqual(device.state, State.ON)
-        
-        
+
+
     def response(self, *args, **kwargs):
         if self._response:
             resp = self._response
@@ -30,4 +30,3 @@ class StateIntefaceTests(TestCase):
             return resp
         else:
             return ''
-        

@@ -20,7 +20,7 @@ class PytomationAPI(PytomationObject):
                    ('post', 'device'): self.update_device,
                    ('post', 'voice'): self.run_voice_command
         }
-        
+
     def run_voice_command(self, levels, data, source):
         for command in data:
             command =  command.lower()
@@ -52,7 +52,7 @@ class PytomationAPI(PytomationObject):
                     except:
                         return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source)
         #Maybe we should ask the internet from here?
-        return json.dumps("I'm sorry, can you please repeat that?") 
+        return json.dumps("I'm sorry, can you please repeat that?")
 
     def get_response(self, method="GET", path=None, type=None, data=None, source=None):
         response = None
@@ -62,9 +62,9 @@ class PytomationAPI(PytomationObject):
                 data = json.loads(data)
             except Exception as ex:
                 pass
-            
+
             path = data['path']
-            
+
             try:
                 data = data['command']
                 if path != 'voice':
@@ -76,10 +76,10 @@ class PytomationAPI(PytomationObject):
             method = "post" if data else "get"
         elif path == 'voice':
             data = urllib.parse.unquote(data).replace('&', '').replace('+', ' ').split("command[]=")
-            
+
         method = method.lower()
         levels = path.split('/')
-        
+
         if data:
             if isinstance(data, list):
                 tdata = []
@@ -146,7 +146,7 @@ class PytomationAPI(PytomationObject):
         detail.update({'id': id})
         del detail['instance']
         return detail
-    
+
     def update_device(self, levels, data=None, source=None, *args, **kwargs):
         """
         Issues command in POST from JSON format.

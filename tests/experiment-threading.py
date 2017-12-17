@@ -7,16 +7,16 @@ source = [12, 34, 55, 234,234,344,4323,43,234,234,2,234,234,23,23,23,423,5,55,2,
 
 def worker(id):
     while True:
-	item = ""
-	for i in range(3):
-		print "id" + str(id) + " i->" + str(i)
-		pass
-	try:
-	        item = q.get(True)
-	except:
-		pass
+        item = ""
+        for i in range(3):
+                print "id" + str(id) + " i->" + str(i)
+                pass
+        try:
+                item = q.get(True)
+        except:
+                pass
 #        do_work(item)
-	print "ThreadID #" + str(id) + " Item->" + str(item)
+        print "ThreadID #" + str(id) + " Item->" + str(item)
         q.task_done()
 
 q = Queue()

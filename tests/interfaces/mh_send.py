@@ -6,7 +6,7 @@ from pytomation.interfaces import TCP, MHSend
 
 
 class MHSendTests(TestCase):
-    
+
     def setUp(self):
 #        self.tcp = TCP('127.0.0.1', 8044)
         self.tcp = Mock()

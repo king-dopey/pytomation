@@ -19,15 +19,15 @@ class LocationTests(TestCase):
 #        MockDateTime.now = classmethod(lambda x: datetime(2012,6,1,12,0,0))
         self.loc.local_time = datetime(2012,6,1,12,0,0)
         self.assertEqual(self.loc.state, State.LIGHT)
-        
+
     def test_civil(self):
-        ph_standard = Location('35.2269', '-80.8433', 
-                       tz='US/Eastern', 
-                       mode=Location.MODE.CIVIL, 
+        ph_standard = Location('35.2269', '-80.8433',
+                       tz='US/Eastern',
+                       mode=Location.MODE.CIVIL,
                        is_dst=True,
                        local_time=datetime(2012,11,26,17,15,0))
         self.assertIsNotNone(ph_standard)
-        
+
     def test_delegate(self):
         self.loc.local_time = datetime(2012,6,1,1,0,0)
         self.assertEqual(self.loc.state, State.DARK)
@@ -38,7 +38,7 @@ class LocationTests(TestCase):
         self.loc.local_time = datetime(2012,6,1,12,0,0)
         self.assertEqual(self.loc.state, State.LIGHT)
         self.assertEqual(l.state, State.OFF)
-        
+
     def test_read_only(self):
         self.loc.local_time = datetime(2012,6,1,0,0,0)
         self.assertEqual(self.loc.state, State.DARK)
@@ -56,12 +56,12 @@ class LocationTests(TestCase):
         self.assertEqual(self.loc.state, State.DARK)
 
     def test_gc_1(self):
-        twilight_standard = Location( '42.2671389', '-71.8756111', 
-                               tz='US/Eastern', 
-                               mode=Location.MODE.STANDARD, 
+        twilight_standard = Location( '42.2671389', '-71.8756111',
+                               tz='US/Eastern',
+                               mode=Location.MODE.STANDARD,
                                is_dst=True,
                                name='Standard Twilight')
-        
+
         twilight_standard.local_time = datetime(2012,6,1,0,0,0)
         self.assertEqual(twilight_standard.state, State.DARK)
 
@@ -76,8 +76,6 @@ class LocationTests(TestCase):
               ignore=(  {   Attribute.COMMAND: Command.OFF,   Attribute.SOURCE: twilight_standard, }, ),
               time=(  { Attribute.COMMAND:(Command.LEVEL, 30),  Attribute.TIME: '11:15pm',    }, ),
               name="Back porch light")
-        
+
         self.assertEqual(twilight_standard.state, State.DARK)
         self.assertEqual(_back_porch.state, State.ON)
-        
-        

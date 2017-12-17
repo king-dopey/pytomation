@@ -20,7 +20,7 @@ class SparkIOTests(TestCase):
         result = self.interface.on(('elroy', 'D0'))
         self.assertEqual(result, True)
         time.sleep(5)
-        
+
 """
 ## Initially this was working
 jason@x120:~/projects/pytomation$ curl https://api.sprk.io/v1/devices/elroy -d pin=D0 -d level=HIGH
@@ -35,12 +35,12 @@ jason@x120:~/projects/pytomation$ curl https://api.sprk.io/v1/devices/elroy -d p
   "error_description": "The access token was not found"
 }
 """
-        #         
+        #
 #     def test_circulate(self):
 #         self.interface.off(self.host)
 #         time.sleep(2)
 #         self.interface.circulate(self.host)
-#     
+#
 #     def test_setpoint(self):
 #         #no prior mode, then default to heat
 #         self.interface.level(address=self.host, level=72)
@@ -50,9 +50,9 @@ jason@x120:~/projects/pytomation$ curl https://api.sprk.io/v1/devices/elroy -d p
 #         self.interface.cool()
 #         time.sleep(2)
 #         self.assertIn(('tstat', '{"tmode": 2, "t_cool": 72}'), self.i.query_write_data())
-#         
+#
 #     def test_cool(self):
 #         self.interface.cool()
 #         time.sleep(2)
 #         self.assertIn(('tstat', '{"tmode": 2}'), self.i.query_write_data())
-#         
+#

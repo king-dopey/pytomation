@@ -81,7 +81,7 @@ class UPBMessage(object):
         fade_start = 0x23
         report_state = 0x30
         state_response=0x86
-        
+
 
     link_type = LinkType.direct
     repeat_request = RepeatType.none
@@ -140,11 +140,11 @@ class UPBMessage(object):
         self.ack_request = (control2 & 0b01110000) >> 4
         self.xmit_count = (control2 & 0b00001100) >> 2
         self.xmit_seq = (control2 & 0b00000011)
-        
+
         self.network = Conversions.hex_to_int(message[6:8])
         self.destination = Conversions.hex_to_int(message[8:10])
         self.source = Conversions.hex_to_int(message[10:12])
-        
+
         message_header = Conversions.hex_to_int(message[12:14])
  #       self.message_id = (message_header & 0b11100000) >> 5
  #       self.message_eid = (message_header & 0b00011111)
@@ -162,7 +162,7 @@ class UPB(HAInterface):
     def _init(self, *args, **kwargs):
         super(UPB, self)._init(*args, **kwargs)
         self.version()
-        
+
         self._modemRegisters = ""
 
         self._modemCommands = {
@@ -291,7 +291,7 @@ class UPB(HAInterface):
         elif incoming.message_did == UPBMessage.MessageDeviceControl.deactivate:
             address = (incoming.network, incoming.destination, 'L')
             command = Command.OFF
-        elif incoming.message_did == UPBMessage.MessageDeviceControl.report_state: 
+        elif incoming.message_did == UPBMessage.MessageDeviceControl.report_state:
             command = Command.STATUS
         if command:
             self._onCommand(command, address)
@@ -323,7 +323,7 @@ class UPB(HAInterface):
         command = command + Conversions.hex_to_ascii('0D')
         commandExecutionDetails = self._sendInterfaceCommand(
                              self._modemCommands['send_upb'], command)
-        return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)        
+        return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)
 
     def _link_deactivate(self, address, timeout=None):
         message = UPBMessage()
@@ -349,7 +349,7 @@ class UPB(HAInterface):
         command = command + Conversions.hex_to_ascii('0D')
         commandExecutionDetails = self._sendInterfaceCommand(
                              self._modemCommands['send_upb'], command)
-        return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)      
+        return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)
 
     def on(self, address, timeout=None, rate=None):
         if len(address) <= 2:
@@ -362,7 +362,7 @@ class UPB(HAInterface):
             return self._device_goto(address, 0x00, timeout=timeout)
         else: # Device Link
             return self._link_deactivate(address, timeout=timeout)
-    
+
     def level(self, address, level, timeout=None, rate=None):
         if len(address) <= 2:
             self._device_goto(address, level, timeout, rate)
@@ -371,7 +371,7 @@ class UPB(HAInterface):
                 return self._link_activate(address, timeout=timeout)
             else:
                 return self._link_deactivate(address, timeout=timeout)
-        
+
     def __getattr__(self, name):
         name = name.lower()
         # Support levels of lighting
@@ -379,9 +379,9 @@ class UPB(HAInterface):
             level = name[1:3]
             self._logger.debug("Level->{level}".format(level=level))
             level = int(level)
-            return lambda x, y=None: self._device_goto(x, level, timeout=y ) 
-        
-        
+            return lambda x, y=None: self._device_goto(x, level, timeout=y )
+
+
     def version(self):
         self._logger.info("UPB Pytomation driver version " + self.VERSION + "\n")
 

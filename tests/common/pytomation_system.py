@@ -16,7 +16,7 @@ class SystemTests(TestCase):
         a = get_instances()
         self.assertIsNotNone(a)
         self.assertEqual(len(a), len(before))
-        
+
     def test_get_instances_detail(self):
         l = len(get_instances())
         mint = Mock()
@@ -28,4 +28,3 @@ class SystemTests(TestCase):
 #        self.assertEqual(len(a), l+2)
         self.assertEqual(a[dev.type_id]['name'], 'Dev1')
         self.assertEqual(a[dev.type_id]['type_name'], 'StateDevice')
-        

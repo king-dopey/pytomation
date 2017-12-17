@@ -23,7 +23,7 @@ from .common import *
 
 class HW_Thermostat(HAInterface):
     VERSION = '1.0.0'
-    
+
     def _init(self, *args, **kwargs):
         super(HW_Thermostat, self)._init(*args, **kwargs)
         self._last_temp = None
@@ -31,7 +31,7 @@ class HW_Thermostat(HAInterface):
         self._hold = None
         self._fan = None
         self._set_point = None
-        
+
         self._iteration = 0
         self._poll_secs = kwargs.get('poll', 60)
 
@@ -39,7 +39,7 @@ class HW_Thermostat(HAInterface):
             self._host = self._interface.host
         except Exception as ex:
             self._logger.debug('[HW Thermostat] Could not find host address: ' + str(ex))
-        
+
     def _readInterface(self, lastPacketHash):
         # We need to dial back how often we check the thermostat.. Lets not bombard it!
         if not self._iteration < self._poll_secs:
@@ -59,7 +59,7 @@ class HW_Thermostat(HAInterface):
         else:
             self._iteration+=1
             time.sleep(1) # one sec iteration
-    
+
     def heat(self, *args, **kwargs):
         self._mode = Command.HEAT
         return self._send_state()
@@ -84,18 +84,18 @@ class HW_Thermostat(HAInterface):
     def still(self, *args, **kwargs):
         self._fan = False
         return self._send_state()
-    
+
     def off(self, *args, **kwargs):
         self._mode = Command.OFF
         return self._send_state()
-    
+
     def setpoint(self, address, level, timeout=2.0):
         self._set_point = level
         return self._send_state()
-    
+
     def version(self):
         self._logger.info("HW Thermostat Pytomation driver version " + self.VERSION + '\n')
-        
+
     def _process_current_temp(self, response):
         temp = None
         try:
@@ -139,7 +139,7 @@ class HW_Thermostat(HAInterface):
                 attributes['tmode'] = modes[self._mode]
             if self._hold != None:
                 attributes['hold'] = 1 if self._hold or self._mode != Command.SCHEDULE else 0
-                
+
             command = ('tstat', json.dumps(attributes),
                     )
         except Exception as ex:

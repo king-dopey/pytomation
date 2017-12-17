@@ -26,7 +26,7 @@ class PeriodicTimerTests(TestCase):
         time.sleep(3)
         rt.stop()
         self.assertEqual(self.called, True, "Callback was not called")
-    
+
     def test_2_sec_repeated(self):
         rt = PeriodicTimer()
         rt.interval = 2
@@ -37,7 +37,7 @@ class PeriodicTimerTests(TestCase):
         self.called = False
         time.sleep(3)
         self.assertEqual(self.called, True, "Callback was not called 2nd time")
-                
+
     def callback(self, *args, **kwargs):
         self.called = True
 

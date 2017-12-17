@@ -7,7 +7,7 @@ class Door(InterfaceDevice):
     COMMANDS = [Command.OPEN, Command.CLOSE, Command.PREVIOUS, Command.TOGGLE, Command.INITIAL,
                 Command.AUTOMATIC, Command.MANUAL, Command.STATUS]
 
-    
+
     def _initial_vars(self, *args, **kwargs):
         super(Door, self)._initial_vars(*args, **kwargs)
         self._read_only = True

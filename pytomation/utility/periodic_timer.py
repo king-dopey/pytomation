@@ -7,20 +7,20 @@ from apscheduler.schedulers.background import BackgroundScheduler
 # The actual Event class
 class PeriodicTimer(object):
     sched = None
-    
+
     def __init__(self, frequency=60, *args, **kwargs):
         # Start the scheduler
         self.frequency = frequency
 
         self.scheduler_start()
-        
+
         self._job = None
         self.is_stopped = Event()
         self.is_stopped.clear()
 
 #         self.interval = frequency
 #         self._timer = Timer(self.frequency, self._check_for_event, ())
-        self.interval = frequency    
+        self.interval = frequency
 
     def scheduler_start(self):
         if not PeriodicTimer.sched:
@@ -57,7 +57,7 @@ class PeriodicTimer(object):
     def stop(self):
         if self._job:
             PeriodicTimer.sched.remove_job(self._job.id)
-        self.is_stopped.set()        
+        self.is_stopped.set()
 
     def _check_for_event(self):
         if self.is_stopped.isSet():

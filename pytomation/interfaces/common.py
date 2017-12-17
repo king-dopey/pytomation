@@ -7,18 +7,18 @@ Description:
         Library of Home Automation code for Python
 
 
-Author(s): 
+Author(s):
          Jason Sharpee <jason@sharpee.com>  http://www.sharpee.com
         Pyjamasam <>
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
-    - 
+    -
 
 
-Example: (see bottom of file) 
+Example: (see bottom of file)
 
 
 Notes:
@@ -131,7 +131,7 @@ class AsynchronousInterface(Interface):
         #threading.Thread.__init__(self)
         #print 'AAAA' + str(args) + " : " + str(kwargs)
         super(AsynchronousInterface,self).__init__()
-        
+
         self._logger.debug('Starting thread: ' + self.name)
 #        self._main_thread = threading.Thread(target=self.run, args=(None,))
         self._main_thread = threading.Thread(target=self.run)
@@ -151,7 +151,7 @@ class AsynchronousInterface(Interface):
 
     def run(self, *args, **kwargs):
         pass
-    
+
 class TCP(Interface):
     def __init__(self, host, port):
         super(TCP, self).__init__()
@@ -161,7 +161,7 @@ class TCP(Interface):
 
     def write(self,data):
         "Send raw binary"
-        self.__s.send(data) 
+        self.__s.send(data)
         return None
 
     def read(self, bufferSize=4096):
@@ -172,7 +172,7 @@ class TCP(Interface):
         except socket.error as ex:
             pass
         except Exception as ex:
-            print("Exception:", type(ex)) 
+            print("Exception:", type(ex))
             pass
 #            print traceback.format_exc()
         return data
@@ -241,7 +241,7 @@ class Serial(Interface):
     def __init__(self, serialDevicePath, serialSpeed=19200, serialTimeout=0.1, xonxoff=True, rtscts=False, dsrdtr=True):
         super(Serial, self).__init__()
         print("Using %s for serial communication" % serialDevicePath)
-#       self.__serialDevice = serial.Serial(serialDevicePath, 19200, timeout = 0.1) 
+#       self.__serialDevice = serial.Serial(serialDevicePath, 19200, timeout = 0.1)
         try:
             self.__serialDevice = serial.Serial(serialDevicePath, serialSpeed, timeout = serialTimeout)
             self.__serialDevice._writeTimeout = serialTimeout
@@ -251,8 +251,8 @@ class Serial(Interface):
             self._logger.critical("{name} Could not open serial port.  Interface disabled".format(
                                                                                     name=self.name
                                                                                                   ))
-        
-    
+
+
     def read(self, bufferSize=1024):
         if self.__serialDevice:
             return self.__serialDevice.read(bufferSize)
@@ -311,9 +311,9 @@ class HTTP(Interface):
             url = self._protocol + "://" + self._host + ":" + self._port + "/" + _path
         else:
             url = self._protocol + "://" + self._host + "/" + _path
-            
+
         r = getattr(requests, _verb.lower())
-        
+
         response = False
         if self._username:
             response = r(url,
@@ -323,12 +323,12 @@ class HTTP(Interface):
             response = r(url,
               data=_data,
               )
-            
+
         return response.text
 
     def read(self, path="", data=None, verb='GET', *args, **kwargs):
         return self.request(path, data, verb)
-        
+
     def write(self, path="", data=None, verb="POST", *args, **kwargs):
         if isinstance(path, tuple):
             _path = path[0]
@@ -342,7 +342,7 @@ class HTTP(Interface):
 
     def inWaiting(self):
         return True
-    
+
     @property
     def host(self):
         return self._host
@@ -378,7 +378,7 @@ class HACommand(Lookup):
                                                     'insteon':0x11,
                                                     'x10':0x02,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0xff,
                                                     'x10':None,
@@ -389,7 +389,7 @@ class HACommand(Lookup):
                                                     'insteon':0x12,
                                                     'x10':0x02,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0xff,
                                                     'x10':None,
@@ -400,7 +400,7 @@ class HACommand(Lookup):
                                                     'insteon':0x13,
                                                     'x10':0x03,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0x00,
                                                     'x10':None,
@@ -412,7 +412,7 @@ class HACommand(Lookup):
                                                     'insteon':0x14,
                                                     'x10':0x03,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0x00,
                                                     'x10':None,
@@ -423,7 +423,7 @@ class HACommand(Lookup):
                                                     'insteon':0x11,
                                                     'x10':0x0a,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0x88,
                                                     'x10':None,
@@ -470,10 +470,10 @@ def interruptibleSleep(sleepTime, interuptEvent):
 
 
 def sort_nicely( l ):
-    """ Sort the given list in the way that humans expect. 
-    """ 
-    convert = lambda text: int(text) if text.isdigit() else text 
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    """ Sort the given list in the way that humans expect.
+    """
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
     l.sort( key=alphanum_key )
 
     return l
@@ -543,19 +543,19 @@ class Conversions(object):
         Convert a string hex byte values into a byte string. The Hex Byte values may
         or may not be space separated.
         """
-        # The list comprehension implementation is fractionally slower in this case    
+        # The list comprehension implementation is fractionally slower in this case
         #
         #    hexStr = ''.join( hexStr.split(" ") )
         #    return ''.join( ["%c" % chr( int ( hexStr[i:i+2],16 ) ) \
         #                                   for i in range(0, len( hexStr ), 2) ] )
-     
+
         bytes = []
-    
+
         hexStr = ''.join( hexStr.split(" ") )
-    
+
         for i in range(0, len(hexStr), 2):
             bytes.append( chr( int (hexStr[i:i+2], 16 ) ) )
-    
+
         return ''.join( bytes )
 
     @staticmethod
@@ -563,11 +563,11 @@ class Conversions(object):
 #        ascii = str(unichr(integer))
         ascii = chr(integer)
         return ascii
-    
+
     @staticmethod
     def hex_to_int(char):
         return Conversions.ascii_to_int(Conversions.hex_to_bytes(char))
-    
+
     @staticmethod
     def int_to_hex(integer):
         return "%0.2X" % integer
@@ -594,7 +594,7 @@ class Conversions(object):
 
     @staticmethod
     def checksum2(data):
-        return reduce(lambda x,y:x+y, list(map(ord, data))) % 256    
+        return reduce(lambda x,y:x+y, list(map(ord, data))) % 256
 
     @staticmethod
     def checksum(data):
@@ -605,4 +605,3 @@ class Conversions(object):
         cs = cs + 1
         cs = cs & 255
         return cs
-        

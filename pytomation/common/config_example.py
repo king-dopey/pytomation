@@ -5,12 +5,12 @@ File:
 Description:
 
 This is the main configuration file for Pytomation.  It is divided into
-sections each pertaining to a specific part of the system.  These sections 
+sections each pertaining to a specific part of the system.  These sections
 cannot be deleted, the variables can be modified but they must have a value.
 
 
 License:
-    This free software is licensed under the terms of the GNU public 
+    This free software is licensed under the terms of the GNU public
     license, Version 3.
 
 System Versions and changes:
@@ -18,7 +18,7 @@ System Versions and changes:
     2012/11/11 - 1.0 - Global debug dictionary created
     2012/11/18 - 1.1 - Log file pieces added
     2013/01/24 - 1.2 - New logging system and start loop vars
-        
+
 """
 import os
 import sys
@@ -46,7 +46,7 @@ device_send_always = False
  log rotation to logging to a remote system.
 
  Please see http://docs.python.org/2/library/logging.html for full information.
- 
+
  Logging Levels:
 
  DEBUG | INFO | WARNING | ERROR | CRITICAL
@@ -68,8 +68,8 @@ logging_modules = {
                    #'UPB': 'DEBUG',
                    #"Light": "DEBUG",
                    #'Arduino': 'DEBUG',
-                   #'CM11a': 'DEBUG',          
-                   'Thermostat': 'DEBUG',         
+                   #'CM11a': 'DEBUG',
+                   'Thermostat': 'DEBUG',
                    }
 
 # Logging file path
@@ -82,11 +82,10 @@ logging_format = '[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s'
 logging_datefmt = "%Y/%m/%d %H:%M:%S"
 
 #*************  NOTE ********************************
-# Log rotation is currently not working, we will update this section when 
+# Log rotation is currently not working, we will update this section when
 # it changes but for now please leave it set to "None"
 #
 #logging_rotate_when = 'midnight' # s, m, h, d, w (interval 0=Monday), midnight, None
 logging_rotate_when = None # s, m, h, d, w (interval 0=Monday), midnight, None
 logging_rotate_interval = 1
 logging_rotate_backup = 4
-

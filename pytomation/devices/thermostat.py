@@ -6,11 +6,11 @@ class Thermostat(InterfaceDevice):
     COMMANDS = [Command.AUTOMATIC, Command.MANUAL, Command.COOL, Command.HEAT, Command.HOLD, Command.SCHEDULE, Command.OFF, Command.LEVEL, Command.STATUS, Command.CIRCULATE, Command.STILL, Command.VACATE, Command.OCCUPY, Command.SETPOINT]
     DEFAULT_COMMAND = Command.STATUS
     DEFAULT_NUMERIC_COMMAND = Command.SETPOINT
-    
+
     def __init__(self, *args, **kwargs):
         for level in range(60,90):
             self.COMMANDS.append((Command.SETPOINT, level))
-            
+
         self._level = None
         self._setpoint = None
         self._automatic_mode = False
@@ -23,7 +23,7 @@ class Thermostat(InterfaceDevice):
         self._thermostat_states = {'temp': 'unknown', 'mode': 'unknown', 'setpoint': 'unknown'}
 
         super(Thermostat, self).__init__(*args, **kwargs)
-    
+
     def _send_command_to_interface(self, interface, address, command):
         try:
             super(Thermostat, self)._send_command_to_interface(interface, address, command)
@@ -32,7 +32,7 @@ class Thermostat(InterfaceDevice):
                 #Thermostat doesnt have Automatic mode
                 self._automatic_mode = True
                 self.automatic_check()
-    
+
     def automatic_check(self):
         self._logger.debug('Automatic Check a:{0} ad:{1} set:{2} state:{3} ltemp:{4} mode:{5}'.format(
                                                                                  self._automatic_mode,
@@ -74,7 +74,7 @@ class Thermostat(InterfaceDevice):
         if isinstance(primary_command, tuple):
             primary_command=command[0]
             secondary_command=command[1]
-        
+
         if primary_command == Command.SETPOINT:
             self._setpoint = secondary_command
 
@@ -94,10 +94,10 @@ class Thermostat(InterfaceDevice):
         elif primary_command == Command.OCCUPY:
             self._sync_with_interface()
             self._away_mode = False
-            
+
 
         result = super(Thermostat, self).command(command, *args, **kwargs)
-        
+
         self.automatic_check()
         return result
 
@@ -116,13 +116,12 @@ class Thermostat(InterfaceDevice):
 
     def automatic_delta(self, value):
         self._automatic_delta = value
-        
+
     def away_delta(self, value):
         self._away_delta = value
-        
+
     def _sync_with_interface(self):
         self._sync_interface = True
-    
+
     def _clear_sync_with_interface(self):
         self._sync_interface = False
-        

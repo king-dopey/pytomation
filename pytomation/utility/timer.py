@@ -10,7 +10,7 @@ class Timer(object):
         self._timer = None
         self._secs = secs
         self._action = None
-        
+
     def _get_timer(self, secs):
         timer = PTimer(secs, self._run_action, ())
         timer.daemon = True
@@ -30,7 +30,7 @@ class Timer(object):
         self._action = action
         self._action_args = action_args
         self._action_kwargs = kwargs
-    
+
     def _run_action(self):
         if self._action:
             if isinstance(self._action_args, tuple):
@@ -44,14 +44,14 @@ class Timer(object):
         self.stop()
         self._timer = self._get_timer(self._secs)
         self._timer.start()
-            
+
     def stop(self):
         if self._timer and self._timer.isAlive():
             self._timer.cancel()
         if self._timer:
             del(self._timer)
         self._timer = None
-        
+
     def restart(self):
         self.stop()
         self.start()

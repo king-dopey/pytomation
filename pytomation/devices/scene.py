@@ -5,15 +5,15 @@ File:
 Description:
     A device that represents a Scene or group of devices.
 
-Author(s): 
+Author(s):
      Chris Van Orman
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
 
-Example: 
+Example:
 
 Notes:
 
@@ -30,8 +30,8 @@ class Scene(InterfaceDevice):
     def __init__(self, address=None, *args, **kwargs):
         super(Scene, self).__init__(address=address, *args, **kwargs)
         self._controllers = kwargs.get('controllers', [])
-        self._responders = kwargs.get('responders', {})       
-        
+        self._responders = kwargs.get('responders', {})
+
         self._processResponders(self._responders)
 
     def _initial_vars(self, *args, **kwargs):
@@ -41,11 +41,11 @@ class Scene(InterfaceDevice):
 
     def addressMatches(self, address):
         matches = super(Scene, self).addressMatches(address)
-        
+
         #check if any controller also matches
         for d in self._controllers:
             matches = matches or d.addressMatches(address)
-        
+
         return matches
 
     def command(self, command, *args, **kwargs):
@@ -65,7 +65,7 @@ class Scene(InterfaceDevice):
             state = State.OFF if d.state != s['state'] else state
         if state != self.state:
             self.state = state
-            
+
     def _updateResponders(self, state):
         #set the state of our responders based upon the scene state.
         for d,s in list(self._responders.items()):

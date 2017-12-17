@@ -5,15 +5,15 @@ File:
 Description:
     A set of classes for Insteon support.
 
-Author(s): 
+Author(s):
     Chris Van Orman
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
 
-Example: 
+Example:
 
 Notes:
 
@@ -41,7 +41,7 @@ class InsteonMessage(PytomationObject):
 
     def getData(self):
         return self._data
-                
+
     def getLength(self):
         return self._length
 
@@ -54,13 +54,13 @@ class InsteonMessage(PytomationObject):
             commands = self._getCommands()
         except Exception as e:
             self._logger.debug("Exception %s" % e)
-        
+
         commands = commands if commands else []
         return { 'data': self._data, 'commands': commands }
 
     def isComplete(self):
         return self.getLength() == len(self._data)
-        
+
 class InsteonEchoMessage(InsteonMessage):
     def __init__(self):
         super(InsteonEchoMessage, self).__init__(0x62, 9)
@@ -72,7 +72,7 @@ class InsteonEchoMessage(InsteonMessage):
 class InsteonExtendedMessage(InsteonMessage):
     def __init__(self):
         super(InsteonExtendedMessage, self).__init__(0x51, 25)
-        
+
     def _getCommands(self):
         ledState = self._data[21]
         commands = []
@@ -87,7 +87,7 @@ class InsteonExtendedMessage(InsteonMessage):
 class InsteonStatusMessage(InsteonMessage):
     def __init__(self):
         super(InsteonStatusMessage, self).__init__(0x50, 11)
-        
+
     def _commandFromLevel(self, level):
         command = Command.ON if level >= 250 else Command.OFF
         command = ((Command.LEVEL, level)) if level > 2 and level < 250 else command
@@ -106,7 +106,7 @@ class InsteonStatusMessage(InsteonMessage):
         isGroupCleanup = isGroup and not isAck and not isBroadcast #manually activated scene
         isGroupBroadcast = not isAck and isGroup and isBroadcast #manually activated scene
         isGroupAck = isAck and isGroup and not isBroadcast #plm activated scene ack of individual device
-        
+
         address = _byteIdToStringId(self._data[2], self._data[3], self._data[4])
         commands = []
         command = None

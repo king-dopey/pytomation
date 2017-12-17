@@ -9,7 +9,7 @@ from .common import *
 
 
 """
-Harmony Interface 
+Harmony Interface
 
 """
 
@@ -19,9 +19,9 @@ class HarmonyHub(HAInterface):
         self._port = port
         self._user = user
         self._password = password
-        
+
         self._create_connection()
-        
+
         super(HarmonyHub, self).__init__(None, *args, **kwargs)
 
     def _create_connection(self):
@@ -34,7 +34,7 @@ class HarmonyHub(HAInterface):
                            use_tls=False, use_ssl=False)
                 print('adf')
                 self._conn.process(block=False)
-        
+
                 while not self._conn.sessionstarted:
                     time.sleep(0.1)
 
@@ -48,10 +48,9 @@ class HarmonyHub(HAInterface):
         print(str(args, **kwargs))
 #        self._conn.start_activity('7174686')
         self._conn.start_activity(args[0])
-        
+
     def off(self, *args, **kwargs):
         self._conn.start_activity(-1)
-        
+
     def get_config(self):
         return self._conn.get_config()
-        

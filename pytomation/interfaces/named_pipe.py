@@ -20,14 +20,14 @@ class NamedPipe(Interface):
             self._logger.critical("Unknown exception: %s" % ex)
             return
         if self._is_read:
-# Unintuitive behavior IMO: 
+# Unintuitive behavior IMO:
 #   http://stackoverflow.com/questions/5782279/python-why-does-a-read-only-open-of-a-named-pipe-block
 #            self._pipe = open(path_name, 'r')
             self._pipe = os.open(path_name, os.O_RDONLY|os.O_NONBLOCK)
         else:
 #            self._pipe = open(path_name, 'w')
             self._pipe = os.open(path_name, os.O_WRONLY|os.O_NONBLOCK)
-            
+
     def read(self, bufferSize=1024):
         result = ''
         try:
@@ -46,4 +46,4 @@ class NamedPipe(Interface):
 #        self._pipe.close()
         os.close(self._pipe)
         os.remove(self._path_name)
-#        os.rmdir(tmpdir)    
+#        os.rmdir(tmpdir)

@@ -7,7 +7,7 @@ from pytomation.interfaces import Command
 class XMPP_ClientTests(TestCase):
     def setUp(self):
         self.xmpp = XMPP_Client(id='pytomation@sharpee.com', password='password', server='talk.google.com', port=5222)
-    
+
     def test_instantiation(self):
         self.assertIsInstance(self.xmpp, XMPP_Client)
 

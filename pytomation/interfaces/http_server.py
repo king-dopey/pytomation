@@ -4,7 +4,7 @@ import threading
 from socketserver import ThreadingMixIn
 from http.server import SimpleHTTPRequestHandler
 from pytomation.common import config
-#import pytomation.common.config 
+#import pytomation.common.config
 from pytomation.common.pyto_logging import PytoLogging
 from pytomation.common.pytomation_api import PytomationAPI
 from .ha_interface import HAInterface
@@ -52,7 +52,7 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         auth_credentials = base64.b64encode(config.admin_user + ":" + config.admin_password)
-        
+
         if config.auth_enabled == 'Y' and self.headers.getheader('Authorization') == None:
             self.do_AUTHHEAD()
             self.wfile.write('no auth header received')
@@ -75,13 +75,13 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
 
     def do_PUT(self):
         self.route()
-        
+
     def do_DELETE(self):
         self.route()
 
     def do_ON(self):
         self.route()
-        
+
     def do_OFF(self):
         self.route()
 
@@ -122,7 +122,7 @@ class HTTPServer(HAInterface):
         super(HTTPServer, self).__init__(address, *args, **kwargs)
         self._handler_instances = []
         self.unrestricted = True # To override light object restrictions
-    
+
     def _init(self, *args, **kwargs):
         super(HTTPServer, self)._init(*args, **kwargs)
         global file_path
@@ -131,16 +131,15 @@ class HTTPServer(HAInterface):
         self._protocol = "HTTP/1.0"
         self._path = kwargs.get('path', config.http_path)
         file_path = self._path
-        
+
     def run(self):
         server_address = (self._address, self._port)
-        
+
         PytoHandlerClass.protocol_version = self._protocol
         PytoHandlerClass.server = self
         httpd = ThreadedHTTPServer(server_address, PytoHandlerClass)
-        
+
         sa = httpd.socket.getsockname()
         print("Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "...")
         httpd.serve_forever()
         #BaseHTTPServer.test(HandlerClass, ServerClass, protocol)
-

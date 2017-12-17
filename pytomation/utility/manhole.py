@@ -10,7 +10,7 @@ class Manhole(object):
     Create a telnet server that allows you to reference your pytomation objects
     directly.  All objects names will be converted to lowercase and spaces will
     be converted to underscore _ .
-    """    
+    """
     def createShellServer(self, user='pyto', password='mation', port=2000, instances={}):
         print('Creating shell server instance')
         factory = telnet.ShellFactory()

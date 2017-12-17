@@ -22,7 +22,7 @@ from .common import *
 
 class SparkIO(HAInterface):
     VERSION = '1.0.0'
-    
+
     def _init(self, *args, **kwargs):
         super(SparkIO, self)._init(*args, **kwargs)
         self._iteration = 0
@@ -32,7 +32,7 @@ class SparkIO(HAInterface):
             self._host = self._interface.host
         except Exception as ex:
             self._logger.debug('Could not find host address: ' + str(ex))
-        
+
     def _readInterface(self, lastPacketHash):
         # We need to dial back how often we check the thermostat.. Lets not bombard it!
         if not self._iteration < self._poll_secs:
@@ -52,13 +52,13 @@ class SparkIO(HAInterface):
         else:
             self._iteration+=1
             time.sleep(1) # one sec iteration
-    
+
     def version(self):
         self._logger.info("SparkIO Devices Pytomation driver version " + self.VERSION + '\n')
-    
+
     def on(self, address=None, timeout=None, *args, **kwargs):
         return self._set_pin(address, Command.ON, timeout=timeout)
-    
+
     def off(self, address=None, timeout=None, *args, **kwargs):
         return self._set_pin(address, Command.ON, timeout=timeout)
 
@@ -74,10 +74,8 @@ class SparkIO(HAInterface):
 
 #        command = (url, json.dumps(attributes))
         command = (url, urllib.parse.urlencode(attributes))
-        
+
         commandExecutionDetails = self._sendInterfaceCommand(command)
         return True
 
         #return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
-                   
-        

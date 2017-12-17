@@ -55,10 +55,10 @@ class InsteonInterfaceTests(TestCase):
         self.ms.put_read_data(Conversions.hex_to_ascii('025019057B16F9EC2B11FF'))
         time.sleep(2)
         self.assertEqual(response, True)
-        
+
     def test_insteon_level2(self):
         self.ms.disabled = False
-        
+
         self.insteon.level('12.20.B0', 50)
         #todo: figure out how to really deal with this race condition
         time.sleep(3)
@@ -125,7 +125,7 @@ d395e51a11bb096e20f9ae84b47f8884
     def test_insteon_status(self):
         response = self.insteon.status('44.33.22')
         self.assertEqual(response, True)
-        
+
     def test_insteon_receive_status2(self):
         """
 Receive Broadcast OFF command from a remote device
@@ -156,7 +156,7 @@ b78 = max hops
         self.assertEqual(self._result, Command.OFF)
 
     def test_door_light_delgate_caseinsensitive(self):
-        d = Door(address='23.d2.bE', 
+        d = Door(address='23.d2.bE',
                  devices=self.insteon)
         d.close()
         self.ms.put_read_data(Conversions.hex_to_ascii('025023D2BE000001CB1100'))

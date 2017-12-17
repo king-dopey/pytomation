@@ -1,13 +1,13 @@
 """
 Insteon Hub Pytomation Interface
 Provides an interface to Insteon Hub tested with 2245-222
-It may work for the Insteon Hub 2242-222, SmartLinc 2414N, 
-    or other hub with a HTTP local API. 
+It may work for the Insteon Hub 2242-222, SmartLinc 2414N,
+    or other hub with a HTTP local API.
     However, it has not been tested with these hubs
 
 This interface combines code copied from the InsteonPLM insterface and
-sections of the InsteonLocal library code available at 
-https://github.com/phareous/insteonlocal 
+sections of the InsteonLocal library code available at
+https://github.com/phareous/insteonlocal
 
 Love GPL -- No need to recreate great work
 
@@ -32,7 +32,7 @@ Based on InsteonPLN created by
     Pyjamasam@github <>
     Jason Sharpee <jason@sharpee.com>  http://www.sharpee.com
     George Farris <farrisg@gmsys.com>
-    
+
     Which was based loosely on the Insteon_PLM.pm code:
     -       Expanded by Gregg Liming <gregg@limings.net>
 
@@ -55,7 +55,7 @@ def simpleMap(value, in_min, in_max, out_min, out_max):
 
 class InsteonHub(HAInterface):
     VERSION = '1.0.0'
-    
+
     def __init__(self, *args, **kwargs):
         super(InsteonHub, self).__init__(*args, **kwargs)
         json_cats = pkg_resources.resource_string(__name__, 'insteon/device_categories.json')
@@ -65,14 +65,14 @@ class InsteonHub(HAInterface):
         self._previous_buffer_end = 0
         self._previous_command_hash = ''
         self._command_wait_count = 0
-        
+
         #Clear the command buffer upon startup
         self._interface.write('1?XB=M=1')
 
         json_models = pkg_resources.resource_string(__name__, 'insteon/device_models.json')
         json_models_str = json_models.decode('utf-8')
         self.device_models = json.loads(json_models_str)
-        
+
     def _writeInterface(self):
         try:
             self._commandLock.acquire()
@@ -102,25 +102,25 @@ class InsteonHub(HAInterface):
         return_record = OrderedDict()
         return_record['success'] = False
         return_record['error'] = True
-        
+
         raw_text = self._interface.read('buffstatus.xml')
         raw_text = raw_text.replace('<response><BS>', '')
         raw_text = raw_text.replace('</BS></response>', '')
         raw_text = raw_text.strip()
-        
+
         for status in self._get_current_buffer_status(raw_text)['msgs']:
             modem_command = status.get('im_code','')
             if (modem_command == '50'): #Standard message
                 self._handleStandardMessage(status)
             elif (modem_command == '62'): #Response from command
-                self._handleStandardResponse(status)    
+                self._handleStandardResponse(status)
         sleep(1) ##TODO: Put in time based wait
-        
+
     def _handleStandardMessage(self, status):
         address = status.get('id_from','')
         cmd = status.get('cmd1','')
         cmd2 = status.get('cmd2','FF')
-        
+
         if (cmd == '18'): #Light on level was manually adjusted, get real value
             self._sendInterfaceCommand(address, '19', '00')
         elif self._devices:
@@ -158,7 +158,7 @@ class InsteonHub(HAInterface):
                         finally:
                             self._commandLock.acquire(False)
                             self._commandLock.release()
-    
+
                         if cmd2 == 'FF' or cmd2 == 'FE':
                             if d.state != State.ON:
                                 self._onCommand(address=address, command=Command.ON)
@@ -198,7 +198,7 @@ class InsteonHub(HAInterface):
                         self._onCommand(address=address, command=Command.OFF)
                 elif d.state != (State.LEVEL, cmd2):
                     self._onCommand(address=address, command=(Command.LEVEL,self.hex_to_brightness(cmd2)))
-            
+
     def _handleStandardResponse(self,status):
         address = status.get('id_from','')
         cmd = status.get('cmd1','')
@@ -227,15 +227,15 @@ class InsteonHub(HAInterface):
         finally:
             self._commandLock.acquire(False)
             self._commandLock.release()
-    
+
     def brightness_to_hex(self, level):
         """Convert numeric brightness percentage into hex for insteon"""
         return format(int(level*2.55),'02X')
-    
+
     def hex_to_brightness(self, level_hex):
         """Convert numeric brightness percentage into hex for insteon"""
         return str(int(int(level_hex, 16)/2.55))
-    
+
     def _sendInterfaceCommand(self, device_id, command, command2, extended_payload=None):
         """Wrapper to queue posted direct command, with queued response (thread-safe). Level is 0-100.
         extended_payload is 14 bytes/28 chars..but last 2 chars is a generated checksum so leave off"""
@@ -278,10 +278,10 @@ class InsteonHub(HAInterface):
         self._logger.info("_direct_command: Device: %s Command: %s Command 2: %s Extended: %s MsgType: %s", device_id, command, command2, extended_payload, msg_type_desc)
         device_id = device_id.upper()
         return super(InsteonHub, self)._sendInterfaceCommand('62', device_id + msg_type + "F"
-                                   + command + command2 + extended_payload + "=I=3", 
+                                   + command + command2 + extended_payload + "=I=3",
                                    extraCommandDetails = { 'destinationDevice': device_id, 'commandId1': command, 'commandId2': command2},
                                    modemCommandPrefix='3?02')
-            
+
     def _get_current_buffer_status(self, modem_buffer):
         """Translates the buffer string into command lists.
         Will also strip any part of the buffer that it already received before
@@ -289,7 +289,7 @@ class InsteonHub(HAInterface):
         buffer_length = len(modem_buffer)
         self._logger.info('_get_current_buffer_status: Got raw text with size %s and contents: %s',
                          buffer_length, modem_buffer)
-        
+
         previous_buffer = ''
         if buffer_length == 202:
             # 2015 hub
@@ -308,12 +308,12 @@ class InsteonHub(HAInterface):
                 previous_buffer = modem_buffer
         else:
             previous_buffer = modem_buffer
-            
+
         modem_buffer = modem_buffer.replace(self._previous_buffer, '')
         self._previous_buffer = previous_buffer
         self._logger.info('bufferEnd hex %s dec %s', buffer_end, buffer_end_int)
         self._logger.info('get_buffer_status: non wrapped %s', modem_buffer)
-        
+
         buffer_status = OrderedDict()
 
         buffer_status['error'] = False
@@ -326,12 +326,12 @@ class InsteonHub(HAInterface):
             msg = buffer_contents.read(2)
             while (msg != '02' and msg != ''):
                 msg = buffer_contents.read(2)
-            
+
             if (msg == ''):
                 break
-            
+
             msg = msg + buffer_contents.read(2)
-                        
+
             im_cmd = msg[-2:]
 
             response_record = OrderedDict()
@@ -835,8 +835,8 @@ class InsteonHub(HAInterface):
         #Remove unfinished command chars from buffer to clear
         unfinished_commands_chars = -len(buffer_contents.read())
         if unfinished_commands_chars:
-            self._previous_buffer = self._previous_buffer[:unfinished_commands_chars] 
-            
+            self._previous_buffer = self._previous_buffer[:unfinished_commands_chars]
+
         buffer_contents.close()
         #pprint.pprint(buffer_status)
         self._logger.debug("get_current_buffer_status: %s", pprint.pformat(buffer_status))
@@ -863,8 +863,8 @@ class InsteonHub(HAInterface):
         else:
             cmd = '13'
         commandExecutionDetails = self._sendInterfaceCommand(deviceId, cmd, '00')
-        return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout) 
-      
+        return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
+
     # if rate the bits 0-3 is 2 x ramprate +1, bits 4-7 on level + 0x0F
     def level(self, deviceId, level, rate=None, timeout=10):
         if level > 100 or level <0:
@@ -875,7 +875,7 @@ class InsteonHub(HAInterface):
             return
         else:
             if rate == None:
-                # make it 0 to 255                                                                                     
+                # make it 0 to 255
                 level = int((int(level) / 100.0) * int(0xFF))
                 commandExecutionDetails = self._sendInterfaceCommand(deviceId, '11', '%02X' % level)
                 return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
@@ -891,7 +891,7 @@ class InsteonHub(HAInterface):
                     levelramp = (int(lev) << 4) + rate
                     commandExecutionDetails = self._sendInterfaceCommand(deviceId, '2E', '%02X' % levelramp)
                     return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-    
+
     def status(self, deviceId, timeout=10):
         commandExecutionDetails = self._sendInterfaceCommand(deviceId, '19', '00')
         return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)

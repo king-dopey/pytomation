@@ -5,16 +5,16 @@ File:
 Description:
     A helper class for defining an address for a scene controller
 
-Author(s): 
+Author(s):
     Chris Van Orman
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
 
 
-Example: 
+Example:
 
 Notes:
 

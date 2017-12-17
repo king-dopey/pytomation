@@ -28,6 +28,6 @@ except LookupError:                            # speech is unintelligible
 print(("You said " + phrase))    # recognize speech using Google Speech Recognition
 phrase = (phrase,)
 command = {'command': phrase}
-r = requests.post(server + "/api/voice", data=json.dumps(command), headers = {'content-type': 'application/json', 
+r = requests.post(server + "/api/voice", data=json.dumps(command), headers = {'content-type': 'application/json',
                                             'Authorization': 'Basic ' + base64.b64encode(username + ":" + password)}, verify=False)
 print(r)

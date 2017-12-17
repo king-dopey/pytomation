@@ -50,7 +50,7 @@ class VenstarThermostat(HAInterface):
         #the delay to poll the thermostat
         self._poll_secs = kwargs.get('poll', 5)
         self._iteration = self._poll_secs + 1
-        
+
         try:
             self._host = self._interface.host
         except Exception as ex:
@@ -79,7 +79,7 @@ class VenstarThermostat(HAInterface):
                 responses = self._interface.read('query/info')
             except:
                 responses = ''
-                
+
             if len(responses) != 0:
                 status = []
                 try:
@@ -145,7 +145,7 @@ class VenstarThermostat(HAInterface):
         else:
             self._iteration+=1
             time.sleep(1) # one sec iteration
-            
+
     def _writeInterfaceFinal(self, data):
         return self._interface.read(data)
 
@@ -159,8 +159,8 @@ class VenstarThermostat(HAInterface):
             if self._fan != None:
                 attributes['fan'] = 1 if self._fan else 0
             if self._set_point != None:
-                    attributes['heattemp'] = self._HeatSetpoint
-                    attributes['cooltemp'] = self._CoolSetpoint
+                attributes['heattemp'] = self._HeatSetpoint
+                attributes['cooltemp'] = self._CoolSetpoint
 
             command = ('control', urllib.parse.urlencode(attributes),)
         except Exception as ex:
@@ -190,14 +190,14 @@ class VenstarThermostat(HAInterface):
         self._CoolSetpoint += 1
         self._HeatSetpoint += 1
         return self._send_state()
-    
+
     def cooler(self):
         self._last_set_point = self._set_point
         self._set_point -= 1
         self._CoolSetpoint -= 1
         self._HeatSetpoint -= 1
         return self._send_state()
-    
+
     def heat(self, *args, **kwargs):
         self._mode = Command.HEAT
         self._last_state = 1
@@ -244,7 +244,7 @@ class VenstarThermostat(HAInterface):
         setpoint_change = level - self._set_point
         self._set_point = level
         self._CoolSetpoint += setpoint_change
-        self._HeatSetpoint += setpoint_change    
+        self._HeatSetpoint += setpoint_change
         return self._send_state()
 
     def version(self):

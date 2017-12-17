@@ -3,17 +3,17 @@
 #  Huecmdr - Phillips HUE Bridge Utility
 #
 #  Copyright (c) 2016 George Farris - farrisg@gmsys.com
-# 
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 3 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -62,12 +62,12 @@ Blue = XYPoint(0.167, 0.04)
 class Hue():
 
     def __init__(self):
-        self.logio = False        
+        self.logio = False
         self.ip = None
         self.username = None
         self.light = None
         self.group = None
-        
+
     def setup_screen(self):
         cur = curses.initscr()  # Initialize curses.
         curses.cbreak()
@@ -81,14 +81,14 @@ class Hue():
         screen.idlok(1)
         screen.refresh()
         return screen
-        
+
     def terminate(self):
         curses.endwin()
         sys.exit()
 
     def check_hue_bridge(self, scn):
         scn.addstr(1,5,"Phillips HUE Bridge authentication...")
-    
+
         scn.addstr(9,5,"You haven't set the IP address for your Phillips HUE Bridge...")
         scn.addstr(11,5, "If you have never used the Bridge on this computer, you ")
         scn.addstr(12,5, "will have to authorize it.")
@@ -132,21 +132,21 @@ class Hue():
 
 
     def rgb2xy(self, red, green, blue):
-    
+
         r = ((red + 0.055) / (1.0 + 0.055))**2.4 if (red > 0.04045) else (red / 12.92)
         g = ((green + 0.055) / (1.0 + 0.055))**2.4 if (green > 0.04045) else (green / 12.92)
         b = ((blue + 0.055) / (1.0 + 0.055))**2.4 if (blue > 0.04045) else (blue / 12.92)
-    
+
         X = r * 0.4360747 + g * 0.3850649 + b * 0.0930804
         Y = r * 0.2225045 + g * 0.7168786 + b * 0.0406169
         Z = r * 0.0139322 + g * 0.0971045 + b * 0.7141733
-    
+
         if X + Y + Z == 0:
             cx = cy = 0
         else:
             cx = X / (X + Y + Z)
             cy = Y / (X + Y + Z)
-    
+
         xyPoint = XYPoint(cx, cy)
         return xyPoint
 
@@ -160,23 +160,23 @@ class Hue():
 
     def showdata(self, scn, data):
         wy,wx=scn.getmaxyx()
-        
+
         if type(data) == str:
             data = data.split('\n')
-        
+
         pady = max(len(data)+1,wy)
         padx = wx
 
         max_x = wx
         max_y = pady-wy
-                
+
         pad = curses.newpad(pady,padx)
-            
+
         for i,line in enumerate(data):
             pad.addstr(i,0,str(line))
-        
+
         scn.refresh()
-        
+
         x=0
         y=0
 
@@ -192,7 +192,7 @@ class Hue():
             if c == curses.KEY_UP:
                 y=max(y-1,0)
 
-                
+
 
         curses.flushinp()
         pad.clear()
@@ -224,9 +224,9 @@ class Hue():
     def authenticate(self, scn):
         scn.erase()
         scn.refresh()
-        
+
         scn.addstr(1,5,"Phillips HUE Bridge authentication...")
-    
+
         scn.addstr(9,5,"You haven't set the IP address for your Phillips HUE Bridge...")
         scn.addstr(11,5, "If you have never used the Bridge on this computer, you ")
         scn.addstr(12,5, "will have to authorize it.")
@@ -238,7 +238,7 @@ class Hue():
         scn.addstr(18,5,"Press button on Bridge then hit Enter...")
         scn.nodelay(0)
         k = scn.getch()
-                
+
         try:
             hub = Bridge(ip)
         except:
@@ -250,11 +250,11 @@ class Hue():
             hub = False
         return hub
 
-# $ ./huecmdr.py 
+# $ ./huecmdr.py
 # [{u'success': {u'/lights': u'Searching for new devices'}}]
 #{u'lastscan': u'2015-12-31T21:16:43'}
 
-# $ ./huecmdr.py 
+# $ ./huecmdr.py
 # [{u'success': {u'/lights': u'Searching for new devices'}}]
 # {u'lastscan': u'2015-12-31T21:18:52', u'5': {u'name': u'Hue white lamp 2'}}
 
@@ -269,15 +269,15 @@ class Hue():
             popup.refresh()
         except:
             pass
-        
+
         t = 70
         while t:
             popup.addstr(2,34,"{0:<2}".format(t))
             popup.refresh()
             time.sleep(1)
-            t -= 1 
+            t -= 1
         newlights = self.request(scn,'GET', '/api/' + self.username + '/lights/new')
-        
+
         if len(newlights) > 1:
             popup.addstr(3,5, "Found new lights...", curses.A_BOLD)
             popup.addstr(4,5, "Press any key to continue...")
@@ -292,7 +292,7 @@ class Hue():
         curses.curs_set(CURSOR_NORMAL)
         scn.touchwin()
         scn.refresh()
-        
+
     def adjust_colours(self, scn, hub):
         if self.light == None and self.group == None:
             self.popup_error(scn, "You haven't selected a light or group yet...")
@@ -334,7 +334,7 @@ class Hue():
             popup.addstr(4,45,'ON', curses.A_REVERSE)
         else:
             popup.addstr(4,51,'OFF', curses.A_REVERSE)
-        
+
         popup.addstr(6, 35,"-+")
         popup.addstr(7, 35," |--Hex value->")
         popup.addstr(8, 35,"-+")
@@ -361,7 +361,7 @@ class Hue():
                     popup.addstr(idx+3,9,data[idx],curses.A_REVERSE)
                     popup.refresh()
             elif c == curses.KEY_PPAGE:
-                i = data[idx][:1] 
+                i = data[idx][:1]
                 if i == 'H':
                     high = 65535
                 elif i == 'R' or i == 'G' or i == 'B' or i == 'S':
@@ -375,7 +375,7 @@ class Hue():
                         popup.addstr(7, 52, self.tohex(value[3],value[4],value[5]))
                     popup.refresh()
             elif c == curses.KEY_NPAGE:
-                i = data[idx][:1] 
+                i = data[idx][:1]
                 if i == 'H' or i == 'S' or i == 'R' or i == 'G' or i == 'B':
                     low = 0
                 elif i == 'T':
@@ -394,7 +394,7 @@ class Hue():
                     result = hub.set_group(self.group, 'on', True)
                 popup.addstr(4,45,'ON', curses.A_REVERSE)
                 popup.addstr(4,51,'OFF', curses.A_NORMAL)
-                
+
             elif c == curses.KEY_RIGHT:
                 if self.light != None:
                     result = hub.set_light(self.light, 'on', False)
@@ -404,7 +404,7 @@ class Hue():
                 popup.addstr(4,51,'OFF', curses.A_REVERSE)
 
             elif curses.keyname(c) == '+':
-                i = data[idx][:1] 
+                i = data[idx][:1]
                 if i == 'H':
                     high = 65535
                 elif i == 'R' or i == 'G' or i == 'B' or i == 'S':
@@ -418,7 +418,7 @@ class Hue():
                         popup.addstr(7, 52, self.tohex(value[3],value[4],value[5]))
                     popup.refresh()
             elif curses.keyname(c) == '-':
-                i = data[idx][:1] 
+                i = data[idx][:1]
                 if i == 'H' or i == 'S' or i == 'R' or i == 'G' or i == 'B':
                     low = 0
                 elif i == 'T':
@@ -442,7 +442,7 @@ class Hue():
                 elif i == 'Re' or i == 'Gr' or i == 'Bl':
                     xy = self.rgb2xy(value[3], value[4], value[5])
                     cmd =  {'transitiontime' : 0, 'on' : True, 'xy' : xy}
-                    
+
                 if self.light:
                     result = hub.set_light(self.light, cmd)
                 elif self.group:
@@ -450,7 +450,7 @@ class Hue():
                 popup.addstr(4,45,'ON', curses.A_REVERSE)
                 popup.addstr(4,51,'OFF', curses.A_NORMAL)
 
-                    
+
             elif curses.keyname(c) in "0123456789":
                 i = data[idx][:1]
                 if i == 'H':
@@ -463,7 +463,7 @@ class Hue():
                 value[idx] = high / 10 * int(curses.keyname(c))
                 if i == 'T' and value[idx] < 153:
                     value[idx] = 153
-                    
+
                 popup.addstr(idx+3,28,str(value[idx]) + '   ')
                 if i == 'R' or i == 'G' or i == 'B':
                     popup.addstr(7, 52, self.tohex(value[3],value[4],value[5]))
@@ -476,9 +476,9 @@ class Hue():
                     hub.set_group(self.group, 'on', False)
                 break
         self.popup_destroy(scn, popup)
-                
 
-    
+
+
     # Get the initial configuration of the Bridge so we can see models of lights etc
     # self.bridge_config['lights']['1']['modelid']
     def list_bulbs(self, scn, hub):
@@ -493,8 +493,8 @@ class Hue():
             data.append("{0:<4}{1:<9}{2:<19}{3:<23}{4}".format(l, lights[l]['modelid'], lights[l]['name'], \
                                                     lights[l]['type'], lights[l]['manufacturername']))
 
-        data.append("\nPress 'q' to quit, arrow keys are active...")    
-        
+        data.append("\nPress 'q' to quit, arrow keys are active...")
+
         self.showdata(scn, data)
         curses.curs_set(CURSOR_NORMAL)
 
@@ -504,8 +504,8 @@ class Hue():
 #[{u'success': {u'id': u'1'}}]
 
 #>>> b.get_group()
-#{u'1': {u'action': {u'on': False, u'hue': 14910, u'colormode': u'ct', u'effect': u'none', u'alert': u'none', 
-#u'xy': [0.4596, 0.4105], u'bri': 1, u'ct': 370, u'sat': 144}, u'lights': [u'1', u'2'], u'type': u'LightGroup', 
+#{u'1': {u'action': {u'on': False, u'hue': 14910, u'colormode': u'ct', u'effect': u'none', u'alert': u'none',
+#u'xy': [0.4596, 0.4105], u'bri': 1, u'ct': 370, u'sat': 144}, u'lights': [u'1', u'2'], u'type': u'LightGroup',
 #u'name': u'Sofa'}}
 
 #>>> b.get_group(1)
@@ -520,15 +520,15 @@ class Hue():
         data.append("{0:<4}{1:<25}{2}\n".format('ID', 'Name', 'Lights'))
         data.append("{0:=<78}".format('='))
         groups = hub.get_group()
-        
+
         for g in groups:
             for l in groups[g]['lights']:   #dump unicode chars
                 lights.append(int(l))
             data.append("{0:<4}{1:<25}{2}\n".format(g, groups[g]['name'], lights))
             lights = []
-            
-        data.append("\nPress 'q' to quit, arrow keys are active...")    
-        
+
+        data.append("\nPress 'q' to quit, arrow keys are active...")
+
         self.showdata(scn, data)
         curses.curs_set(CURSOR_NORMAL)
 
@@ -539,7 +539,7 @@ class Hue():
                 'Lights to add coma seperated     :')
 
         try:
-            popup = curses.newwin(10, 78, 4, 2)            
+            popup = curses.newwin(10, 78, 4, 2)
             for i in range(len(data)):
                 popup.addstr(i+3, 2, data[i])
                 popup.addstr(7, 2, "Arrow Up/Down to select.")
@@ -604,7 +604,7 @@ class Hue():
                     curses.echo()
                     lights = popup.getstr(4,38)
                     curses.curs_set(CURSOR_INVISIBLE)
-                
+
             elif curses.keyname(c) == 'w' or curses.keyname(c) == 'W':
                 if name == '' or lights == '':
                     break
@@ -619,7 +619,7 @@ class Hue():
                     else:
                         self.popup_error(scn, "     Could not create group     ")
                         return
-                        
+
             elif curses.keyname(c) == 'q' or curses.keyname(c) == 'Q':
                 break
         self.popup_destroy(scn, popup)
@@ -651,7 +651,7 @@ class Hue():
                 cl.append("{0:<4}{1:<25}{2}".format(l, lights[l]['name'], lights[l]['lights']))
         else:
             return
-        
+
         try:
             popup = curses.newwin(20, 78, 1, 2)
 
@@ -669,12 +669,12 @@ class Hue():
             popup.nodelay(0)
             popup.keypad(1)
             popup.scrollok(1)
-            popup.idlok(1)            
+            popup.idlok(1)
             curses.curs_set(0)
             popup.refresh()
         except:
             pass
-    
+
         #j = 0
         idx = 0
         page = 0
@@ -701,7 +701,7 @@ class Hue():
                             break
                     popup.move(2,3)
                     idx = 0
-                    
+
                 else:
                     if idx + page +1 < len(cl):
                         popup.addstr(idx+2,3,cl[idx+page],curses.A_NORMAL)
@@ -730,7 +730,7 @@ class Hue():
                                 break
                         popup.move(16,3)
                         idx = 14
-                    
+
                 else:
                     if idx + page > 0:
                         popup.addstr(idx+2,3,cl[idx+page],curses.A_NORMAL)
@@ -744,7 +744,7 @@ class Hue():
                 scn.refresh()
                 curses.curs_set(1)
                 return light
-    
+
             elif curses.keyname(c) == 'q':
                 scn.touchwin()
                 scn.refresh()
@@ -773,7 +773,7 @@ class Hue():
 
     def popup_colour_dialog(self, scn, hub, cl, title):
         try:
-            popup = curses.newwin(20, 64, 4, 8)            
+            popup = curses.newwin(20, 64, 4, 8)
             for i in range(len(cl)):
                 popup.addstr(i+3, 9, cl[i])
                 popup.addstr(14, 2, "Arrow Up/Down to select. Left/Right to turn on/off.")
@@ -790,9 +790,9 @@ class Hue():
             popup.refresh()
         except:
             pass
-    
+
         return popup
-            
+
     def popup_destroy(self, scn, popup):
         popup.erase()
         popup.refresh()
@@ -801,16 +801,16 @@ class Hue():
         scn.refresh()
         curses.curs_set(1)
 
-        
+
     def popup_menu(self, scn):
         cmds = 'aAdDgGnNcClLoOqQrRsS'
         c = 0
         text = """
-                    
-                  
-    Authenticate system with Bridge....................A 
-    Select light to use................................S 
-    Select group to use................................O 
+
+
+    Authenticate system with Bridge....................A
+    Select light to use................................S
+    Select group to use................................O
     Add new bulb to Bridge.............................N
     Adjust colours | toggle light on/off...............C
     List bulbs connected to Bridge.....................L
@@ -818,11 +818,11 @@ class Hue():
     Create new group...................................R
     Delete group.......................................D
     Exit Huecmdr.......................................Q
-        
+
     Press command key, can be upper or lower case. [   ]
 
     Currently Selected:  Light [      ] - Group [      ]
-    Bridge IP Address :  
+    Bridge IP Address :
         """
 
         try:
@@ -842,7 +842,7 @@ class Hue():
             popup.addstr(17,33,str(self.light))
         else:
             popup.addstr(17,34,"{0:0>2}".format(self.light))
-        
+
         if self.group == None:
             popup.addstr(17,50,str(self.group))
         else:
@@ -869,12 +869,12 @@ class Hue():
         text = """
           Welcome to:
 
-           _   _                               _      
-          | | | |_   _  ___  ___ _ __ ___   __| |_ __ 
+           _   _                               _
+          | | | |_   _  ___  ___ _ __ ___   __| |_ __
           | |_| | | | |/ _ \/ __| '_ ` _ \ / _` | '__|
-          |  _  | |_| |  __/ (__| | | | | | (_| | |   
-          |_| |_|\__,_|\___|\___|_| |_| |_|\__,_|_|   
-                                            
+          |  _  | |_| |  __/ (__| | | | | | (_| | |
+          |_| |_|\__,_|\___|\___|_| |_| |_|\__,_|_|
+
           """
 
         scn.erase()
@@ -887,21 +887,21 @@ class Hue():
         scn.refresh()
         scn.nodelay(0)
         scn.getch()
-    
+
     def main(self, scr, term):
         scn = self.setup_screen()
 
         dateString = ''
         self.firstChar = True
         today = datetime.datetime.today()
-    
+
         curses.curs_set(CURSOR_INVISIBLE)
         self.show_intro(scn)
         curses.curs_set(CURSOR_NORMAL)
         scn.erase()
 
         config_file = os.path.join(os.getenv('HOME'), '.python_hue')
-        
+
         try:
             f = open(config_file, 'r')
             config = json.loads(f.read())
@@ -910,13 +910,13 @@ class Hue():
             if self.username is None:
                 self.username = config[self.ip]['username']
             # Connect to the Bridge
-            hub = Bridge(self.ip) 
+            hub = Bridge(self.ip)
         except:
             hub = self.authenticate(scn)
-        
+
         while (True):
             c = self.popup_menu(scn)
-            
+
             if c == 'q' or c == 'Q':
                 term.terminate()
             elif c == 'a' or c == 'A':
@@ -953,8 +953,7 @@ class Hue():
                     self.delete_group(scn, hub)
 
 
-                
+
 if __name__ == "__main__":
     hue = Hue()
     curses.wrapper(hue.main, hue)
-

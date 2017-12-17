@@ -54,7 +54,7 @@ class Light(InterfaceDevice):
             if source and (primary_command in [Command.ON, Command.LEVEL]):
                 if self.restricted and source not in self._interfaces and not source.unrestricted:
                     m_command = None
-                    m_state = None 
+                    m_state = None
                     self._logger.info("{name} is restricted. Ignoring command {command} from {source}".format(
                                                                                          name=self.name,
                                                                                          command=command,
@@ -63,15 +63,15 @@ class Light(InterfaceDevice):
         except AttributeError as ex:
             pass #source is not a state device
         return (m_state, m_command)
-        
+
     @property
     def restricted(self):
         return self._restricted
-    
+
     @restricted.setter
     def restricted(self, value):
         self._restricted = value
         return self._restricted
-    
+
     def level(self, value):
         self.command((Command.LEVEL, value))

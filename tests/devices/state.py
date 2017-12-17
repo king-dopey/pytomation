@@ -21,7 +21,7 @@ class StateTests(TestCase):
                         )
         self.assertEqual(device.state, State.ON)
         self.assertEqual(device.last_command, Command.ON)
-    
+
     def test_initial_from_device(self):
         d1 = StateDevice(
                           )
@@ -30,14 +30,14 @@ class StateTests(TestCase):
         self.assertEqual(d1.state, State.ON)
         d2 = StateDevice(devices=d1)
         self.assertEqual(d2.state, State.ON)
-    
+
     def test_initial_delegate(self):
         d1 = StateDevice()
         d1.on()
         d2 = StateDevice(devices=(d1),
                           initial=d1)
         self.assertEqual(d2.state, State.ON)
-        
+
     def test_command_on(self):
         device = StateDevice()
         self.assertEqual(device.state, State.UNKNOWN)
@@ -49,7 +49,7 @@ class StateTests(TestCase):
         self.assertEqual(device.state, State.UNKNOWN)
         device.level(80)
         self.assertEqual(device.state, (State.LEVEL, 80))
-        
+
     def test_time_off(self):
         now = datetime.now()
         hours, mins, secs = now.timetuple()[3:6]
@@ -71,7 +71,7 @@ class StateTests(TestCase):
         print('Trigger Time' + trigger_time2)
         device = StateDevice(
                               time={
-                                    
+
                                     Attribute.COMMAND: Command.OFF,
                                     Attribute.TIME: (trigger_time1, trigger_time2),
                                     }
@@ -85,14 +85,14 @@ class StateTests(TestCase):
         print(datetime.now())
         print(device._times)
         self.assertEqual(device.state, State.OFF)
-        
+
     def test_time_cron_off(self):
         now = datetime.now()
         hours, mins, secs = now.timetuple()[3:6]
         secs = (secs + 2) % 60
         mins += (secs + 2) / 60
         ctime = (secs, mins, hours)
-        
+
         s = StateDevice(
                        time={
                              Attribute.COMMAND: Command.OFF,
@@ -112,7 +112,7 @@ class StateTests(TestCase):
         self.assertEqual(d2.state, State.OFF)
         d1.on()
         self.assertEqual(d2.state, State.ON)
-        
+
     def test_binding_default(self):
         d1 = StateDevice()
         d1.off()
@@ -121,7 +121,7 @@ class StateTests(TestCase):
         d1.on()
         self.assertEqual(d2.state, State.ON)
 
-        
+
     def test_map(self):
         d1 = StateDevice()
         d2 = StateDevice()
@@ -135,7 +135,7 @@ class StateTests(TestCase):
         self.assertEqual(d3.state, State.ON)
         d2.on()
         self.assertEqual(d3.state, State.OFF)
-        
+
     def test_delay(self):
         d1 = StateDevice()
         d2 = StateDevice(devices=d1,
@@ -152,7 +152,7 @@ class StateTests(TestCase):
         time.sleep(3)
 #        time.sleep(2000)
         self.assertEqual(d2.state, (State.LEVEL, 80))
-        
+
     def test_delay_zero_secs(self):
         d1 = StateDevice()
         d2 = StateDevice()
@@ -169,7 +169,7 @@ class StateTests(TestCase):
                                  }
                                 ),
                          initial=State.ON,
-                         )    
+                         )
         self.assertEqual(d3.state, State.ON)
         d1.off()
         self.assertEqual(d3.state, State.ON)
@@ -179,8 +179,8 @@ class StateTests(TestCase):
         self.assertEqual(d3.state, State.ON)
         d2.off()
         self.assertEqual(d3.state, State.OFF)
-        
-        
+
+
     def test_delay_no_retrigger(self):
         d1 = StateDevice(trigger={
                                  Attribute.COMMAND: Command.ON,
@@ -198,8 +198,8 @@ class StateTests(TestCase):
         d1.off()
         time.sleep(1)
         self.assertEqual(d1.state, State.OFF)
-        
-                
+
+
     def test_delay_single(self):
         d1 = StateDevice(
                           delay={Attribute.COMMAND: Command.OFF,
@@ -238,7 +238,7 @@ class StateTests(TestCase):
         self.assertEqual(d3.state, State.ON)
         time.sleep(3)
         self.assertEqual(d3.state, State.OFF)
-        
+
         #d2
         d3.on()
         self.assertEqual(d3.state, State.ON)
@@ -248,7 +248,7 @@ class StateTests(TestCase):
         self.assertEqual(d3.state, State.ON)
         time.sleep(1)
         self.assertEqual(d3.state, State.OFF)
-        
+
     def test_delay_priority(self):
         d1 = StateDevice()
         d2 = StateDevice()
@@ -273,14 +273,14 @@ class StateTests(TestCase):
         self.assertEqual(d3.state, State.ON)
         time.sleep(2)
         self.assertEqual(d3.state, State.OFF)
-        
-        
+
+
     def test_idle_time_property(self):
         d = StateDevice()
         d.on()
         time.sleep(2)
         self.assertTrue(d.idle_time >= 2)
-        
+
     def test_idle_timer(self):
         s1 = StateDevice()
         s2 = StateDevice(devices=s1,
@@ -319,7 +319,7 @@ class StateTests(TestCase):
 #         self.assertEqual(s2.state, State.ON)
 
 
-        
+
     def test_idle_source(self):
         s1 = StateDevice()
         s2 = StateDevice()
@@ -340,7 +340,7 @@ class StateTests(TestCase):
         self.assertEqual(s3.state, State.ON)
         time.sleep(3)
         self.assertEqual(s3.state, State.OFF)
-        
+
 
     def test_ignore_state(self):
         s1 = StateDevice()
@@ -401,7 +401,7 @@ class StateTests(TestCase):
         self.assertEqual(s2.state, State.UNKNOWN)
         s1.on()
         self.assertEqual(s2.state, State.UNKNOWN)
-        
+
 
     def test_last_command(self):
         s1 = StateDevice()
@@ -431,10 +431,10 @@ class StateTests(TestCase):
         self.assertEqual(s1.state, State.ON)
         s1.previous()
         self.assertEqual(s1.state, State.OFF)
-        
-        
-        
-        
+
+
+
+
     def test_toggle_state(self):
         s1 = StateDevice()
         s1.on()
@@ -443,7 +443,7 @@ class StateTests(TestCase):
         self.assertEqual(s1.state, State.OFF)
         s1.toggle()
         self.assertEqual(s1.state, State.ON)
-        
+
     def test_trigger(self):
         s1 = StateDevice(
                           trigger={
@@ -479,7 +479,7 @@ class StateTests(TestCase):
                                                                       s=e_s,
                                                                       ),
                                  },
-                         
+
                          )
         self.assertEqual(s2.state, State.UNKNOWN)
         s.on()
@@ -491,13 +491,13 @@ class StateTests(TestCase):
         s.on()
         time.sleep(3)
         self.assertEqual(s2.state, State.ON)
-      
+
     def test_initial_attribute(self):
         d = StateDevice(
                          name='pie'
                          )
         self.assertEqual(d.name, 'pie')
-        
+
     def test_delay_multiple_source(self):
         d1 = StateDevice()
         d2 = StateDevice()
@@ -521,7 +521,7 @@ class StateTests(TestCase):
         self.assertEqual(d4.state, State.ON)
         d3.off()
         self.assertEqual(d4.state, State.OFF)
-        
+
     def test_override_default_maps(self):
         d = StateDevice(
                          mapped={
@@ -531,8 +531,8 @@ class StateTests(TestCase):
                          )
         d.on()
         self.assertEqual(d.state, State.OFF)
-        
-        
+
+
     def test_map_delay(self):
         d = StateDevice(
                          mapped={
@@ -546,7 +546,7 @@ class StateTests(TestCase):
         self.assertEqual(d.state, State.UNKNOWN)
         time.sleep(3)
         self.assertEqual(d.state, Command.OFF)
-        
+
     def test_map_sources(self):
         d1 = StateDevice()
         d2 = StateDevice()
@@ -564,7 +564,7 @@ class StateTests(TestCase):
         self.assertEqual(d4.state, State.ON)
         d2.on()
         self.assertEqual(d4.state, State.OFF)
-        
+
     def test_delay_cancel_on_other_state(self):
         d1 = StateDevice()
         d2 = StateDevice(devices=d1,
@@ -583,8 +583,8 @@ class StateTests(TestCase):
         self.assertEqual(d2.state, State.ON)
         time.sleep(3)
         self.assertEqual(d2.state, State.ON)
-        
-        
+
+
     def test_manual_state(self):
         d1 = StateDevice()
         d2 = StateDevice(devices=d1,
@@ -604,7 +604,7 @@ class StateTests(TestCase):
         self.assertEqual(d2.state, State.ON)
         time.sleep(3)
         self.assertEqual(d2.state, State.OFF)
-                
+
     def test_changes_only(self):
         d1 = StateDevice()
         d2 = StateDevice(devices=d1,
@@ -629,7 +629,7 @@ class StateTests(TestCase):
         time.sleep(3)
         d1.on()
         self.assertEqual(d3.state, State.OFF)
-        
+
     def test_retrigger_delay(self):
         d1 = StateDevice()
         d2 = StateDevice(devices=d1,
@@ -651,12 +651,12 @@ class StateTests(TestCase):
         # set on again, this time no delegation
         d1.on()
         self.assertEqual(d3.state, State.OFF)
-        
+
         # after x amount of time allow dupes
         time.sleep(3)
         d1.on()
         self.assertEqual(d3.state, State.ON)
-        
+
     def test_loop_prevention(self):
         s1 = StateDevice()
         s2 = StateDevice()
@@ -664,23 +664,23 @@ class StateTests(TestCase):
         s2.devices(s1)
         s1.on()
         pass
-    
+
     def test_state_remove_device(self):
         s1 = StateDevice()
         s2 = StateDevice(devices=s1)
         s1.on()
         self.assertEqual(s2.state, State.ON)
         s2.off()
-        self.assertEqual(s2.state, State.OFF)        
+        self.assertEqual(s2.state, State.OFF)
         r=s2.remove_device(s1)
         self.assertTrue(r)
-        self.assertEqual(s2.state, State.OFF)        
+        self.assertEqual(s2.state, State.OFF)
         s1.on()
-        self.assertEqual(s2.state, State.OFF)     
+        self.assertEqual(s2.state, State.OFF)
         # remove again and not error
         r = s2.remove_device(s1)
         self.assertFalse(r)
-        
+
     def test_state_ignore_range(self):
         (s_h, s_m, s_s) = datetime.now().timetuple()[3:6]
         e_h = s_h
@@ -701,7 +701,7 @@ class StateTests(TestCase):
                                                                       s=e_s,
                                                                       ),
                                  },
-                         
+
                          )
         self.assertEqual(s2.state, State.UNKNOWN)
         s.on()
@@ -709,7 +709,7 @@ class StateTests(TestCase):
         time.sleep(3)
         s.on()
         self.assertEqual(s2.state, State.ON)
-        
+
     def test_ignore_multi_command(self):
         s1 = StateDevice()
         s2 = StateDevice(devices=s1,
@@ -722,20 +722,20 @@ class StateTests(TestCase):
         self.assertEqual(s2.state, State.UNKNOWN)
         s1.off()
         self.assertEqual(s2.state, State.UNKNOWN)
-        
-        
+
+
     def test_status_command(self):
         s = StateDevice()
         s.status()
         self.assertTrue(True)
-        
+
     def test_invalid_constructor_keyword(self):
         s1 = StateDevice()
         s2 = StateDevice(device=s1) #invalid keyword device
         #If I had implemented a DI framework I could automatically test for an error debug statement.
         # alas I do not.  Need to manually verify this one
         self.assertTrue(True)
-        
+
 #     def test_invert_commands(self):
 #         s = StateDevice(invert=True)
 #         s.on()
@@ -760,7 +760,7 @@ class StateTests(TestCase):
             raise ex
         except Exception as ex:
             pass
-        
+
 
     def test_restriction(self):
         sr = StateDevice()
@@ -771,7 +771,7 @@ class StateTests(TestCase):
                                       Attribute.SOURCE: sr,
                                       Attribute.STATE: State.ON,
                                       }
-                                      
+
                          )
         self.assertEqual(State.UNKNOWN, s2.state)
         s1.on()
@@ -786,7 +786,7 @@ class StateTests(TestCase):
         sr.off()
         s1.on()
         self.assertEqual(State.ON, s2.state)
-        
+
     def test_restriction_specific_state(self):
         # Dark = ON
         # light = OFF
@@ -799,13 +799,13 @@ class StateTests(TestCase):
                                       Attribute.TARGET: Command.ON,
                                       }
                          )
-                                      
+
         # Restrict
         sr.on()
         self.assertEqual(State.ON, s2.state)
         sr.off()
-        self.assertEqual(State.OFF, s2.state)        
-        
+        self.assertEqual(State.OFF, s2.state)
+
     def test_onStateChanged(self):
         s1 = StateDevice()
         custom = Mock()

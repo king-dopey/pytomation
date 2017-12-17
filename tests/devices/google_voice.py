@@ -7,7 +7,7 @@ from pytomation.interfaces import Command
 class Google_VoiceTests(TestCase):
     def setUp(self):
         self.gv = Google_Voice(user='jason@sharpee.com', password='password')
-    
+
     def test_instantiation(self):
         self.assertIsInstance(self.gv, Google_Voice)
 

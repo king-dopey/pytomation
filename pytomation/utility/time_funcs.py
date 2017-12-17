@@ -29,7 +29,7 @@ def to_datetime(now, string):
         dow = now.weekday()
     else:
         dow = string[5]
-    
+
     return (datetime(now.year,mon,dom,hours,mins,secs))
 
 
@@ -38,7 +38,7 @@ def crontime_in_range(now, start, end):
     dt_end = to_datetime(now, end,)
     if dt_start == None or dt_end == None:
         return False
-        
+
     # take care of weekday
     dw_start = start[5]
     dw_end = end[5]
@@ -52,14 +52,13 @@ def crontime_in_range(now, start, end):
         else:
             if dw_start <= now.weekday() <= dw_end:
                 dt_end = dt_end + timedelta(days=dw_end - dw_start)
-            
+
     if dt_start > dt_end:
         dt_end = dt_end + timedelta(days=365)
         if now < dt_start:
             now = now + timedelta(days=365)
-            
+
     if dt_start <= now <= dt_end:
         return True
 
     return False
-

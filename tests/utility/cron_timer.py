@@ -14,7 +14,7 @@ class CronTimerTests(TestCase):
 
     def test_2_sec_callback(self):
         m = Mock()
-        
+
         t = datetime.now().timetuple()[5]
         t += 2
         self.ct.interval(secs=t)

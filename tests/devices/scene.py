@@ -7,11 +7,11 @@ class SceneDeviceTests(TestCase):
     def test_instantiation(self):
         scene = Scene()
         self.assertIsNotNone(scene)
-        
+
     def test_scene_activate(self):
         interface = Mock()
         interface.onCommand.return_value = True
-        
+
         d1 = InterfaceDevice('d1', interface)
         d2 = InterfaceDevice('d2', interface)
 
@@ -32,10 +32,10 @@ class SceneDeviceTests(TestCase):
         self.assertIsNotNone(scene)
         #scene.activate()
         scene.on()
-        
+
         #self.assertTrue(interface.update_scene.called)
         #self.assertTrue(interface.activate.called)
-        
+
 #         interface.update_scene.assert_called_with(
 #                                                            's1',
 #                                                           devices= {d1: {

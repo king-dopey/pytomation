@@ -27,14 +27,14 @@ class LightTests(TestCase):
 
     def test_on_time(self):
         pass
-    
+
     def test_door_triggered(self):
         door = Door()
         self.assertIsNotNone(door)
         self.device = Light('D1', devices=(self.interface, door))
         door.open()
         self.assertTrue(self.interface.on.called)
-        
+
     def test_door_closed(self):
         door = Door()
         self.assertIsNotNone(door)
@@ -47,7 +47,7 @@ class LightTests(TestCase):
 #        self.interface.on.assert_called_once_with('')
         door.open()
         self.assertTrue(self.interface.on.called)
-        
+
     def test_location_triggered(self):
         home = Location('35.2269', '-80.8433')
         home.local_time = datetime(2012,6,1,12,0,0)
@@ -56,7 +56,7 @@ class LightTests(TestCase):
         home.local_time = datetime(2012,6,1,0,0,0)
         self.assertEqual(home.state, State.DARK)
         self.assertEqual(light.state, State.ON)
-        
+
     def test_motion_triggered(self):
         motion = Motion('D1', initial=State.STILL)
         self.assertEqual(motion.state, State.STILL)
@@ -71,8 +71,8 @@ class LightTests(TestCase):
         self.assertEqual(light.state, State.OFF)
         photo.dark()
         self.assertEqual(light.state, State.ON)
-        
-        
+
+
     def test_light_restricted(self):
         photo = Photocell('D1', initial=State.LIGHT)
         self.assertEqual(photo.state, State.LIGHT)
@@ -101,21 +101,21 @@ class LightTests(TestCase):
         motion.unrestricted = True
         motion.motion()
         self.assertEqual(light.state, State.ON)
-        
+
 #         photo.dark()
 #         self.assertEqual(light.state, State.ON)
 #         light.off()
 #         self.assertEqual(light.state, State.OFF)
 #         motion.motion()
 #         self.assertEqual(light.state, State.ON)
-        
+
 
     def test_delay_normal(self):
         # Door Open events retrigger delay
         # Instead of turning off in 2 secs should be 4
         door = Door()
         self.assertIsNotNone(door)
-        light = Light(address='D1', 
+        light = Light(address='D1',
                       devices=(self.interface, door),
                       delay={
                              Attribute.COMMAND: Command.OFF,
@@ -141,7 +141,7 @@ class LightTests(TestCase):
     def test_delay_light_specific(self):
         # motion.off and Photocell.Light events do not retrigger
         motion = Motion()
-        light = Light(address='D1', 
+        light = Light(address='D1',
                       devices=(self.interface, motion),
                       trigger={
                              Attribute.COMMAND: Command.ON,
@@ -171,7 +171,7 @@ class LightTests(TestCase):
                       initial=photo,
                       )
         self.assertEqual(light.state, State.ON)
-        
+
     def test_light_photocell_delay(self):
         ## Dont like this behavior anymore
         # Delay off should not trigger when photocell tells us to go dark.
@@ -188,15 +188,15 @@ class LightTests(TestCase):
 #        photo.light()
 #        self.assertEqual(light.state, State.OFF)
         pass
-    
+
     def test_level(self):
         self.device.command((Command.LEVEL, 40))
         self.interface.level.assert_called_with('D1', 40)
-        
+
     def test_level_direct(self):
         self.device.level(50)
         self.interface.level.assert_called_with('D1', 50)
-        
+
     def test_level_ramp(self):
         self.device.command((Command.LEVEL, 40, 20))
         self.interface.level.assert_called_with('D1', 40, 20)
@@ -209,7 +209,7 @@ class LightTests(TestCase):
                             Attribute.TIME:(0, 30, list(range(0,5)), 0, 0)
                             })
         self.assertIsNotNone(light)
-        
+
     def test_time_cron2(self):
         ttime = datetime.now().timetuple()[3:7]
         l = Light(address='12.03.BB',
@@ -222,13 +222,13 @@ class LightTests(TestCase):
         self.assertEqual(l.state, State.ON)
         time.sleep(2)
         self.assertEqual(l.state, State.OFF)
-        
-        
-        
+
+
+
     def test_light_scenario1(self):
         m = Motion()
         l = Light(
-                address=(49, 6), 
+                address=(49, 6),
                 devices=m,
                 mapped={
                         Attribute.COMMAND: Command.MOTION,
@@ -246,12 +246,12 @@ class LightTests(TestCase):
         self.assertEqual(l.state, State.UNKNOWN)
         m.command(command=State.ON, source=None)
         self.assertEqual(l.state, State.UNKNOWN)
-    
+
     def test_light_scenario_g1(self):
         d = Door()
         p = Photocell()
         p.light()
-        l =  Light(address='xx.xx.xx', 
+        l =  Light(address='xx.xx.xx',
             devices=(d, p),
             mapped={
                Attribute.COMMAND: (Command.CLOSE),
@@ -268,8 +268,8 @@ class LightTests(TestCase):
         self.assertEqual(l.state, State.OFF)
         d.open()
         self.assertEqual(l.state, State.OFF)
-        
-        
+
+
     def test_light_scenario_2(self):
         m = Motion()
         l = Light(
@@ -301,10 +301,10 @@ class LightTests(TestCase):
         self.assertEqual(l.state, State.OFF)
         time.sleep(3)
         self.assertEqual(l.state, State.OFF)
-        
+
     def test_scenario_g2(self):
         d = StateDevice()
-        l = Light(address='1E.39.5C', 
+        l = Light(address='1E.39.5C',
                devices=(d),
                delay={
                    Attribute.COMMAND: Command.OFF,
@@ -317,7 +317,7 @@ class LightTests(TestCase):
         self.assertEqual(l.state, State.OFF)
         l.on()
         self.assertEqual(l.state, State.ON)
-    
+
     def test_delay_non_native_command(self):
         m = Motion()
         l = Light(
@@ -333,7 +333,7 @@ class LightTests(TestCase):
         self.assertEqual(l.state, State.ON)
         time.sleep(3)
         self.assertEqual(l.state, State.OFF)
-        
+
     def test_light_scenario_g3(self):
         m1 = Motion()
         m2 = Motion()
@@ -370,7 +370,7 @@ class LightTests(TestCase):
         time.sleep(2)
         # Light should still be on < 10 secs
         self.assertEqual(l.state, State.ON)
-        
+
         m2.motion()
         self.assertEqual(l.state, State.ON)
         # more noise to try and force an issue. Should be ignored
@@ -381,7 +381,7 @@ class LightTests(TestCase):
         # total of 5 secs have elapsed since m1 and 3 since m2
         # Light should be off as m2 set the new time to only 2 secs
         self.assertEqual(l.state, State.OFF)
-        
+
     def test_light_restriction_idle(self):
         ph = Photocell()
         m = Motion()
@@ -419,7 +419,7 @@ class LightTests(TestCase):
         self.assertEqual(l.state, State.OFF)
         time.sleep(3)
         self.assertEqual(l.state, State.OFF)
-        
+
     def test_trigger_in_range_gc(self):
         (s_h, s_m, s_s) = datetime.now().timetuple()[3:6]
         e_h = s_h
@@ -449,7 +449,7 @@ class LightTests(TestCase):
         self.assertEqual(d2.state, State.ON)
         time.sleep(3)
         self.assertEqual(d2.state, State.OFF)
- 
+
         #Out range
         d2.off()
         self.assertEqual(d2.state, State.OFF)
@@ -504,7 +504,7 @@ class LightTests(TestCase):
         s1.level(80)
         self.assertEqual(s2.state, State.OFF)
 
-        
-        
+
+
 if __name__ == '__main__':
-	main() 
+    main()

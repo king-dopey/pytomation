@@ -1,7 +1,7 @@
 import http.server
 
 from http.server import SimpleHTTPRequestHandler
-import pytomation.common.config 
+import pytomation.common.config
 from pytomation.common.pyto_logging import PytoLogging
 from pytomation.common.pytomation_api import PytomationAPI
 
@@ -16,7 +16,7 @@ class PytomationHandlerClass(SimpleHTTPRequestHandler):
         self._api = PytomationAPI()
 
         SimpleHTTPRequestHandler.__init__(self, req, client_addr, server)
-    
+
     def translate_path(self, path):
         global file_path
         path = file_path + path
@@ -30,13 +30,13 @@ class PytomationHandlerClass(SimpleHTTPRequestHandler):
 
     def do_PUT(self):
         self.route()
-        
+
     def do_DELETE(self):
         self.route()
 
     def do_ON(self):
         self.route()
-        
+
     def do_OFF(self):
         self.route()
 
@@ -69,15 +69,14 @@ class PytomationHTTPServer(object):
         self._protocol = "HTTP/1.0"
         self._path = path
         file_path = path
-        
+
     def start(self):
         server_address = (self._address, self._port)
-        
+
         PytomationHandlerClass.protocol_version = self._protocol
         httpd = http.server.HTTPServer(server_address, PytomationHandlerClass)
-        
+
         sa = httpd.socket.getsockname()
         print("Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "...")
         httpd.serve_forever()
         #BaseHTTPServer.test(HandlerClass, ServerClass, protocol)
-

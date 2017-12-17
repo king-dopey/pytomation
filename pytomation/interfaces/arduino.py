@@ -1,5 +1,5 @@
 """
-File: 
+File:
     arduino_uno.py
 
 George Farris <farrisg@gmsys.com>
@@ -24,44 +24,44 @@ MA 02110-1301, USA.
 
 Description:
 
-This is a driver for the Arduino UNO board used with the included uno.pde 
-sketch.  The UNO board supports digital and analog I/O.  The Uno board can be 
-configured to use up 18 digital I/O channels or 12 digital and 6 analog 
+This is a driver for the Arduino UNO board used with the included uno.pde
+sketch.  The UNO board supports digital and analog I/O.  The Uno board can be
+configured to use up 18 digital I/O channels or 12 digital and 6 analog
 channels or a combination of both.
 
-This driver will re-initialize any of the boards that experience a power on 
+This driver will re-initialize any of the boards that experience a power on
 reset or brownout without having to restart Pytomation.
 
-The the I/O channels on the Andunio board are set according to the following 
+The the I/O channels on the Andunio board are set according to the following
 command set.
 
-Every command sent to the board is three or four characters in length.  There 
+Every command sent to the board is three or four characters in length.  There
 is no terminating CR or NL character.
 
   [Board] [I/O direction] [Pin]
   ===========================================================================
-  [Board] 	- 'A'
-  [I/O]		- 'DN<pin>' Configure as Digital Input no internal pullup (default)
-  			- 'DI<pin>'     "      " Digital Input uses internal pullup
-	  		- 'DO<pin>'     "      " Digital Output 
-	  		- 'AI<pin>'     "      " Analog Input
-			- 'AO<pin>'     "      " Analog Output
-	        - 'L<pin>'  Set Digital Output to LOW
-	        - 'H<pin>'  Set Digital Output to HIGH
-			- '%<pin><value>'  Set Analog Output to value (0 - 255)
-  [Pin]		- Ascii 'C' to 'T'  C = pin 2, R = pin A3, etc
- 
+  [Board]       - 'A'
+  [I/O]         - 'DN<pin>' Configure as Digital Input no internal pullup (default)
+                        - 'DI<pin>'     "      " Digital Input uses internal pullup
+                        - 'DO<pin>'     "      " Digital Output
+                        - 'AI<pin>'     "      " Analog Input
+                        - 'AO<pin>'     "      " Analog Output
+                - 'L<pin>'  Set Digital Output to LOW
+                - 'H<pin>'  Set Digital Output to HIGH
+                        - '%<pin><value>'  Set Analog Output to value (0 - 255)
+  [Pin]         - Ascii 'C' to 'T'  C = pin 2, R = pin A3, etc
+
   Examples transmitted to board:
-    ADIF	Configure pin 5 as digital input with pullup
-	AAIR	Configure pin A3 as analog input
-	AHE		Set digital pin 4 HIGH
-	A%D75	Set analog output to value of 75
+    ADIF        Configure pin 5 as digital input with pullup
+        AAIR    Configure pin A3 as analog input
+        AHE             Set digital pin 4 HIGH
+        A%D75   Set analog output to value of 75
 
   Examples received from board:  NOTE the end of message (eom) char '.'
-	AHE.		Digital pin 4 is HIGH
-	ALE.		Digital pin 4 is LOW
-	AP89.		Analog pin A1 has value 89
-	
+        AHE.            Digital pin 4 is HIGH
+        ALE.            Digital pin 4 is LOW
+        AP89.           Analog pin A1 has value 89
+
   Available pins, pins with ~ can be analog Output
                   pins starting with A can be Analog Input
                   All pins can be digital except 0 and 1
@@ -69,7 +69,7 @@ is no terminating CR or NL character.
   02 03 04 05 06 07 08 09 10 11 12 13 A0 A1 A2 A3 A4 A5
   C  D  E  F  G  H  I  J  K  L  M  N  O  P  Q  R  S  T
      ~     ~  ~        ~  ~  ~
-  ============================================================================ 
+  ============================================================================
   The board will return a '?' on error.
   The board will return a '!' on power up or reset.
 
@@ -80,7 +80,7 @@ Author(s):
 
 
 License:
-    This free software is licensed under the terms of the GNU public license, 
+    This free software is licensed under the terms of the GNU public license,
     Version 3
 
 Usage:
@@ -96,7 +96,7 @@ Notes:
 Versions and changes:
     Initial version created on Feb 14, 2013
     2013/02/14 - 1.0 - Initial version
-    
+
 """
 import threading
 import time
@@ -111,11 +111,11 @@ from .ha_interface import HAInterface
 class Arduino(HAInterface):
     VERSION = '1.0'
     MODEM_PREFIX = ''
-    
-    
+
+
     def __init__(self, interface, *args, **kwargs):
         super(Arduino, self).__init__(interface, *args, **kwargs)
-        
+
     def _init(self, *args, **kwargs):
         super(Arduino, self)._init(*args, **kwargs)
 
@@ -128,10 +128,10 @@ class Arduino(HAInterface):
 
         self._modemResponse = {
                                }
-        # for inverting the I/O point 
+        # for inverting the I/O point
         self.d_inverted = [False for x in range(19)]
-        #self._interface.read(100)        
-        		
+        #self._interface.read(100)
+
     def _readInterface(self, lastPacketHash):
         #check to see if there is anyting we need to read
         responses = self._interface.read()
@@ -139,7 +139,7 @@ class Arduino(HAInterface):
             for response in responses.split():
                 self._logger.debug("[Arduino] Response> " + hex_dump(response))
                 d = re.compile('[A][C-T][H,L][\.]')
-                a = re.compile('[A][O-T][0-9]*[\.]')    
+                a = re.compile('[A][O-T][0-9]*[\.]')
                 if d.match(response):
                     # strip end of message :a.index('.')
                     self._processDigitalInput(response[:response.index('.')], lastPacketHash)
@@ -151,11 +151,11 @@ class Arduino(HAInterface):
                         self.setChannel(bct)
                 elif response[1] == '?':
                     self._logger.debug("[Arduino] Board [" + response[0] + "] received invalid command or variable...\n")
-                    
-        else:
-            time.sleep(0.1)  # try not to adjust this 
 
-    # response[0] = board, response[1] = channel, response[2] = L or H    
+        else:
+            time.sleep(0.1)  # try not to adjust this
+
+    # response[0] = board, response[1] = channel, response[2] = L or H
     def _processDigitalInput(self, response, lastPacketHash):
         if (response[2] == 'L' and not self.d_inverted[ord(response[1]) - 65]):
         #if (response[2] == 'L'):
@@ -200,14 +200,14 @@ class Arduino(HAInterface):
         # Save the board settings in case we need to re-init
         if not boardChannelType in self.boardSettings:
             self.boardSettings.append(boardChannelType)
-        
+
         self._logger.debug("[Arduino] Setting channel " + boardChannelType + '\n')
         command = boardChannelType
         commandExecutionDetails = self._sendInterfaceCommand(command)
 
     def dio_invert(self, channel, value=True):
         self.d_inverted[ord(channel) - 65] = value
-                    
+
     def on(self, address):
         command = address[0] + 'H' + address[1]
         commandExecutionDetails = self._sendInterfaceCommand(command)
@@ -222,10 +222,9 @@ class Arduino(HAInterface):
         command = address[0] + '%' + address[1] + level
         commandExecutionDetails = self._sendInterfaceCommand(command)
 
-		
+
     def listBoards(self):
         self._logger.info(self.boardSettings + '\n')
-        
+
     def version(self):
         self._logger.info("Ardunio Pytomation driver version " + self.VERSION + '\n')
-

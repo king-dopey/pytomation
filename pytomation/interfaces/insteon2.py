@@ -5,16 +5,16 @@ File:
 Description:
     An Insteon driver for the Pytomation home automation framework.
 
-Author(s): 
+Author(s):
          Chris Van Orman
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
 
 
-Example: 
+Example:
 
 Notes:
     Currently only tested with the 2412S, but should work with similar PLMs.
@@ -36,10 +36,10 @@ def _cleanStringId(stringId):
 # _stringIdToByteIds is for parsing a standard Insteon address such as 1E.2E.3E. It was taken from the original insteon.py.
 def _stringIdToByteIds(stringId):
     return binascii.unhexlify(_cleanStringId(stringId))
-    
-       
+
+
 class InsteonPLM2(HAInterface):
-    
+
     messages = {
         0x15: lambda : InsteonMessage(0x15, 1),
         0x50: lambda : InsteonStatusMessage(),
@@ -73,7 +73,7 @@ class InsteonPLM2(HAInterface):
         0x72: lambda : InsteonMessage(0x72, 3),
         0x73: lambda : InsteonMessage(0x73, 6)
     }
-    
+
     commands = {
         Command.ON: lambda : InsteonStandardCommand([0x11, 0xff]),
         Command.LEVEL: lambda : InsteonStandardCommand([0x11,]),
@@ -81,12 +81,12 @@ class InsteonPLM2(HAInterface):
         Command.STATUS: lambda : InsteonStandardCommand([0x19, 0x00]),
         "ledstatus": lambda : InsteonExtendedCommand([0x2E, 0x00])
     }
-    
+
     sceneCommands = {
         Command.ON: lambda : InsteonAllLinkCommand([0x11, 0x00]),
         Command.OFF: lambda : InsteonAllLinkCommand([0x13, 0x00])
     }
-    
+
     def __init__(self, interface, *args, **kwargs):
         super(InsteonPLM2, self).__init__(interface, *args, **kwargs)
 
@@ -102,12 +102,12 @@ class InsteonPLM2(HAInterface):
                     message = self.messages[b]()
                     if (b != 0x15):
                         message.appendData(0x2)
-                    
-                # append the data to the message if it exists                    
+
+                # append the data to the message if it exists
                 if (message):
                     message.appendData(b)
-                
-                # if our message is complete, then process it and 
+
+                # if our message is complete, then process it and
                 # start the next one
                 if (message and message.isComplete()):
                     self._processMessage(message)
@@ -120,14 +120,14 @@ class InsteonPLM2(HAInterface):
     def _processMessage(self, message):
         self._printByteArray(message.getData())
         response = message.getCommands()
-        
+
         if (response != None):
             command = response['commands']
             self._findPendingCommand(message)
-            
+
             for c in command:
                 self._onCommand(command=c['command'], address=c['address'])
-    
+
     def _findPendingCommand(self, message):
         # check if any commands are looking for this message
         for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
@@ -143,18 +143,18 @@ class InsteonPLM2(HAInterface):
 
     def _printByteArray(self, data, message="Message"):
         s = ' '.join(hex(x) for x in data)
-        self._logger.debug(message + ">" + s + " <")	
+        self._logger.debug(message + ">" + s + " <")
 
     def command(self, deviceId, command, timeout=None):
         isScene = False
         level = 100
-        
+
         if isinstance(command, tuple):
             level = command[1]
             command = command[0].lower()
         else:
             command = command.lower()
-        
+
         try:
             device = self._getDevice(deviceId)
         except:
@@ -163,39 +163,39 @@ class InsteonPLM2(HAInterface):
 
         if device:
             isScene = isinstance(device, Scene)
-            
+
         commands = self.sceneCommands if isScene else self.commands
-            
+
         try:
             haCommand = commands[command]()
             if command == Command.LEVEL:
                 percent_level = int((level / 100 ) * 255)
                 haCommand.setSecondaryData([level,])
             # flags = 207 if isScene else 15
-        
+
             haCommand.setAddress(array.array('B', _stringIdToByteIds(deviceId)))
             # haCommand.setFlags(flags)
             commandExecutionDetails = self._sendInterfaceCommand(haCommand.getBytes(),
                 extraCommandDetails={'destinationDevice': deviceId, 'command' : haCommand})
-            
+
             return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)
         except Exception as ex:
             self._logger.exception('Error executing command: ' + str(ex))
             return None
-        
+
     def on(self, deviceId, fast=None, timeout=None):
         return self.command(deviceId, Command.ON)
 
     def off(self, deviceId, fast=None, timeout=None):
         return self.command(deviceId, Command.OFF)
-    
+
     def level(self, deviceId, value=100, fast=None, timeout=None):
         return self.command(deviceId, (Command.LEVEL, value))
 
     def update_status(self):
         for d in self._devices:
             self.command(d, 'status')
-                
+
     def _sendInterfaceCommand(self, modemCommand, commandDataString=None, extraCommandDetails=None):
         return super(InsteonPLM2, self)._sendInterfaceCommand(modemCommand, commandDataString, extraCommandDetails, modemCommandPrefix='\x02')
 

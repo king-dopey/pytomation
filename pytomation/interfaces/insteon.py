@@ -4,13 +4,13 @@ File:
 
 Description:
         InsteonPLM Home Automation Protocol library for Python (Smarthome 2412N, 2412S, 2412U)
-        
+
         For more information regarding the technical details of the PLM:
                 http://www.smarthome.com/manuals/2412sdevguide.pdf
                 http://www.insteon.com/pdf/insteondetails.pdf (message flags)
                 http://www.madreporite.com/insteon/commands.htm
 
-Author(s): 
+Author(s):
          Pyjamasam@github <>
          Jason Sharpee <jason@sharpee.com>  http://www.sharpee.com
          George Farris <farrisg@gmsys.com>
@@ -19,7 +19,7 @@ Author(s):
         -       Expanded by Gregg Liming <gregg@limings.net>
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
     - Instantiate InsteonPLM by passing in an interface
@@ -27,7 +27,7 @@ Usage:
     - ?
     - Profit
 
-Example: (see bottom of the file) 
+Example: (see bottom of the file)
 
 Notes:
     - Supports 2412N, 2412S, and 2413U right now
@@ -42,7 +42,7 @@ Versions and changes:
     2013/01/04 - 1.6 - Retry orphaned commands and deal with Modem Nak's
     2013/01/11 - 1.7 - Add status support from a linked device when manually operated
     2015/04/14 - 1.8 - Fixed status messages
-    
+
 '''
 import select
 import traceback
@@ -91,7 +91,7 @@ def simpleMap(value, in_min, in_max, out_min, out_max):
 KEYPADLINC Information
 
 D1   Button or Group number
-D2   Controls sending data to device 
+D2   Controls sending data to device
 D3   Button's LED follow mask  - 0x00 - 0xFF
 D4   Button's LED-off mask  - 0x00 - 0xFF
 D5   X10 House code, we don't support
@@ -136,23 +136,23 @@ D2 = 01  Is response to a get data request
 
 class InsteonPLM(HAInterface):
     VERSION = '1.8'
-    
+
     #(address:engineVersion) engineVersion 0x00=i1, 0x01=i2, 0x02=i2cs
     deviceList = {}         # Dynamically built list of devices [address,devcat,subcat,firmware,engine,name]
                             # we store and load this from disk and only run when network changes
     currentCommand = ""
-    cmdQueueList = []   	# List of orphaned commands that need to be dealt with
-    spinTime = 0.1   		# _readInterface loop time
-    extendedCommand = False	# if extended command ack expected from PLM
+    cmdQueueList = []           # List of orphaned commands that need to be dealt with
+    spinTime = 0.1              # _readInterface loop time
+    extendedCommand = False     # if extended command ack expected from PLM
     statusRequest = False   # Set to True when we do a status request
-    lastUnit = ""		# last seen X10 unit code
+    lastUnit = ""               # last seen X10 unit code
 
-    
+
     plmAddress = ""
-    
+
     def __init__(self, interface, *args, **kwargs):
         super(InsteonPLM, self).__init__(interface, *args, **kwargs)
-        
+
     def _init(self, *args, **kwargs):
         super(InsteonPLM, self)._init(*args, **kwargs)
         self.version()
@@ -271,12 +271,12 @@ class InsteonPLM(HAInterface):
                                         'validResponseCommands' : ['SD2E']
                                     },
 
-				    #X10 Commands
+                                    #X10 Commands
                                     'XD03': {        #Light Status Response
                                         'callBack' : self._handle_StandardDirect_AckCompletesCommand,
                                         'validResponseCommands' : ['XD03']
                                     },
-                                    
+
                                     #Broadcast Messages/Responses
                                     'SB01': {
                                                     #Set button pushed
@@ -369,17 +369,17 @@ class InsteonPLM(HAInterface):
         firstByte = self._interface.read(1)
         try:
             if len(firstByte) == 1:
-                #Got at least one byte; set the _lastSendTime to prevent PLM errors when a command is sent shortly after read 
+                #Got at least one byte; set the _lastSendTime to prevent PLM errors when a command is sent shortly after read
                 self._lastSendTime = time.time()
-                #Check to see what kind of byte it is (helps us sort out how many bytes we need to read now) 
+                #Check to see what kind of byte it is (helps us sort out how many bytes we need to read now)
                 if firstByte[0] == '\x02':
                     #modem command (could be an echo or a response)
                     #read another byte to sort that out
                     secondByte = self._interface.read(1)
-    
+
                     responseSize = -1
                     callBack = None
-                    
+
                     if self.extendedCommand:
                         # set the callback and response size expected for extended commands
                         modemCommand = binascii.hexlify(secondByte).upper()
@@ -397,12 +397,12 @@ class InsteonPLM(HAInterface):
                                 responseSize = self._modemCommands[modemCommand]['responseSize']
                             if 'callBack' in self._modemCommands[modemCommand]:
                                 callBack = self._modemCommands[modemCommand]['callBack']
-    
+
                     if responseSize != -1:
                         remainingBytes = self._interface.read(responseSize)
                         currentPacketHash = hashPacket(firstByte + secondByte + remainingBytes)
                         self._logger.debug("Receive< " + hex_dump(firstByte + secondByte + remainingBytes, len(firstByte + secondByte + remainingBytes)) + currentPacketHash + "\n")
-    
+
                         if lastPacketHash and lastPacketHash == currentPacketHash:
                             #duplicate packet.  Ignore
                             pass
@@ -411,12 +411,12 @@ class InsteonPLM(HAInterface):
                                 callBack(firstByte + secondByte + remainingBytes)
                             else:
                                 self._logger.debug("No callBack defined for for modem command %s" % modemCommand)
-    
+
                         self._lastPacketHash = currentPacketHash
                         self.spinTime = 0.2     #reset spin time, there were no naks, Don't set this lower
                     else:
                         self._logger.debug("No responseSize defined for modem command %s" % modemCommand)
-                        
+
                 elif firstByte[0] == '\x15':
                     self.spinTime += 0.2
                     self._logger.debug("first byte %s" % binascii.hexlify(firstByte[0]))
@@ -427,9 +427,9 @@ class InsteonPLM(HAInterface):
                         self._logger.debug("Too many NAK's! Device not responding...")
                 else:
                     self._logger.debug("Unknown first byte %s" % binascii.hexlify(firstByte[0]))
-                
-                self.extendedCommand = False	# go back to standard commands as default
-                
+
+                self.extendedCommand = False    # go back to standard commands as default
+
             else:
                 self._checkCommandQueue()
                 #print "Sleeping"
@@ -463,7 +463,7 @@ class InsteonPLM(HAInterface):
         self._logger.debug("Command: %s %s %s" % (destinationDevice, commandId1, commandId2))
         self._logger.debug("C: %s" % self._getX10UnitCommand(destinationDevice))
         self._logger.debug("c1: %s" % self._getX10CommandCommand(destinationDevice, commandId1))
-            
+
         self._sendInterfaceCommand('63', binascii.unhexlify(self._getX10UnitCommand(destinationDevice)))
 
         return self._sendInterfaceCommand('63', binascii.unhexlify(self._getX10CommandCommand(destinationDevice, commandId1)))
@@ -471,16 +471,16 @@ class InsteonPLM(HAInterface):
     #low level processing methods
     def _process_PLMInfo(self, responseBytes):
         (modemCommand, InsteonCommand, idHigh, idMid, idLow, deviceCat, deviceSubCat, firmwareVer, acknak) = struct.unpack('BBBBBBBBB', responseBytes)
-        
+
         foundCommandHash = None
         #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
         for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
 #            if binascii.unhexlify(commandDetails['modemCommand']) == chr(modemCommand):
             if commandDetails['modemCommand'] == '\x60':
                 #Looks like this is our command.  Lets deal with it
-                #self._commandReturnData[commandHash] = { 'id': _byteIdToStringId(idHigh,idMid,idLow), 'deviceCategory': '%02X' % deviceCat, 'deviceSubCategory': '%02X' % deviceSubCat, 'firmwareVersion': '%02X' % firmwareVer }    
+                #self._commandReturnData[commandHash] = { 'id': _byteIdToStringId(idHigh,idMid,idLow), 'deviceCategory': '%02X' % deviceCat, 'deviceSubCategory': '%02X' % deviceSubCat, 'firmwareVersion': '%02X' % firmwareVer }
                 self.plmAddress = _byteIdToStringId(idHigh,idMid,idLow).upper()
-                
+
                 waitEvent = commandDetails['waitEvent']
                 waitEvent.set()
 
@@ -496,7 +496,7 @@ class InsteonPLM(HAInterface):
     def _process_StandardInsteonMessagePLMEcho(self, responseBytes):
         #print utilities.hex_dump(responseBytes, len(responseBytes))
         #echoed standard message is always 9 bytes with the 6th byte being the command
-        #here we handle a status request as a special case the very next received message from the 
+        #here we handle a status request as a special case the very next received message from the
         #PLM will most likely be the status response.
         if ord(responseBytes[1]) == 0x62:
             if len(responseBytes) == 9:  # check for proper length
@@ -545,10 +545,10 @@ class InsteonPLM(HAInterface):
 
         if self.statusRequest:
             insteonCommandCode = 'SD19'
-            
+
             #this is a strange special case...
             #lightStatusRequest returns a standard message and overwrites the cmd1 and cmd2 bytes with "data"
-            #cmd1 (that we use here to sort out what kind of incoming message we got) contains an 
+            #cmd1 (that we use here to sort out what kind of incoming message we got) contains an
             #"ALL-Link Database Delta number that increments every time there is a change in the addressee's ALL-Link Database"
             #which makes is super hard to deal with this response (cause cmd1 can likley change)
             #for now my testing has show that its 0 (at least with my dimmer switch - my guess is cause I haven't linked it with anything)
@@ -578,7 +578,7 @@ class InsteonPLM(HAInterface):
                     self._logger.warning("Unable to find a list of valid response messages for command %s" % originatingCommandId1)
                     continue
 
-                #since there could be multiple insteon messages flying out over the wire, check to see if this one is 
+                #since there could be multiple insteon messages flying out over the wire, check to see if this one is
                 #from the device we sent this command to
                 destDeviceId = None
                 if 'destinationDevice' in commandDetails:
@@ -595,7 +595,7 @@ class InsteonPLM(HAInterface):
                                 # Run the callback
                                 (requestCycleDone, extraReturnData) = self._insteonCommands[insteonCommandCode]['callBack'](responseBytes)
                                 self.statusRequest = False
-                                
+
                                 if extraReturnData:
                                     returnData = dict(list(returnData.items()) + list(extraReturnData.items()))
 
@@ -617,7 +617,7 @@ class InsteonPLM(HAInterface):
             self._logger.warning("Unhandled packet packet (couldn't find any pending command to deal with it)")
             self._logger.warning("This could be a status message from a broadcast")
             # very few things cause this certainly a scene on or off will so that's what we assume
-            
+
             self._handle_StandardDirect_LightStatusResponse(responseBytes)
 
         if waitEvent and foundCommandHash:
@@ -630,15 +630,15 @@ class InsteonPLM(HAInterface):
 
     def _process_InboundExtendedInsteonMessage(self, responseBytes):
         (modemCommand, insteonCommand, fromIdHigh, fromIdMid, fromIdLow, toIdHigh, toIdMid, toIdLow, messageFlags, \
-            command1, command2, d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14) = struct.unpack('BBBBBBBBBBBBBBBBBBBBBBBBB', responseBytes)        
-        
-        print(hex_dump(responseBytes))        
+            command1, command2, d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14) = struct.unpack('BBBBBBBBBBBBBBBBBBBBBBBBB', responseBytes)
+
+        print(hex_dump(responseBytes))
 
         foundCommandHash = None
         waitEvent = None
-        
+
         return
-        
+
         insteonCommandCode = "%02X" % command1
         insteonCommandCode = 'SD' + insteonCommandCode
 
@@ -659,7 +659,7 @@ class InsteonPLM(HAInterface):
                     self._logger.warning("Unable to find a list of valid response messages for command %s" % originatingCommandId1)
                     continue
 
-                #since there could be multiple insteon messages flying out over the wire, check to see if this one is 
+                #since there could be multiple insteon messages flying out over the wire, check to see if this one is
                 #from the device we sent this command to
                 destDeviceId = None
                 if 'destinationDevice' in commandDetails:
@@ -675,7 +675,7 @@ class InsteonPLM(HAInterface):
                             if 'callBack' in self._insteonCommands[insteonCommandCode]:
                                 # Run the callback
                                 (requestCycleDone, extraReturnData) = self._insteonCommands[insteonCommandCode]['callBack'](responseBytes)
-                                
+
                                 if extraReturnData:
                                     returnData = dict(list(returnData.items()) + list(extraReturnData.items()))
 
@@ -701,16 +701,16 @@ class InsteonPLM(HAInterface):
             waitEvent.set()
             del self._pendingCommandDetails[foundCommandHash]
             self._logger.debug("Command %s completed\n" % foundCommandHash)
-    
- 
-    
+
+
+
     def _process_InboundX10Message(self, responseBytes):
         "Receive Handler for X10 Data"
         unitCode = None
         commandCode = None
-        (byteB, byteC) = struct.unpack('xxBB', responseBytes)        
+        (byteB, byteC) = struct.unpack('xxBB', responseBytes)
         self._logger.debug("X10> " + hex_dump(responseBytes, len(responseBytes)))
-        houseCode =     (byteB & 0b11110000) >> 4 
+        houseCode =     (byteB & 0b11110000) >> 4
         houseCodeDec = self._x10HouseCodes.get_key(houseCode)
         self._logger.debug("X10> HouseCode " + houseCodeDec )
         unitCmd = (byteC & 0b10000000) >> 7
@@ -787,7 +787,7 @@ class InsteonPLM(HAInterface):
             else:
                 self._logger.debug("Ignoring command:{0}:{1}:{2}:{3}:..........".format(command1,isGrpCleanupAck, isGrpBroadcast, isGrpCleanupDirect))
         else: # direct command
-            
+
             self._logger.debug("Setting status for:{0}:{1}:{2}..........".format(
                                                                                  str(destDeviceId),
                                                                                  str(command1),
@@ -809,7 +809,7 @@ class InsteonPLM(HAInterface):
                                     self._onCommand(address=destDeviceId, command=State.ON)
                         elif d.state != (State.LEVEL, command2):
                             if command2 < 0x02: #Off -- Doesn't always go to 0
-                                if d.state != State.OFF: 
+                                if d.state != State.OFF:
                                     self._onCommand(address=destDeviceId, command=State.OFF)
                             elif command2 > 0xFD: #On -- Doesn't always go to 255
                                 if d.state != State.ON:
@@ -830,8 +830,8 @@ class InsteonPLM(HAInterface):
                         self._onCommand(address=destDeviceId, command=State.ON)
                     else:
                         self._onCommand(address=destDeviceId, command=(State.LEVEL, int(command2 / 2.54)))
-                
-        self.statusRequest = False            
+
+        self.statusRequest = False
         return (True,None)
         # Old stuff, don't use this at the moment
         #lightLevelRaw = messageBytes[10]
@@ -841,15 +841,15 @@ class InsteonPLM(HAInterface):
         #return (True, {'lightStatus': round(normalizedLightLevel, 2) })
 
 
-   	# _checkCommandQueue is run every iteration of _readInterface. It counts the commands 
+        # _checkCommandQueue is run every iteration of _readInterface. It counts the commands
     # to find repeating ones.  If a command is repeated too many times it means it never
-    # recieved a response so we should delete the original command and delete it from the 
+    # recieved a response so we should delete the original command and delete it from the
     # queue.  This is a hack and will be dealt with properly in the new driver.
     def _checkCommandQueue(self):
         if self._pendingCommandDetails != {}:
             for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
                 self.cmdQueueList.append(commandHash)
-                
+
                 # If we have an orphaned queue it will show up here, get the details, remove the old command
                 # from the queue and re-issue.
                 if self.cmdQueueList.count(commandHash) > 50:
@@ -873,12 +873,12 @@ class InsteonPLM(HAInterface):
         if name[0] == 'l' and len(name) == 3:
             level = name[1:3]
             level = int((int(level) / 100.0) * int(0xFF))
-            return lambda x, y=None: self.level(x, level, timeout=y ) 
+            return lambda x, y=None: self.level(x, level, timeout=y )
 
 
 
     #---------------------------public methods---------------------------------
-    
+
     def getPLMInfo(self, timeout = None):
         commandExecutionDetails = self._sendInterfaceCommand('60')
 
@@ -901,46 +901,46 @@ class InsteonPLM(HAInterface):
 
     def idRequest(self, deviceId, timeout = None):
         if len(deviceId) != 2: #insteon device address
-		commandExecutionDetails = self._sendExtendedP2PInsteonCommand(deviceId, '10', '00', '0')
-		return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-	return
+            commandExecutionDetails = self._sendExtendedP2PInsteonCommand(deviceId, '10', '00', '0')
+            return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
+        return
 
     def getInsteonEngineVersion(self, deviceId, timeout = None):
         if len(deviceId) != 2: #insteon device address
-		commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '0D', '00')
-		return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-	# X10 device,  command not supported,  just return
-	return
+            commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '0D', '00')
+            return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
+        # X10 device,  command not supported,  just return
+        return
 
     def getProductData(self, deviceId, timeout = None):
         if len(deviceId) != 2: #insteon device address
-		commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '03', '00', )
-		return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-	# X10 device,  command not supported,  just return
-	return
+            commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '03', '00', )
+            return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
+        # X10 device,  command not supported,  just return
+        return
 
     def lightStatusRequest(self, deviceId, timeout = None, async = False):
         if len(deviceId) != 2: #insteon device address
-		commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '19', '00')
-		if not async:
-		    return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-		return
-	# X10 device,  command not supported,  just return
-	return
+            commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '19', '00')
+            if not async:
+                return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
+            return
+        # X10 device,  command not supported,  just return
+        return
 
     def relayStatusRequest(self, deviceId, timeout = None):
         if len(deviceId) != 2: #insteon device address
-		commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '19', '01')
-		return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-	# X10 device,  command not supported,  just return
-	return
+            commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '19', '01')
+            return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
+        # X10 device,  command not supported,  just return
+        return
 
     def command(self, device, command, timeout=None):
         command = command.lower()
         if isinstance(device, InsteonDevice):
             commandExecutionDetails = self._sendStandardP2PInsteonCommand(device.deviceId, "%02x" % (HACommand()[command]['primary']['insteon']), "%02x" % (HACommand()[command]['secondary']['insteon']))
             self._logger.debug("InsteonA" + commandExecutionDetails)
-            
+
         elif isinstance(device, X10Device):
             commandExecutionDetails = self._sendStandardP2PX10Command(device.deviceId,"%02x" % (HACommand()[command]['primary']['x10']))
             self._logger.debug("X10A" + commandExecutionDetails)
@@ -969,8 +969,8 @@ class InsteonPLM(HAInterface):
         else: #X10 device address
             commandExecutionDetails = self._sendStandardP2PX10Command(deviceId,'03')
         return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-    
-      
+
+
     # if rate the bits 0-3 is 2 x ramprate +1, bits 4-7 on level + 0x0F
     def level(self, deviceId, level, rate=None, timeout=None):
         if level > 100 or level <0:
@@ -981,7 +981,7 @@ class InsteonPLM(HAInterface):
             return
         else:
             if rate == None:
-                # make it 0 to 255                                                                                     
+            # make it 0 to 255
                 level = int((int(level) / 100.0) * int(0xFF))
                 commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '11', '%02x' % level)
                 return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)
@@ -994,7 +994,7 @@ class InsteonPLM(HAInterface):
                                                                                      ))
                     return
                 else:
-                    lev = int(simpleMap(level, 1, 100, 1, 15))                                                                                     
+                    lev = int(simpleMap(level, 1, 100, 1, 15))
                     levelramp = (int(lev) << 4) + rate
                     commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '2E', '%02x' % levelramp)
                     return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)
@@ -1026,7 +1026,7 @@ class InsteonPLM(HAInterface):
             return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
         # X10 device,  command not supported,  just return
         return
-        
+
     def inactive(self, address, timeout=None):
         if len(address) != 2: #insteon device address
             commandExecutionDetails = self._sendStandardAllLinkInsteonCommand(address, '14', '00')
@@ -1045,7 +1045,7 @@ class InsteonPLM(HAInterface):
         for device in devices:
             for k, v in device.items():
                 print('This is a device member' + str(k))
-        
+
     def version(self):
         self._logger.info("Insteon Pytomation driver version " + self.VERSION)
 
@@ -1071,7 +1071,7 @@ class InsteonPLM(HAInterface):
                 time.sleep(2.0)
 
 
-        
+
 
     def bitstring(self, s):
         return str(s) if s<=1 else self.bitstring(s>>1) + str(s&1)
@@ -1080,7 +1080,7 @@ class InsteonPLM(HAInterface):
         self._logger.debug("Extended Command: %s %s %s %s" % (destinationDevice, commandId1, commandId2, d1_d14))
         self.extendedCommand = True
         return self._sendInterfaceCommand('62', _stringIdToByteIds(destinationDevice) + _buildFlags(self.extendedCommand) + binascii.unhexlify(commandId1) + binascii.unhexlify(commandId2), extraCommandDetails = { 'destinationDevice': destinationDevice, 'commandId1': 'SD' + commandId1, 'commandId2': commandId2})
-    
+
     def _process_InboundAllLinkRecordResponse(self, responseBytes):
         #print hex_dump(responseBytes)
         (modemCommand, insteonCommand, recordFlags, recordGroup, toIdHigh, toIdMid, toIdLow, linkData1, linkData2, linkData3) = struct.unpack('BBBBBBBBBB', responseBytes)
@@ -1097,17 +1097,17 @@ class InsteonPLM(HAInterface):
             for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
                 if commandDetails['modemCommand'] == '\x61':
                     originatingCommandId1 = None
-                
+
                     if 'commandId1' in commandDetails:  #example SD11
                         originatingCommandId1 = commandDetails['commandId1']  # = SD11
 
                     if 'commandId2' in commandDetails:  #example FF
                         originatingCommandId2 = commandDetails['commandId2']
-                
+
                     destDeviceId = None
                     if 'destinationDevice' in commandDetails:
                         destDeviceId = commandDetails['destinationDevice']
-                
+
                     waitEvent = commandDetails['waitEvent']
                     foundCommandHash = commandHash
                     break
@@ -1120,7 +1120,7 @@ class InsteonPLM(HAInterface):
             time.sleep(1.0)  # wait for a bit befor resending the command.
             waitEvent.set()
             del self._pendingCommandDetails[foundCommandHash]
-            
+
         else:
             self._logger.debug("All-Link Cleanup received a NAK...")
 
@@ -1136,18 +1136,18 @@ class InsteonPLM(HAInterface):
         for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
             if commandDetails['modemCommand'] == '\x61':
                 originatingCommandId1 = None
-                
+
                 if 'commandId1' in commandDetails:  #example SD11
                     originatingCommandId1 = commandDetails['commandId1']  # = SD11
 
                 if 'commandId2' in commandDetails:  #example FF
                     originatingCommandId2 = commandDetails['commandId2']
-                
+
                 destDeviceId = _byteIdToStringId(toIdHigh, toIdMid, toIdLow)
                 #destDeviceId = None
                 #if commandDetails.has_key('destinationDevice'):
                 #    destDeviceId = commandDetails['destinationDevice']
-                
+
                 waitEvent = commandDetails['waitEvent']
                 foundCommandHash = commandHash
                 break
@@ -1161,28 +1161,28 @@ class InsteonPLM(HAInterface):
             del self._pendingCommandDetails[foundCommandHash]
             #self._sendStandardAllLinkInsteonCommand(destDeviceId, originatingCommandId1[2:], originatingCommandId2)
             self._sendStandardP2PInsteonCommand(destDeviceId, originatingCommandId1[2:], originatingCommandId2)
-            
-        
-    
+
+
+
     def print_linked_insteon_devices(self):
         print("Device    Group Flags     Data1 Data2 Data3")
         print("------------------------------------------------")
         self.request_first_all_link_record()
         while self.request_next_all_link_record():
             time.sleep(0.1)
-            
+
     def getkeypad(self):
         destinationDevice='12.BD.CA'
         commandId1='2E'
         commandId2='00'
         d1_d14='0000000000000000000000000000'
         self.extendedCommand = True
-        return self._sendInterfaceCommand('62', _stringIdToByteIds(destinationDevice) + '\x1F' + 
-                binascii.unhexlify(commandId1) + binascii.unhexlify(commandId2) + binascii.unhexlify(d1_d14), 
-                extraCommandDetails = { 'destinationDevice': destinationDevice, 'commandId1': 'SD' + commandId1, 
+        return self._sendInterfaceCommand('62', _stringIdToByteIds(destinationDevice) + '\x1F' +
+                binascii.unhexlify(commandId1) + binascii.unhexlify(commandId2) + binascii.unhexlify(d1_d14),
+                extraCommandDetails = { 'destinationDevice': destinationDevice, 'commandId1': 'SD' + commandId1,
                 'commandId2': commandId2})
 
-        
+
     def request_first_all_link_record(self, timeout=None):
         commandExecutionDetails = self._sendInterfaceCommand('69')
         #print "Sending Command 0x69..."
@@ -1193,4 +1193,3 @@ class InsteonPLM(HAInterface):
         commandExecutionDetails = self._sendInterfaceCommand('6A')
         #print "Sending Command 0x6A..."
         return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
-

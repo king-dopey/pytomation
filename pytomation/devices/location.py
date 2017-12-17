@@ -16,7 +16,7 @@ class Location(StateDevice):
         CIVIL = '-6'
         NAUTICAL = '-12'
         ASTRONOMICAL = '-18'
-    
+
     def __init__(self, latitude, longitude, tz='US/Eastern', mode=MODE.STANDARD, is_dst=True, *args, **kwargs):
         super(Location, self).__init__(*args, **kwargs)
         self.obs = ephem.Observer()
@@ -27,7 +27,7 @@ class Location(StateDevice):
 
         self.sun = ephem.Sun(self.obs)
         self._horizon = mode
-        
+
         self._sunset_timer = CronTimer()
         self._sunrise_timer = CronTimer()
         self._local_time = None
@@ -36,20 +36,20 @@ class Location(StateDevice):
     @property
     def mode(self):
         return self._horizon
-    
+
     @mode.setter
     def mode(self, value):
         self._horizon = value
         self._recalc()
-        
-        
+
+
     @property
     def local_time(self):
         if not self._local_time:
             return self.tz.localize(datetime.now(), is_dst=self.is_dst)
         else:
             return self.tz.localize(self._local_time, is_dst=self.is_dst)
-    
+
     @local_time.setter
     def local_time(self, value):
         self._local_time = value
@@ -58,9 +58,9 @@ class Location(StateDevice):
     def _recalc(self):
         self.obs.horizon = self._horizon
 
-#        midnight = self.tz.localize(local_time.replace(hour=12, minute=0, second=0, microsecond=0, tzinfo=None), 
+#        midnight = self.tz.localize(local_time.replace(hour=12, minute=0, second=0, microsecond=0, tzinfo=None),
 #                               is_dst=None)
-#        self.obs.date = midnight.astimezone(pytz.utc) 
+#        self.obs.date = midnight.astimezone(pytz.utc)
 
         self.obs.date = self.local_time.astimezone(pytz.utc)
 
@@ -96,7 +96,7 @@ class Location(StateDevice):
                                                                                                      name=self.name
                                                                                                      ))
 
-                         
+
         # Setup trigger for next transition
         self._sunset_timer.interval(*CronTimer.to_cron(strftime("%H:%M:%S", self.sunset.timetuple())))
         self._sunset_timer.action(self._recalc)
@@ -105,22 +105,22 @@ class Location(StateDevice):
         self._sunrise_timer.interval(*CronTimer.to_cron(strftime("%H:%M:%S", self.sunrise.timetuple())))
         self._sunrise_timer.action(self._recalc)
         self._sunrise_timer.start()
-        
+
 
     @property
     def sunset(self):
         return self._sunset
-    
+
     @sunset.setter
     def sunset(self, value):
         self._sunset = value
         self._recalc()
         return self._sunset
-    
+
     @property
     def sunrise(self):
         return self._sunrise
-    
+
     @sunrise.setter
     def sunrise(self, value):
         self._sunrise = value

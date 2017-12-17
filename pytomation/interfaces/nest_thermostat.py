@@ -23,10 +23,10 @@ from .common import *
 
 class NestThermostat(HAInterface):
     VERSION = '1.0.0'
-    
+
     def __init__(self, *args, **kwargs):
         super(NestThermostat, self).__init__(None, *args, **kwargs)
-        
+
     def _init(self, *args, **kwargs):
         super(NestThermostat, self)._init(*args, **kwargs)
         self._last_temp = None
@@ -35,20 +35,20 @@ class NestThermostat(HAInterface):
         self._fan = None
         self._set_point = None
         self._away = None
-        
+
         self._user_name = kwargs.get('username', None)
         self._password = kwargs.get('password', None)
         self._iteration = 0
         self._poll_secs = kwargs.get('poll', 60)
-        
+
 
         self.interface = Connection(self._user_name, self._password)
         try:
             self.interface.login()
         except Exception as ex:
             self._logger.debug('Could not login: ' + str(ex))
-        
-        
+
+
     def _readInterface(self, lastPacketHash):
         # We need to dial back how often we check the thermostat.. Lets not bombard it!
         if not self._iteration < self._poll_secs:
@@ -70,7 +70,7 @@ class NestThermostat(HAInterface):
         else:
             self._iteration+=1
             time.sleep(1) # one sec iteration
-    
+
     def circulate(self, address, *args, **kwargs):
         self._fan = True
         try:
@@ -81,7 +81,7 @@ class NestThermostat(HAInterface):
     def still(self, address, *args, **kwargs):
         self._fan = False
         self.interface.devices[address].fan_mode = 'auto'
-    
+
     def occupy(self, address, *args, **kwargs):
         self._away = False
         for structure in self.interface.structures:
@@ -102,8 +102,7 @@ class NestThermostat(HAInterface):
                                                                                         address[0],
                                                                                         address[1],
                                                                                         str(ex)))
-        return 
-    
+        return
+
     def version(self):
         self._logger.info("HW Thermostat Pytomation driver version " + self.VERSION + '\n')
-        

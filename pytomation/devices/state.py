@@ -60,7 +60,7 @@ class Attribute(object):
 class Property(object):
     IDLE = 'idle'
     DELAY = 'delay'
-    
+
 class StateDevice(PytomationObject):
     STATES = [State.UNKNOWN, State.ON, State.OFF, State.LEVEL]
     COMMANDS = [Command.ON, Command.OFF, Command.LEVEL, Command.PREVIOUS,
@@ -68,7 +68,7 @@ class StateDevice(PytomationObject):
     DEFAULT_COMMAND = Command.TOGGLE
     DEFAULT_NUMERIC_COMMAND = Command.LEVEL
     _delegates_state_change = []
-    
+
     def __init__(self, *args, **kwargs):
         self._command_lock = _thread.allocate_lock()
         super(StateDevice, self).__init__(*args, **kwargs)
@@ -102,8 +102,8 @@ class StateDevice(PytomationObject):
         self._automatic = True
         self._retrigger_delay = None
 #        self.invert(False)
-        
-        
+
+
     def invert(self, *args, **karwgs):
         if not self._maps.get((Command.ON, None), None):
             if args[0]:
@@ -115,7 +115,7 @@ class StateDevice(PytomationObject):
                 self.mapped(command=Command.OFF, mapped=Command.ON)
             else:
                 self.mapped(command=Command.OFF, mapped=Command.OFF)
-        
+
     @property
     def state(self):
         return self._get_state()
@@ -126,10 +126,10 @@ class StateDevice(PytomationObject):
 
     def _get_state(self):
         return self._state
-    
+
     def set_state(self, value, *args, **kwargs):
         return self._set_state(value, *args, **kwargs)
-    
+
     def _set_state(self, value, *args, **kwargs):
         source = kwargs.get('source', None)
         self._previous_state = self._state
@@ -138,7 +138,7 @@ class StateDevice(PytomationObject):
             self._state = value
             self._delegate_state_change(value, prev=self._state, source=source)
         return self._state
-    
+
     def __getattr__(self, name):
         # Give this object methods for each command supported
         if self._is_valid_command(name):
@@ -170,14 +170,14 @@ class StateDevice(PytomationObject):
                     self._automatic = False
                 elif map_command == Command.AUTOMATIC:
                     self._automatic = True
-                
+
                 if self._is_restricted(map_command, source):
                     state = None
                     map_command = None
-        
+
                 if state and map_command and self._is_valid_state(state):
                     if not self._filter_retrigger_delay(command=map_command, source=source, new_state=state, original_state=self.state, original=command):
-                    
+
                         if source == self or (not self._get_delay(map_command, source, original=command) or not self._automatic):
                             original_state = self.state
                             self._logger.info('{name} changed state from "{original_state}" to "{state}", by command {command} from {source}'.format(
@@ -266,7 +266,7 @@ class StateDevice(PytomationObject):
             state = self._previous_state
         elif command == Command.PREVIOUS:
             state = self._previous_state
-            m_command = self._state_to_command(state, m_command)            
+            m_command = self._state_to_command(state, m_command)
         elif command == Command.TOGGLE:
             state = self.toggle_state()
             m_command = self._state_to_command(state, m_command)
@@ -288,7 +288,7 @@ class StateDevice(PytomationObject):
         else:
             state = State.OFF #default to toggle off, to account for dimmed lights
         return state
-    
+
     def _command_to_state(self, command, state):
         # Try to map the same state ID
         try:
@@ -310,10 +310,10 @@ class StateDevice(PytomationObject):
         except Exception as ex:
             self._logger.debug("{name} Could not find command to state for {command}".format(
                                                                             name=self.name,
-                                                                            command=command,                                                                                                                 
+                                                                            command=command,
                                                                             ))
         return state
-    
+
     def _state_to_command(self, state, command):
         try:
 #            return Command['state']
@@ -338,7 +338,7 @@ class StateDevice(PytomationObject):
                                                                         state=state,
                                                                                                     ))
             return command
-    
+
     def _process_kwargs(self, kwargs):
         # Process each initializing attribute as a method call on this object
         # devices have priority
@@ -374,11 +374,11 @@ class StateDevice(PytomationObject):
                                     except Exception as ex:
                                         attribute(v1)
                             else:
-                                    attribute(v)
+                                attribute(v)
                         else:
                             attribute = v
-                
-            
+
+
     def _process_maps(self, *args, **kwargs):
         source = kwargs.get(Attribute.SOURCE, None)
         command = kwargs.get(Attribute.COMMAND, None)
@@ -400,7 +400,7 @@ class StateDevice(PytomationObject):
                 commands = c
             else:
                 commands = (c, )
-            
+
             # Find specific first
             if command in commands and source in sources:
                 if not timer or not self._automatic:
@@ -433,9 +433,9 @@ class StateDevice(PytomationObject):
                     timer.restart()
                     return None
 
-        
+
         return command
- 
+
     def _is_valid_state(self, state):
         isFound = state in self.STATES
         if not isFound:
@@ -462,12 +462,12 @@ class StateDevice(PytomationObject):
         except: # Just a value
 #            self.state = state
             self.command(self._state_to_command(state, None), source=None)
-        
+
     def time(self, *args, **kwargs):
         # time, command
         times = kwargs.get('time', None)
         command = kwargs.get('command', State.UNKNOWN)
-        
+
         if times:
             if not isinstance( times, tuple) or (isinstance(times, tuple) and isinstance(times[0], int)):
                 times = (times, )
@@ -486,11 +486,11 @@ class StateDevice(PytomationObject):
             self._delegates.append(device)
         else:
             self._delegates.remove(device)
-    
+
     def _delegate_command(self, command, *args, **kwargs):
         source = kwargs.get('source', None)
         original_state = kwargs.get('original_state', None)
-        
+
         for delegate in self._delegates:
 #            print "here {name} s:{source} d:{delegate}".format(
 #                                                               name=self.name,
@@ -549,7 +549,7 @@ class StateDevice(PytomationObject):
 
         if not isinstance(devices, tuple):
             devices = (devices, )
-                   
+
         for device in devices:
             if device:
                 self._add_device(device)
@@ -574,7 +574,7 @@ class StateDevice(PytomationObject):
             return True
         else:
             return False
-    
+
     def mapped(self, *args, **kwargs):
         command = kwargs.get('command', None)
         mapped = kwargs.get('mapped', None)
@@ -594,8 +594,8 @@ class StateDevice(PytomationObject):
             if not isinstance(source, tuple):
                 sources = (source ,)
             for s in sources:
-                self._maps.update({(c, s): (mapped, timer)}) 
-            
+                self._maps.update({(c, s): (mapped, timer)})
+
     def delay(self, *args, **kwargs):
         commands = kwargs.get('command', None)
         if (not isinstance(commands, tuple)):
@@ -605,7 +605,7 @@ class StateDevice(PytomationObject):
         if (not isinstance(sources, tuple)):
             sources = (sources, )
         secs = kwargs.get('secs', None)
-        
+
         for command in commands:
             for source in sources:
                 if not mapped:
@@ -627,15 +627,15 @@ class StateDevice(PytomationObject):
                 return delay
             else:
                 return None
-        
+
         delay = self._delays.get((command, None), None)
         if not delay and original:
             delay = self._delays.get((original, None), None)
         if delay and (delay['secs'] > 0 or include_zero):
             return delay
 
-        return None       
-    
+        return None
+
     def _cancel_delays(self, command, source, original=None, source_property=None):
         if not self._get_delay(command, source, original) and source_property != Property.IDLE:
             for c, timer in self._delay_timers.items():
@@ -684,10 +684,10 @@ class StateDevice(PytomationObject):
             timer.interval = secs
             timer.action(self.command, (mapped, ), source=self, original=source, source_property=Property.IDLE)
 #            self._idle_timer = timer
-            self._idle_timer.update({(command, source): {Attribute.SECS: secs, 
+            self._idle_timer.update({(command, source): {Attribute.SECS: secs,
                                                          Attribute.MAPPED: mapped,
                                                          'timer': timer}})
-            
+
     def _idle_start(self, *args, **kwargs):
         command = kwargs.get('command', None)
         source = kwargs.get('source', None)
@@ -706,8 +706,8 @@ class StateDevice(PytomationObject):
                 timer = idle['timer']
                 timer.action(self.command, (idle[Attribute.MAPPED], ), source=self, original=source, source_property=Property.IDLE)
                 timer.start()
-        
-        
+
+
     def ignore(self, *args, **kwargs):
         commands = kwargs.get('command', None)
         sources = kwargs.get('source', None)
@@ -728,11 +728,11 @@ class StateDevice(PytomationObject):
                                                      }
                                       })
                 self._logger.debug("{name} add ignore for {command} from {source}".format(
-        										name=self.name,
-        										command=command,
-        										source=source.name if source else None,
-        										));
-        
+                                                                                        name=self.name,
+                                                                                        command=command,
+                                                                                        source=source.name if source else None,
+                                                                                        ));
+
     def _is_ignored(self, command, source):
         is_ignored = False
         self._logger.debug("{name} check ignore for {command} from {source}".format(
@@ -741,13 +741,13 @@ class StateDevice(PytomationObject):
                                         source=source.name if source else None,
                                         ));
 
-        
+
         match = self._match_condition(command, source, self._ignores)
         if match:
             return True
         else:
             return False
-        
+
 
     def restriction(self, *args, **kwargs):
         states = kwargs.get(Attribute.STATE, None)
@@ -762,7 +762,7 @@ class StateDevice(PytomationObject):
             sources = (sources, )
         if not isinstance(targets, tuple):
             targets = (targets, )
-        
+
         for state in states:
             for source in sources:
                 for target in targets:
@@ -791,7 +791,7 @@ class StateDevice(PytomationObject):
                         return True
 
         return False
-    
+
     def _match_condition(self, command, source, conditions):
         # Specific match first
         cond = self._match_condition_item(self._get_condition(command, source, conditions))
@@ -806,7 +806,7 @@ class StateDevice(PytomationObject):
         cond = self._match_condition_item(self._get_condition(None, None, conditions))
         if cond:
             return cond
-        
+
     def _get_condition(self, command, source, conditions):
         result = conditions.get((command, source), None)
 
@@ -814,7 +814,7 @@ class StateDevice(PytomationObject):
             if isinstance(command, tuple):
                 result = conditions.get((command[0], source), None)
         return result
-                    
+
     def _match_condition_item(self, item):
         if not item:
             return None
@@ -826,7 +826,7 @@ class StateDevice(PytomationObject):
                 now = datetime.now()
                 result = crontime_in_range(now, start, end)
                 self._logger.debug("Compare times: Now -> {0}  -  Start-> {1}  -  End {2}".format(now,start,end))
-                return result 
+                return result
         return item
 
     def trigger(self, *args, **kwargs):
@@ -836,12 +836,12 @@ class StateDevice(PytomationObject):
         secs = kwargs.get(Attribute.SECS, None)
         start = kwargs.get(Attribute.START, None)
         end = kwargs.get(Attribute.END, None)
-        
+
         if not isinstance(commands, tuple):
             commands = (commands, )
         if not isinstance(sources, tuple):
             sources = (sources, )
-        
+
         for command in commands:
             for source in sources:
                 m = None
@@ -849,12 +849,12 @@ class StateDevice(PytomationObject):
                     m = command
                 else:
                     m = mapped
-                self._triggers.update({(command, source): {Attribute.SECS: secs, 
+                self._triggers.update({(command, source): {Attribute.SECS: secs,
                                                            Attribute.MAPPED: m,
                                                            Attribute.START: CronTimer.to_cron(start),
                                                            Attribute.END: CronTimer.to_cron(end),
                                                            }})
-        
+
 #        timer = CTimer()
 #        timer.interval=secs
 #        timer.action(self.command, (mapped, ), source=self, original=source)
@@ -870,7 +870,7 @@ class StateDevice(PytomationObject):
         if not trigger:
             trigger = self._triggers.get((original_command, None), None)
 ##       trigger = self._match_condition(command, source, self._triggers)
-        
+
         if trigger and self._match_condition_item(trigger):
             timer = self._trigger_timers.get(trigger[Attribute.MAPPED], None)
             if not timer:
@@ -887,15 +887,15 @@ class StateDevice(PytomationObject):
                                                                                       command=command,
                                                                                       mapped=trigger[Attribute.MAPPED],
                                                                                       secs=trigger[Attribute.SECS],
-                                                                                ))  
-            
-        
+                                                                                ))
+
+
 #        for trigger in self._triggers:
 #            if trigger['command'] == command and \
 #            (not trigger['source'] or trigger['source'] == source):
 #                trigger['timer'].action(self.command, (trigger['mapped'], ), source=self, original=source)
 #                trigger['timer'].start()
-                
+
     def _initial_from_devices(self, *args, **kwargs):
         state = None
         if self.state == State.UNKNOWN:
@@ -905,24 +905,24 @@ class StateDevice(PytomationObject):
                 if state:
                     self.initial(device)
                     self._logger.debug("{name} initial for {command} from {state}".format(
-        										name=self.name,
-        										command=command,
-        										state=state,
-        										));
+                                                                                        name=self.name,
+                                                                                        command=command,
+                                                                                        state=state,
+                                                                                        ));
         return
-    
+
     @property
     def last_command(self):
         return self._previous_command
-    
+
     def changes_only(self, value):
         self._changes_only=value
         return self._changes_only
-    
+
     def retrigger_delay(self, *args, **kwargs):
         secs = kwargs.get('secs', None)
         self._retrigger_delay = CTimer()
-        self._retrigger_delay.interval = secs       
+        self._retrigger_delay.interval = secs
 
     def _filter_retrigger_delay(self, *args, **kwargs):
         """
@@ -935,8 +935,8 @@ class StateDevice(PytomationObject):
             return True
         elif new_state != original_state and self._retrigger_delay:
             self._retrigger_delay.restart()
-        return False          
-    
+        return False
+
     def onStateChanged(self, func):
         self._delegates_state_change.append(func)
         return True
@@ -955,7 +955,7 @@ class StateDevice(PytomationObject):
         # force collection
     #    print "\nGARBAGE:"
         gc.collect()
-    
+
     #    print "\nGARBAGE OBJECTS:"
 #        for x in gc.garbage:
 #            s = str(x)

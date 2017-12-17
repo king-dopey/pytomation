@@ -5,17 +5,17 @@ File:
 Description:
 
 
-Author(s): 
+Author(s):
          Pyjamasam@github <>
          Jason Sharpee <jason@sharpee.com>  http://www.sharpee.com
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
 
 
-Example: 
+Example:
 
 Notes:
 
@@ -36,7 +36,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
     "Base protocol interface"
 
     MODEM_PREFIX = '\x02'
-    
+
     def __init__(self, interface, *args, **kwargs):
         kwargs.update({'interface': interface})
         #self._po_common(*args, **kwargs)
@@ -83,7 +83,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 self._writeInterface()
             except Exception as ex:
                 self._logger.error("Problem with interface: " + str(ex))
-                
+
         self._interfaceRunningEvent.clear()
 
     def onCommand(self, callback=None, address=None, device=None):
@@ -100,7 +100,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         # Received command from interface and this will delegate to subscribers
         self._logger.debug("Received Command:" + str(address) + ":" + str(command))
         self._logger.debug('Delegates for Command: ' + str(self._commandDelegates))
-        
+
         addressC = address
         try:
             addressC = addressC.lower()
@@ -114,11 +114,11 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 pass
             if commandDelegate['address'] == None or \
                 addressD == addressC:
-                    commandDelegate['callback'](
-                                                command=command,
-                                                address=address,
-                                                source=self
-                                                )
+                commandDelegate['callback'](
+                                            command=command,
+                                            address=address,
+                                            source=self
+                                            )
         self._logger.debug('Devices for Command: ' + str(self._devices))
         for device in self._devices:
             if device.addressMatches(address):
@@ -145,8 +145,8 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                                        )
                 except Exception as ex:
                     self._logger.debug('Could not set state for device: {device}'.format(device=device.name))
-                    
-                    
+
+
     def _sendInterfaceCommand(self, modemCommand,
                           commandDataString=None,
                           extraCommandDetails=None, modemCommandPrefix=None):
@@ -365,7 +365,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 self._commandLock.release()
             except:
                 self._logger.error("Could not release Lock! " + str(self._commandLock))
-                
+
             if requiresRetry:
                 return self._waitForCommandToFinish(commandExecutionDetails,
                                                     timeout=timeout)
@@ -375,15 +375,15 @@ class HAInterface(AsynchronousInterface, PytomationObject):
     @property
     def name(self):
         return self.name_ex
-    
+
     @name.setter
     def name(self, value):
         self.name_ex = value
         return self.name_ex
-    
+
     def update_status(self):
         for d in self._devices:
             self.status(d.address)
-            
+
     def status(self, address=None):
         return None

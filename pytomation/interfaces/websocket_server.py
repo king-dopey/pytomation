@@ -57,7 +57,7 @@ class PytoWebSocketServer(HAInterface):
         resource['/api/device*'] = self.api_app
         resource['/api/voice'] = self.api_app
         resource['/'] = self.http_file_app
-        if self._ssl_path:            
+        if self._ssl_path:
             self.ws = WebSocketServer(
             (self._address, self._port),
             Resource(resource),
