@@ -398,11 +398,14 @@ function reload_device_grid() {
             var temp = 0;
             var tempTransitionLabel = 'to';
             if (values['type_name'] === 'Thermostat') {
-                $.each(state, function(stateIndex, statePart) {
-                    if (statePart[0] === 'temp') temp = statePart[1] + '°';
-                    if (statePart[0] === 'mode') mode = statePart[1];
-                    if (statePart[0] === 'setpoint') {setpoint = statePart[1]; buttonLabel=setpoint + '°';}
-                }); //each
+                if (state === 'unknown')
+                    buttonLabel = 'N/A';
+                else
+                    $.each(state, function(stateIndex, statePart) {
+                        if (statePart[0] === 'temp') temp = statePart[1] + '°';
+                        if (statePart[0] === 'mode') mode = statePart[1];
+                        if (statePart[0] === 'setpoint') {setpoint = statePart[1]; buttonLabel=setpoint + '°';}
+                    }); //each
             } else {
                 if (name.length > 18) {
                     $.each(name.split(' '), function(nameIndex,namepart) {

@@ -36,3 +36,4 @@ htmlcov
 .idea/*
 .bash_history
 
+/HomeControl/nbproject/private/
