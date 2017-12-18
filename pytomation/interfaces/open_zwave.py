@@ -15,13 +15,16 @@ try:
     from openzwave.option import ZWaveOption
     from openzwave.network import ZWaveNetwork
     #from openzwave.node import ZWaveNode
-    from louie import dispatcher, All
 except:
     print ("Error importing Openzwave and/or Python-Openzwave")
-
+import sys
+if sys.hexversion >= 0x3000000:
+    from pydispatch import dispatcher
+else:
+    from louie import dispatcher
 
 class Open_zwave(HAInterface):
-    VERSION = '0.0.4'
+    VERSION = '0.1.0'
 
     def louie_network_ready(self, network):
         self._logger.info(">>>>>>> Hello from network : I'm ready : %d nodes were found.".format(self._network.nodes_count))
