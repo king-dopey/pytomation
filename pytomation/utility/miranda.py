@@ -18,7 +18,7 @@ try:
     from urllib.error import URLError, HTTPError
     from platform import system as thisSystem
     import xml.dom.minidom as minidom
-    import IN,urllib.request,urllib.parse,urllib.error,urllib.request,urllib.error,urllib.parse
+    import urllib.request,urllib.parse,urllib.error,urllib.request,urllib.error,urllib.parse
     import readline,time
     import pickle
     import struct
@@ -84,6 +84,7 @@ class upnp:
     STARS = '****************************************************************'
     csock = False
     ssock = False
+    SO_BINDTODEVICE = 25
 
     def __init__(self, ip=False, port=False, iface=None, appCommands=[]):
         if appCommands:
@@ -126,8 +127,8 @@ class upnp:
             #Only bind to this interface
             if self.IFACE != None:
                 print('\nBinding to interface',self.IFACE,'...\n')
-                self.ssock.setsockopt(SOL_SOCKET,IN.SO_BINDTODEVICE,struct.pack("%ds" % (len(self.IFACE)+1,), self.IFACE))
-                self.csock.setsockopt(SOL_SOCKET,IN.SO_BINDTODEVICE,struct.pack("%ds" % (len(self.IFACE)+1,), self.IFACE))
+                self.ssock.setsockopt(SOL_SOCKET,self.SO_BINDTODEVICE,struct.pack("%ds" % (len(self.IFACE)+1,), self.IFACE))
+                self.csock.setsockopt(SOL_SOCKET,self.SO_BINDTODEVICE,struct.pack("%ds" % (len(self.IFACE)+1,), self.IFACE))
 
             try:
                 self.ssock.bind(('',self.port))
