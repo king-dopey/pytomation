@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os
-from pytomation.common import config, pytomation_system
+from pytomation.common import config, pytomation_system, User
 
 INSTANCES_DIR = './instances'
 
@@ -27,15 +27,15 @@ if __name__ == "__main__":
         except AttributeError as ex:
             loop_action=None
 
+        #Create admin user
+        User(username=config.admin_user,password=config.admin_password, is_admin=True)
+
         pytomation_system.start(
             loop_action=loop_action,
             loop_time=config.loop_time, # Loop every 1 sec
             admin_user=config.admin_user,
             admin_password=config.admin_password,
-            telnet_port=config.telnet_port,
-            http_address=config.http_address,
-            http_port=config.http_port,
-            http_path=config.http_path,
+            telnet_port=config.telnet_port
         )
     else:
         print("No Scripts found. Exiting")

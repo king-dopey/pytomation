@@ -247,8 +247,11 @@ function setup_ws_connection() {
         }
         ws.onmessage = function(e) {
             data = e.data;
-            data = $.parseJSON(data);
-            if (data !== 'success') { //just an ack from command
+            if (data === 'Unauthorized') {
+                ws.send("Basic " + btoa(userName + ":" + password));
+            }
+            else if (data !== 'success') { //just an ack from command
+                data = $.parseJSON(data);
                 if(typeof data.previous_state === "undefined"){
                     //this isn't a device state update, so it's a device list update
                     get_device_data_callback(data);
@@ -336,7 +339,7 @@ function get_device_data_ajax() {
             context: document.body,
             type: 'GET',
             error: function(jqXHR, status, errorThrown){
-                if (currentServer !== serverName2) {
+                if (currentServer !== serverName2 && serverName2 !== '') {
                     currentServer = serverName2;
                     get_device_data_ajax();
                 } else {
