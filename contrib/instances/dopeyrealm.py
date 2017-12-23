@@ -1,5 +1,4 @@
 # import the standard python modules "select" and "time"
-import select
 import time
 
 # Import all the Pytomation interfaces we are going to use.
@@ -10,6 +9,8 @@ from pytomation.interfaces import InsteonHub, HTTP, VenstarThermostat, Command, 
 
 # Import all the Pytomation Devices we will use.
 from pytomation.devices import Attribute, Light, Location, Thermostat, Room, Door, Lock, Scene
+
+from pytomation.common import User
 
 #Web Server
 websocket = PytoWebSocketServer()
@@ -110,6 +111,16 @@ r_master_bedroom = Room(name='Master Bedroom', ignore={Attribute.COMMAND: Comman
 #r_house = Room(name='House', devices=(r_kitchen, r_bathroom, r_foyer, r_hallway, r_master_bathroom, r_master_bedroom))
 #r_outside = Room(name='Outside', devices=(r_backporch, r_frontporch))
 
+#Users
+u_david = User(username='David', password='ASecretPass', accessible_devices = [
+    hall_thermostat,
+    d_front_door,
+    l_backporch,l_frontporch,
+    l_kitchen_recessed,l_kitchen_back,l_kitchen_faucet,
+    l_bathroom,f_bathroom,
+    l_foyer,
+    l_hallway,
+    l_master_bathroom,l_master_faucet])
 
 def MainLoop(startup=False, *args, **kwargs):
     def kitchen_back_onStateChanged(state, source, prev, device):
