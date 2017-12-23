@@ -677,13 +677,13 @@ function doVoice(event, data) {
         };
         recognizer.start();
     } else {
-        window.plugins.speechrecognizer.startRecognize(function(result){
+        window.plugins.speechRecognition.startListening(function(result){
             send_voice_command(result);
             data.iscrollview.refresh();
         }, function(errorMessage){
             alert("Error message: " + errorMessage);
             data.iscrollview.refresh();
-        }, maxMatches, 'Speak now');
+        });
     }
 };
 
