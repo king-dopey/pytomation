@@ -1,13 +1,12 @@
 import http.server
-import base64
-import threading
 from socketserver import ThreadingMixIn
 from http.server import SimpleHTTPRequestHandler
 from pytomation.common import config
 #import pytomation.common.config
 from pytomation.common.pyto_logging import PytoLogging
 from pytomation.common.pytomation_api import PytomationAPI
-from .ha_interface import HAInterface
+from pytomation.interfaces import HAInterface
+from pytomation.common import PytomationObject
 
 file_path = "/tmp"
 
@@ -20,6 +19,7 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         self._logger = PytoLogging(self.__class__.__name__)
         self._api = PytomationAPI()
         self._server = server
+        self.user = {}
 
         SimpleHTTPRequestHandler.__init__(self, req, client_addr, server)
 
@@ -51,23 +51,25 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, ON, OFF, DELETE, PUT, HEAD')
 
     def do_GET(self):
-        auth_credentials = base64.b64encode(config.admin_user + ":" + config.admin_password)
-
-        if config.auth_enabled == 'Y' and self.headers.getheader('Authorization') == None:
-            self.do_AUTHHEAD()
-            self.wfile.write('no auth header received')
-            return
-        elif config.auth_enabled != 'Y' or self.headers.getheader('Authorization') == 'Basic ' + auth_credentials:
-#            self.do_HEAD()
-#            self.wfile.write(self.headers.getheader('Authorization'))
-#            self.wfile.write('authenticated!')
-            pass
-        else:
-            self.do_AUTHHEAD()
-            self.wfile.write(self.headers.getheader('Authorization'))
-            self.wfile.write('Not authenticated')
-            self.wfile.write('<br />AuthConfig :' + config.auth_enabled)
-            return
+        auth = None
+        for header in self.headers._headers:
+            if header[0] == 'Authorization':
+                auth = header[1]
+        if config.auth_enabled == 'Y':
+            if auth == None:
+                self.do_AUTHHEAD()
+                self.wfile.write('no auth header received'.encode())
+                return
+            else:
+                #Search for user and exit if found
+                if not auth in PytomationObject.users:
+                    self.do_AUTHHEAD()
+                    self.wfile.write(auth.encode())
+                    self.wfile.write('Not authenticated'.encode())
+                    self.wfile.write(('<br />AuthConfig :' + config.auth_enabled).encode())
+                    return
+                else:
+                    self.user = PytomationObject.users[auth]            
         self.route()
 
     def do_POST(self):
@@ -96,7 +98,7 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
                 data = self.rfile.read(length)
 #                print 'rrrrr' + str(length) + ":" + str(data) + 'fffff' + str(self._server)
                 self.rfile.close()
-            response = self._api.get_response(method=method, path="/".join(p[2:]), type=None, data=data, source=PytoHandlerClass.server)
+            response = self._api.get_response(method=method, path="/".join(p[2:]), type=None, data=data, source=PytoHandlerClass.server, user=self.user)
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             if config.auth_enabled == 'Y':
@@ -107,7 +109,7 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
             self.send_header("Content-length", len(response))
             self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(response)
+            self.wfile.write(response.encode())
             self.finish()
         else:
             getattr(SimpleHTTPRequestHandler, "do_" + self.command.upper())(self)
