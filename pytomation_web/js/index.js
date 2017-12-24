@@ -274,6 +274,7 @@ function setup_ws_connection() {
             wsAttempts = 0;
             if (wsRetrying) {
                 wsRetrying = false;
+                ws.send("Basic " + btoa(userName + ":" + password));
                 ws.send(JSON.stringify({
                     path: "devices"
                 }));
@@ -677,12 +678,40 @@ function doVoice(event, data) {
         };
         recognizer.start();
     } else {
+        // Verify if recognition is available
+        window.plugins.speechRecognition.isRecognitionAvailable(function(available){
+            if(!available){
+                console.log("Sorry, not available");
+            }
+
+            // Check if has permission to use the microphone
+            window.plugins.speechRecognition.hasPermission(function (isGranted){
+                if(isGranted){
+                    startRecognition();
+                }else{
+                    // Request the permission
+                    window.plugins.speechRecognition.requestPermission(function (){
+                        // Request accepted, start recognition
+                        startRecognition();
+                    }, function (err){
+                        console.log(err);
+                    });
+                }
+            }, function(err){
+                console.log(err);
+            });
+        }, function(err){
+            console.log(err);
+        });
         window.plugins.speechRecognition.startListening(function(result){
             send_voice_command(result);
             data.iscrollview.refresh();
         }, function(errorMessage){
             alert("Error message: " + errorMessage);
             data.iscrollview.refresh();
+        }, {
+            language: "en-US",
+            showPopup: true
         });
     }
 };

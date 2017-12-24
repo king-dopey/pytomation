@@ -49,7 +49,7 @@ class PytomationAPI(PytomationObject):
                                         device_command = device_command + ',' + numeric_command
                                 except:
                                     pass
-                                return self.update_device(levels, 'command=' + device_command, source)
+                                return self.update_device(levels, 'command=' + device_command, source, user=user)
                             else:
                                 return 'access denied'
                     try:
@@ -57,17 +57,17 @@ class PytomationAPI(PytomationObject):
                         if numeric_command:
                             device_command = device.DEFAULT_NUMERIC_COMMAND + ',' + numeric_command
                             if self.has_security(user,dev_id):
-                                return self.update_device(levels, 'command=' + device_command, source)
+                                return self.update_device(levels, 'command=' + device_command, source, user=user)
                             else:
                                 return 'access denied'
                         else:
                             if self.has_security(user,dev_id):
-                                return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source)
+                                return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source, user=user)
                             else:
                                 return 'access denied'
                     except:
                         if self.has_security(user,dev_id):
-                            return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source)
+                            return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source, user=user)
                         else:
                             return 'access denied'
         #Maybe we should ask the internet from here?
@@ -117,7 +117,7 @@ class PytomationAPI(PytomationObject):
         elif levels[0].lower() == 'device':
             try:
                 if self.has_security(user,levels[1]):
-                    response = self.update_device(command=method, levels=levels, source=source)
+                    response = self.update_device(command=method, levels=levels, source=source, user=user)
                 else:
                     return 'access denied'
             except Exception as ex:
@@ -141,7 +141,7 @@ class PytomationAPI(PytomationObject):
                 'previous_state': prev
             })
         else:
-            return None
+            return "access denied"
 
     @staticmethod
     def get_devices(path=None, user=None, *args, **kwargs):
