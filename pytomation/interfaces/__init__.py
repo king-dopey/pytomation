@@ -15,8 +15,7 @@ try:
 except:
     print("Could not import State Interface Library")
 try:
-    pass
-    #from .http_server import *
+    from .http_server import *
 except:
     print("Could not import HTTP Server Library")
 try:

@@ -19,7 +19,6 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         self._logger = PytoLogging(self.__class__.__name__)
         self._api = PytomationAPI()
         self._server = server
-        self.user = {}
 
         SimpleHTTPRequestHandler.__init__(self, req, client_addr, server)
 
@@ -27,6 +26,21 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         global file_path
         path = file_path + path
         return path
+    
+    def authenticate(self):
+        auth = self.headers.get('Authorization')
+        if config.auth_enabled == 'Y' and auth == None:
+            self.do_AUTHHEAD()
+            self.wfile.write('no auth header received')
+            return None
+        elif config.auth_enabled != 'Y' or auth in PytomationObject.users:
+            return PytomationObject.users[auth]
+        else:
+            self.do_AUTHHEAD()
+            self.wfile.write(self.headers.getheader('Authorization'))
+            self.wfile.write('Not authenticated')
+            self.wfile.write('<br />AuthConfig :' + config.auth_enabled)
+            return None
 
     def do_HEAD(self):
         print("send header")
@@ -37,7 +51,7 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
     def do_AUTHHEAD(self):
         print("send header")
         self.send_response(401)
-        self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
+        self.send_header('WWW-Authenticate', 'Basic realm=\"Pytomation\"')
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
@@ -51,25 +65,6 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, ON, OFF, DELETE, PUT, HEAD')
 
     def do_GET(self):
-        auth = None
-        for header in self.headers._headers:
-            if header[0] == 'Authorization':
-                auth = header[1]
-        if config.auth_enabled == 'Y':
-            if auth == None:
-                self.do_AUTHHEAD()
-                self.wfile.write('no auth header received'.encode())
-                return
-            else:
-                #Search for user and exit if found
-                if not auth in PytomationObject.users:
-                    self.do_AUTHHEAD()
-                    self.wfile.write(auth.encode())
-                    self.wfile.write('Not authenticated'.encode())
-                    self.wfile.write(('<br />AuthConfig :' + config.auth_enabled).encode())
-                    return
-                else:
-                    self.user = PytomationObject.users[auth]            
         self.route()
 
     def do_POST(self):
@@ -88,17 +83,18 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         self.route()
 
     def route(self):
+        user = self.authenticate()
+        if not user or self.path == '/api/bridge':
+            return
         p = self.path.split('/')
         method = self.command
-#        print "pd:" + self.path + ":" + str(p[1:])
         if p[1].lower() == "api":
             data = None
             if method.lower() == 'post':
-                length = int(self.headers.getheader('content-length'))
+                length = int(self.headers.get('content-length'))
                 data = self.rfile.read(length)
-#                print 'rrrrr' + str(length) + ":" + str(data) + 'fffff' + str(self._server)
                 self.rfile.close()
-            response = self._api.get_response(method=method, path="/".join(p[2:]), type=None, data=data, source=PytoHandlerClass.server, user=self.user)
+            response = self._api.get_response(method=method, path="/".join(p[2:]), type=None, data=data, source=PytoHandlerClass.server, user=user)
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             if config.auth_enabled == 'Y':
@@ -110,7 +106,6 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(response.encode())
-            self.finish()
         else:
             getattr(SimpleHTTPRequestHandler, "do_" + self.command.upper())(self)
 
@@ -121,6 +116,12 @@ class ThreadedHTTPServer(ThreadingMixIn, http.server.HTTPServer):
 
 class HTTPServer(HAInterface):
     def __init__(self, address=None, port=None, path=None, *args, **kwargs):
+        if not address:
+            address = config.http_address
+        if not port:
+            port = config.http_port
+        if not path:
+            path = config.http_path
         super(HTTPServer, self).__init__(address, *args, **kwargs)
         self._handler_instances = []
         self.unrestricted = True # To override light object restrictions
