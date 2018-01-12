@@ -22,14 +22,25 @@ System Versions and changes:
 """
 import os
 import sys
+import socket
+import fcntl
+import struct
 
+#Finds the IP address, by the interface name
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15].encode())
+    )[20:24])
 #
 #********************* SYSYTEM CONFIGURATION ONLY ********************
 #
 auth_enabled = 'Y'
-admin_user = 'pyto'
-admin_password = 'mation'
-http_address = "0.0.0.0"
+#admin_user = 'pyto'
+#admin_password = 'mation'
+http_address = get_ip_address('eth0')
 http_port = 8080
 http_path = "./pytomation_web"
 #ssl_path = "./ssl"
