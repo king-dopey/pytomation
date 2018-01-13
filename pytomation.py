@@ -28,7 +28,8 @@ if __name__ == "__main__":
             loop_action=None
 
         #Create admin user
-        User(username=config.admin_user,password=config.admin_password, is_admin=True)
+        if config.admin_user and config.admin_password:
+            User(username=config.admin_user,password=config.admin_password, is_admin=True)
 
         pytomation_system.start(
             loop_action=loop_action,
