@@ -9,6 +9,13 @@ ADD . /home/pytomation
 RUN chown -R pyto /home/pytomation
 RUN mv /home/pytomation/pytomation/common/config_docker_default.py /home/pytomation/pytomation/common/config.py 
 
+#Install system dependancies
+RUN apt-get update
+RUN apt-get -y install apt-utils 
+RUN dpkg --configure -a
+RUN apt-get upgrade -y
+RUN apt-get -y install libudev-dev
+
 #Install requirements
 RUN pip3 install --trusted-host pypi.python.org -r requirements.txt
 
