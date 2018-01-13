@@ -1,13 +1,12 @@
 import time
 from .pytomation_object import PytomationObject
 from pytomation.utility import PeriodicTimer
-from . import config
 #from ..utility.manhole import Manhole
 
 def get_instances():
     return PytomationObject.instances
 
-def get_instances_detail(user=config.admin_user):
+def get_instances_detail(user):
     details = {}
     sysDevices = {}
     if user.is_admin:
@@ -32,7 +31,7 @@ def get_instances_detail(user=config.admin_user):
 
     return details
 
-def get_instance_detail(object_id,user=config.admin_user):
+def get_instance_detail(object_id,user):
     pyObject = []
     if user.is_admin:
         pyObject = PytomationObject.instances[object_id]
