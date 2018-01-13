@@ -38,8 +38,8 @@ def get_ip_address(ifname):
 #********************* SYSYTEM CONFIGURATION ONLY ********************
 #
 auth_enabled = 'Y'
-#admin_user = 'pyto'
-#admin_password = 'mation'
+admin_user = None
+admin_password = None
 http_address = get_ip_address('eth0')
 http_port = 8080
 http_path = "./pytomation_web"

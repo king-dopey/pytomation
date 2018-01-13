@@ -23,4 +23,4 @@ RUN pip3 install --trusted-host pypi.python.org -r requirements.txt
 EXPOSE 8080
 
 #Run Pytomation
-CMD ["su", "-", "pyto", "-c", "python3", "/home/pytomation/pytomation.py"]
+CMD ["su", "-", "pyto", "-c", "python3 /home/pytomation/pytomation.py"]
