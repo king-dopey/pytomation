@@ -13,6 +13,8 @@ if [ "x$1" == "x" ]; then
     echo "You are using the default install location..."
     echo "You can change this by running install.sh with an path..."
     echo "Example:  install.sh /usr/local/lib/pytomation"
+else
+	PYHOME=$1
 fi
 
 echo -n "Install location is -> $PYHOME [Y/n] ?"
