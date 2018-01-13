@@ -9,7 +9,7 @@ ADD . /home/pytomation
 RUN chown -R pyto /home/pytomation
 RUN mv /home/pytomation/pytomation/common/config_docker_default.py /home/pytomation/pytomation/common/config.py 
 
-#Install system dependancies
+#Install system dependencies
 RUN apt-get update
 RUN apt-get -y install apt-utils 
 RUN dpkg --configure -a
