@@ -18,6 +18,20 @@
 # under the License.
 #
 -->
-# Cordova Hooks
 
-Cordova Hooks represent special scripts which could be added by application and plugin developers or even by your own build system  to customize cordova commands. See Hooks Guide for more details:  http://cordova.apache.org/docs/en/edge/guide_appdev_hooks_index.md.html#Hooks%20Guide.
+# Contributing to Apache Cordova
+
+Anyone can contribute to Cordova. And we need your contributions.
+
+There are multiple ways to contribute: report bugs, improve the docs, and
+contribute code.
+
+For instructions on this, start with the
+[contribution overview](http://cordova.apache.org/contribute/).
+
+The details are explained there, but the important items are:
+ - Sign and submit an Apache ICLA (Contributor License Agreement).
+ - Have a Jira issue open that corresponds to your contribution.
+ - Run the tests so your patch doesn't break existing functionality.
+
+We look forward to your contributions!

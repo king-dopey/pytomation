@@ -1,0 +1,29 @@
+{
+  "name": "com.pytomation.homecontrol",
+  "displayName": "Home Control",
+  "version": "1.0.0",
+  "description": "A sample Apache Cordova application that responds to the deviceready event.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Apache Cordova Team",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "com.manueldeveloper.speech-recognizer": "~0.0.2",
+    "cordova-android": "^7.0.0",
+    "cordova-plugin-speechrecognition": "^1.2.0",
+    "cordova-plugin-whitelist": "^1.3.3",
+    "speechrecognizer": "0.0.2"
+  },
+  "cordova": {
+    "plugins": {
+      "com.manueldeveloper.speech-recognizer": {},
+      "cordova-plugin-speechrecognition": {},
+      "cordova-plugin-whitelist": {}
+    },
+    "platforms": [
+      "android"
+    ]
+  }
+}

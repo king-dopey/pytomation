@@ -11,22 +11,32 @@ import base64
 import collections
 
 from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
-
-from .ha_interface import HAInterface
-from pytomation.common.pytomation_api import PytomationAPI
-from pytomation.common import config
-from pytomation.devices import StateDevice
-
+try:
+    from .ha_interface import HAInterface
+    from ..common.pytomation_api import PytomationAPI
+    from ..common import config
+    from ..devices import StateDevice
+    from ..common.pytomation_object import PytomationObject
+except Exception as ex:
+    print(ex)
 
 class PytoWebSocketApp(WebSocketApplication):
     _api = PytomationAPI()
 
     def on_open(self):
+        if not self.ws.environ['user']:
+            self.ws.send("Unauthorized")
         print("WebSocket Client connected")
 
     def on_message(self, message):
         if message:
-            self.ws.send(self._api.get_response(data=message, type=self._api.WEBSOCKET).encode('UTF-8'))
+            if not self.ws.environ['user']:
+                if message in PytomationObject.users:
+                    self.ws.environ['user'] = PytomationObject.users[message]
+                else:
+                    self.ws.send("Unauthorized")
+            else:
+                self.ws.send(self._api.get_response(data=message, type=self._api.WEBSOCKET, user=self.ws.environ['user']).encode('UTF-8'))
 
     def on_close(self, reason):
         print("WebSocket Client disconnected: ")
@@ -80,7 +90,7 @@ class PytoWebSocketServer(HAInterface):
             data = None
         start_response("200 OK", [("Content-Type", "text/html"), ('Access-Control-Allow-Origin', '*')])
         return [self._api.get_response(path='/'.join(environ['PATH_INFO'].split('/')[2:]), source=PytoWebSocketServer,
-                                      method=method, data=data).encode('UTF-8')]
+                                      method=method, data=data, user=environ['user']).encode('UTF-8')]
 
     def http_file_app(self, environ, start_response):
         path_info = environ['PATH_INFO']
@@ -114,8 +124,9 @@ class PytoWebSocketServer(HAInterface):
         # TODO: add queue system and separate thread to avoid blocking on long network operations
         if self.ws:
             for client in list(self.ws.clients.values()):
-                message = self._api.get_state_changed_message(state, source, prev, device)
-                client.ws.send(message)
+                message = self._api.get_state_changed_message(state, source, prev, device, client.ws.environ['user'])
+                if message:
+                    client.ws.send(message)
 
 
 def auth_hook(web_socket_handler):
@@ -127,10 +138,14 @@ def auth_hook(web_socket_handler):
                                                   [("Access-Control-Allow-Headers", "Authorization"),
                                                    ('Access-Control-Allow-Origin', '*')])
             else:
+                web_socket_handler.environ['user'] = None
                 web_socket_handler.start_response("401 Unauthorized", [('WWW-Authenticate', 'Basic realm=\"Pytomation\"'), ('Access-Control-Allow-Origin', '*')])
-        elif auth != 'Basic ' + base64.urlsafe_b64encode((config.admin_user + ":" + config.admin_password).encode('UTF-8')).decode('ascii'):
-            web_socket_handler.start_response("401 Unauthorized", [('WWW-Authenticate', 'Basic realm=\"Pytomation\"'), ('Access-Control-Allow-Origin', '*')])
         else:
-            return False
+            if not auth in PytomationObject.users:
+                web_socket_handler.start_response("401 Unauthorized", [('WWW-Authenticate', 'Basic realm=\"Pytomation\"'), ('Access-Control-Allow-Origin', '*')])
+            else:
+                web_socket_handler.environ['user'] = PytomationObject.users[auth]
+                return False
     else:
+        web_socket_handler.environ['user'] = list(PytomationObject.users.items())[0][1]
         return False

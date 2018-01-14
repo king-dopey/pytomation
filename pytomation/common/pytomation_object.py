@@ -2,6 +2,7 @@ from .pyto_logging import PytoLogging
 
 class PytomationObject(object):
     """ Common PytomationObject """
+    users = {}
     instances = {}
     name_to_id_map = {}
     sorted_names_by_length =[]
@@ -11,9 +12,9 @@ class PytomationObject(object):
         self._po_common(*args, **kwargs)
 
     def _po_common(self, *args, **kwargs):
-
-        self._logger = PytoLogging(self.__class__.__name__)
-        self._type_id = str(self.__class__.__name__) + str(len(self.instances))
+        class_name = self.__class__.__name__
+        self._type_id = str(class_name) + str(len(self.instances))
+        self._logger = PytoLogging(class_name)
         self.instances[self._type_id] = self
         self._name = kwargs.get('name', self._type_id)
         self.name_to_id_map[self._name.lower()] = self.type_id

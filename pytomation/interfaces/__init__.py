@@ -13,7 +13,7 @@ except:
 try:
     from .state_interface import *
 except:
-    print("Could not import State Inerface Library")
+    print("Could not import State Interface Library")
 try:
     from .http_server import *
 except:

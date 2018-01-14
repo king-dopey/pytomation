@@ -247,8 +247,11 @@ function setup_ws_connection() {
         }
         ws.onmessage = function(e) {
             data = e.data;
-            data = $.parseJSON(data);
-            if (data !== 'success') { //just an ack from command
+            if (data === 'Unauthorized') {
+                ws.send("Basic " + btoa(userName + ":" + password));
+            }
+            else if (data !== 'success') { //just an ack from command
+                data = $.parseJSON(data);
                 if(typeof data.previous_state === "undefined"){
                     //this isn't a device state update, so it's a device list update
                     get_device_data_callback(data);
@@ -271,6 +274,7 @@ function setup_ws_connection() {
             wsAttempts = 0;
             if (wsRetrying) {
                 wsRetrying = false;
+                ws.send("Basic " + btoa(userName + ":" + password));
                 ws.send(JSON.stringify({
                     path: "devices"
                 }));
@@ -336,7 +340,7 @@ function get_device_data_ajax() {
             context: document.body,
             type: 'GET',
             error: function(jqXHR, status, errorThrown){
-                if (currentServer !== serverName2) {
+                if (currentServer !== serverName2 && serverName2 !== '') {
                     currentServer = serverName2;
                     get_device_data_ajax();
                 } else {
@@ -674,13 +678,41 @@ function doVoice(event, data) {
         };
         recognizer.start();
     } else {
-        window.plugins.speechrecognizer.startRecognize(function(result){
+        // Verify if recognition is available
+        window.plugins.speechRecognition.isRecognitionAvailable(function(available){
+            if(!available){
+                console.log("Sorry, not available");
+            }
+
+            // Check if has permission to use the microphone
+            window.plugins.speechRecognition.hasPermission(function (isGranted){
+                if(isGranted){
+                    startRecognition();
+                }else{
+                    // Request the permission
+                    window.plugins.speechRecognition.requestPermission(function (){
+                        // Request accepted, start recognition
+                        startRecognition();
+                    }, function (err){
+                        console.log(err);
+                    });
+                }
+            }, function(err){
+                console.log(err);
+            });
+        }, function(err){
+            console.log(err);
+        });
+        window.plugins.speechRecognition.startListening(function(result){
             send_voice_command(result);
             data.iscrollview.refresh();
         }, function(errorMessage){
             alert("Error message: " + errorMessage);
             data.iscrollview.refresh();
-        }, maxMatches, 'Speak now');
+        }, {
+            language: "en-US",
+            showPopup: true
+        });
     }
 };
 
