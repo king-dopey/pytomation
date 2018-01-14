@@ -13,7 +13,12 @@ class PytomationObject(object):
 
     def _po_common(self, *args, **kwargs):
         class_name = self.__class__.__name__
-        self._type_id = str(class_name) + str(len(self.instances))
+        self._type_id = kwargs.get('type_id', str(class_name) + str(len(self.instances)))
+        #Ensure this id isn't already in use
+        i = 1
+        while self._type_id in self.instances:
+            self._type_id = str(class_name) + str(len(self.instances)+i)
+        
         self._logger = PytoLogging(class_name)
         self.instances[self._type_id] = self
         self._name = kwargs.get('name', self._type_id)

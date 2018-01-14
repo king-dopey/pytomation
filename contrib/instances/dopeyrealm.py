@@ -46,9 +46,9 @@ l_office = Light(address='5',devices=ozw,name='Office Light')
 
 l_livingroom = Light(address="7",devices=ozw,name="Living Room Light")
 
-l_backporch = Light(address='2A7438',
+l_backporch = Light(address='254458',
                     devices=(insteon, ph_calculated),
-                    name="Back Porch Light")
+                    name="Back Porch Light", type_id='test1')
 
 l_frontporch = Light(address='2A5658',
                      devices=(insteon, ph_calculated),
