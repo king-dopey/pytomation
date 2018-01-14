@@ -19,7 +19,10 @@ def get_instances_detail(user):
                          'type_name': pyObject.type_name,
                          }
         try:
-            object_detail.update({'commands': pyObject.COMMANDS})
+            if user.is_admin:
+                object_detail.update({'commands': pyObject.COMMANDS})
+            else:
+                object_detail.update({'commands': user.accessible_commands[pyObject.type_id]})
             object_detail.update({'state': pyObject.state})
             object_detail.update({'devices': pyObject.device_list()})
         except Exception as ex:
@@ -36,14 +39,17 @@ def get_instance_detail(object_id,user):
     if user.is_admin:
         pyObject = PytomationObject.instances[object_id]
     else:
-        pyObject = PytomationObject.users[object_id]
+        pyObject = user.accessible_devices[object_id]
     
     object_detail = {'instance': pyObject,
                      'name': pyObject.name,
                      'type_name': pyObject.type_name,
                      }
     try:
-        object_detail.update({'commands': pyObject.COMMANDS})
+        if user.is_admin:
+            object_detail.update({'commands': pyObject.COMMANDS})
+        else:
+            object_detail.update({'commands': user.accessible_commands[object_id]})
         object_detail.update({'state': pyObject.state})
         object_detail.update({'devices': pyObject.device_list()})
     except Exception as ex:
