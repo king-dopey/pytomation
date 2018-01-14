@@ -31,15 +31,15 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         auth = self.headers.get('Authorization')
         if config.auth_enabled == 'Y' and auth == None:
             self.do_AUTHHEAD()
-            self.wfile.write('no auth header received')
+            self.wfile.write('no auth header received'.encode())
             return None
         elif config.auth_enabled != 'Y' or auth in PytomationObject.users:
             return PytomationObject.users[auth]
         else:
             self.do_AUTHHEAD()
             self.wfile.write(self.headers.getheader('Authorization'))
-            self.wfile.write('Not authenticated')
-            self.wfile.write('<br />AuthConfig :' + config.auth_enabled)
+            self.wfile.write('Not authenticated'.encode())
+            self.wfile.write(('<br />AuthConfig :' + config.auth_enabled).encode())
             return None
 
     def do_HEAD(self):
