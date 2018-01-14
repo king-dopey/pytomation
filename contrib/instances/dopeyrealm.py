@@ -117,7 +117,7 @@ u_david = User(username='David', password='ASecretPass', accessible_devices = [
     d_front_door,
     l_backporch,l_frontporch,
     l_kitchen_recessed,l_kitchen_back,l_kitchen_faucet,
-    l_bathroom,f_bathroom,
+    f_bathroom,(l_bathroom, [Command.OFF, Command.ON]), #Restricting bathroom light commands to only on and off, for this user only (note: disables toggle)
     l_foyer,
     l_hallway,
     l_master_bathroom,l_master_faucet])

@@ -21,11 +21,14 @@ class PytomationAPI(PytomationObject):
         }
     
     @staticmethod
-    def has_security(user, device):
+    def has_security(user, device, command=None):
         if user.is_admin:
             return True
         elif device in user.accessible_devices:
-            return True
+            if command == None:
+                return True
+            elif command in user.accessible_commands[device]:
+                return True
         return False
 
     def run_voice_command(self, levels, data, source, user):
@@ -214,10 +217,13 @@ class PytomationAPI(PytomationObject):
                 l.append(t)
             command = tuple(l)
         try:
-            detail = pytomation_system.get_instances_detail(user)[dev_id]
-            device = detail['instance']
-            device.command(command=command, source=source)
-            response = PytomationAPI.get_device(levels, user)
+            if user.is_admin or PytomationAPI.has_security(user,dev_id,command):
+                detail = pytomation_system.get_instance_detail(dev_id, user)
+                device = detail['instance']
+                device.command(command=command, source=source)
+                response = PytomationAPI.get_device(levels, user)
+            else:
+                response = 'access denied'
         except Exception as ex:
             pass
         return response

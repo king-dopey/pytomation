@@ -11,9 +11,15 @@ class User(PytomationObject):
         self.username = username
         self.is_admin = is_admin
         self.accessible_devices = {}
+        self.accessible_commands = {}
         if accessible_devices:
             for dev in accessible_devices:
-                self.accessible_devices[dev._type_id] = dev
+                if isinstance(dev, tuple):
+                    self.accessible_devices[dev[0]._type_id] = dev[0]
+                    self.accessible_commands[dev[0]._type_id] = dev[1]
+                else:
+                    self.accessible_devices[dev._type_id] = dev
+                    self.accessible_commands[dev._type_id] = dev.COMMANDS
         try:
             self.users['Basic ' + base64.urlsafe_b64encode((username + ':' + kwargs['password']).encode('UTF-8')).decode('ascii')] = self
         except:
@@ -23,8 +29,6 @@ class User(PytomationObject):
             print("Created admin user: " + username)
         else:
             print("Created user: " + username)
-        
-        
 
     def _initial_vars(self, *args, **kwargs):
         super(User, self)._initial_vars(*args, **kwargs)
