@@ -30,7 +30,7 @@ fi
 if [ -d /secured/ssl ]
 then
 	cp -R /secured/ssl /home/pytomation/ssl
-	chown pyto:root /home/pytomation/ssl/*
+	chown -R pyto:root /home/pytomation/ssl
 	chmod 400 /home/pytomation/ssl/*
 fi
 
