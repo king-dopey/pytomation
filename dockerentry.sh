@@ -34,5 +34,11 @@ then
 	chmod 400 /home/pytomation/ssl/*
 fi
 
+#Set local time based in environment variable given
+if [ "x" != "x$TZ" ]
+then 
+	ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+fi
+
 # Now run Pytomation as the pyto user
 exec su - pyto -c "python3 /home/pytomation/pytomation.py"
