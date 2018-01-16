@@ -46,7 +46,7 @@ function init() {
     }); //resizeTimer
     
     // Voice Command pulldown
-    if((window.isAndroid && isCordovaApp) || (window.chrome && !isMobile)) {
+    if((window.isAndroid && isCordovaApp) || (window.chrome)) {
         $(".iscroll-wrapper", $('#main')).bind( {
             iscroll_onpulldown : doVoice
         } );
@@ -54,6 +54,8 @@ function init() {
     else {
         $(".iscroll-wrapper").data("mobileIscrollview").destroy();
         $(".iscroll-pulldown").remove();
+        //ToDo: Add button for chrome/firefox speech recognition
+        //      Pull Down Doesn't work that great on a desktop, all the time
     } // Voice Command pulldown
     get_device_data_ajax();
 }; // init
@@ -665,10 +667,10 @@ function send_command_ajax(deviceID, command) {
 
 function doVoice(event, data) {
     var maxMatches = 3;
-    if (window.chrome) {
-        var recognizer = new webkitSpeechRecognition();
+    if (window.chrome || navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+        var recognizer = new SpeechRecognition();
         recognizer.onresult = function(event) {
-            //var command = [event.results[0][0].transcript];
             send_voice_command([event.results[0][0].transcript]);
             data.iscrollview.refresh();
         };
