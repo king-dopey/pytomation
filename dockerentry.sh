@@ -1,6 +1,12 @@
 #!/bin/bash
-# Move contents of the secured mounted volume to the correct locaitons
+# Move contents of the secured mounted volume to the correct locations
 # and give the only the pyto user read-only access to them
+
+#Set local time based in environment variable given
+if [ "x" != "x$TZ" ]
+then 
+	timedatectl set-timezone $TZ
+fi
 
 # Copy OpenZwave options.xml 
 if [ -e /secured/config/openzwave.xml ]
@@ -32,12 +38,6 @@ then
 	cp -R /secured/ssl /home/pytomation/ssl
 	chown -R pyto:root /home/pytomation/ssl
 	chmod 400 /home/pytomation/ssl/*
-fi
-
-#Set local time based in environment variable given
-if [ "x" != "x$TZ" ]
-then 
-	ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
 fi
 
 # Now run Pytomation as the pyto user
