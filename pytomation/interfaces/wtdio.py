@@ -111,7 +111,7 @@ class Wtdio(HAInterface):
                     self._logger.debug("[WTDIO] Board [" + response[0] + "] received invalid command or variable...\n")
 
         else:
-            time.sleep(0.3)
+            time.sleep(0.2)
 
     # response[0] = board, resonse[1] = channel, response[2] = L or H
     def _processDigitalInput(self, response, lastPacketHash):

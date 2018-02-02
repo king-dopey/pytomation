@@ -24,7 +24,7 @@ MA 02110-1301, USA.
 
 Description:
 
-This is a driver for the Phillips HUE colour LED interface.  The HUE supports
+This is a driver for the Philips HUE colour LED interface.  The HUE supports
 a number of devices such as 120VAC LED lights, Low voltage LED strips, wireless
 dimmer switches to name a few.
 
@@ -46,6 +46,7 @@ Versions and changes:
     Jan 06, 2016 - 1.1 - Added support for groups
     Jan 09, 2016 - 1.2 - Added update_status command
     Jan 25, 2016 - 1.3 - Updated status check so it won't trigger unless required
+    Feb 02, 2018 - 2.0 - Python 3 port and rename.
 
 """
 import threading
@@ -59,23 +60,23 @@ from .common import *
 from .ha_interface import HAInterface
 
 
-class PhillipsHue(HAInterface):
-    VERSION = '1.3'
+class PhilipsHue(HAInterface):
+    VERSION = '2.0'
     valid_commands = ('bri','hue','sat','ct','rgb','tr','eft')
 
     def __init__(self, *args, **kwargs):
-        super(PhillipsHue, self).__init__(None, *args, **kwargs)
+        super(PhilipsHue, self).__init__(None, *args, **kwargs)
 
-    # Instance should be hue = PhillipsHue(address = '192.168.0.2', poll=10)
+    # Instance should be hue = PhilipsHue(address = '192.168.0.2', poll=10)
     def _init(self, *args, **kwargs):
-        super(PhillipsHue, self)._init(*args, **kwargs)
+        super(PhilipsHue, self)._init(*args, **kwargs)
         self._iteration = 0
         self._poll_secs = kwargs.get('poll', 60)
         self.last_status = {}
 
         # get the ip address and connect to the bridge
         self._ip = kwargs.get('address', None)
-        print("Phillips HUE Bridge address -> {0}".format(self._ip))
+        print("Philips HUE Bridge address -> {0}".format(self._ip))
         try:
             self.interface = Bridge(self._ip)
             self.interface.connect()
@@ -337,4 +338,4 @@ class PhillipsHue(HAInterface):
 
 
     def version(self):
-        self._logger.info("Phillips HUE Pytomation driver version " + self.VERSION + '\n')
+        self._logger.info("Philips HUE Pytomation driver version " + self.VERSION + '\n')
