@@ -61,7 +61,7 @@ from .ha_interface import HAInterface
 
 
 class PhilipsHue(HAInterface):
-    VERSION = '2.0'
+    VERSION = '2.1'
     valid_commands = ('bri','hue','sat','ct','rgb','tr','eft')
 
     def __init__(self, *args, **kwargs):
@@ -71,12 +71,12 @@ class PhilipsHue(HAInterface):
     def _init(self, *args, **kwargs):
         super(PhilipsHue, self)._init(*args, **kwargs)
         self._iteration = 0
-        self._poll_secs = kwargs.get('poll', 60)
+        self._poll_secs = kwargs.get('poll', 10)
         self.last_status = {}
 
         # get the ip address and connect to the bridge
         self._ip = kwargs.get('address', None)
-        print("Philips HUE Bridge address -> {0}".format(self._ip))
+        print("Philips HUE Bridge address -> {0} Poll time -> {1}".format(self._ip, self._poll_secs))
         try:
             self.interface = Bridge(self._ip)
             self.interface.connect()
@@ -97,36 +97,72 @@ class PhilipsHue(HAInterface):
 
     def _readInterface(self, lastPacketHash):
         # We need to dial back how often we check the bridge.. Lets not bombard it!
-        if not self._iteration < self._poll_secs:
+        # If status hasn't changed for N seconds, dial back polling, once status changes
+        # reset and slowly dial back again.
+        # We check the status here and compare with what Pytomation knows, in case a light gets changed
+        # by one of the Huw switches, a cell phone or some other app or device.
+
+        if self._iteration <= self._poll_secs:
             self._logger.debug('[HUE] Retrieving status from bridge.')
-            self._iteration = 0
             #check to see if there is anything we need to read
             try:
                 # get dictionary of lights
                 lights = self.interface.get_light_objects('id')
-                #print lights
                 for d in self._devices:
-                    #print d.address,d.state,lights[int(d.address[1:])].on
-                    if d.state == 'off' and lights[int(d.address[1:])].on == True:
-                        time.sleep(.01)     #wait 10ms to see if state will change
-                        if d.state == 'off' and lights[int(d.address[1:])].on == True:
-                            contact = Command.OFF
-                            self._logger.debug('Light {0} status -> {1}'.format(d.address, contact))
-                            self._onCommand(address="{0}".format(d.address),command=contact)
-                    elif d.state == 'on' and lights[int(d.address[1:])].on == False:
-                        time.sleep(.01)     #wait 10ms to see if state will change
-                        if d.state == 'on' and lights[int(d.address[1:])].on == False:
-                            bri = int(round(int(lights[l].brightness) / 255.0 * 100))
-                            contact = (Command.LEVEL, bri)
-                            self._logger.debug('Light {0} status -> {1}'.format(d.address, contact))
-                            self._onCommand(address="{0}".format(d.address),command=contact)
+                    #print (d.address,d.state,lights[int(d.address[1:])].on)
+                    if (d.state == 'on' or 'level' in d.state) and lights[int(d.address[1:])].on == False:
+                        contact = Command.OFF
+                        self._logger.debug('Light {0} status -> {1}'.format(d.address, contact))
+                        self._onCommand(address="{0}".format(d.address),command=contact)
+                        self._iteration = .1
+                    elif d.state == 'off' and lights[int(d.address[1:])].on == True:
+                        bri = int(round(int(lights[int(d.address[1:])].brightness) / 255.0 * 100))
+                        contact = (Command.LEVEL, bri)
+                        self._logger.debug('Light {0} status -> {1}'.format(d.address, contact))
+                        self._onCommand(address="{0}".format(d.address),command=contact)
+                        self._iteration = .1
             except Exception as ex:
                 self._logger.error('Could not process data from bridge: '+ str(ex))
 
+            if self._iteration < self._poll_secs:
+                self._iteration += .1
+            time.sleep(self._iteration)
+            # print("looping", self._iteration)
         else:
-            self._iteration+=1
-            time.sleep(1) # one sec iteration
+            self._iteration-=.2
 
+
+
+        # if not self._iteration < self._poll_secs:
+        #     self._logger.debug('[HUE] Retrieving status from bridge.')
+        #     self._iteration = 0
+        #     #check to see if there is anything we need to read
+        #     try:
+        #         # get dictionary of lights
+        #         lights = self.interface.get_light_objects('id')
+        #         # print (lights)
+        #         for d in self._devices:
+        #             # print (d.address,d.state,lights[int(d.address[1:])].on)
+        #             if d.state == 'off' and lights[int(d.address[1:])].on == True:
+        #                 time.sleep(.01)     #wait 10ms to see if state will change
+        #                 if d.state == 'off' and lights[int(d.address[1:])].on == True:
+        #                     contact = Command.OFF
+        #                     self._logger.debug('Light {0} status -> {1}'.format(d.address, contact))
+        #                     self._onCommand(address="{0}".format(d.address),command=contact)
+        #             elif d.state == 'on' and lights[int(d.address[1:])].on == False:
+        #                 time.sleep(.01)     #wait 10ms to see if state will change
+        #                 if d.state == 'on' and lights[int(d.address[1:])].on == False:
+        #                     bri = int(round(int(lights[l].brightness) / 255.0 * 100))
+        #                     contact = (Command.LEVEL, bri)
+        #                     self._logger.debug('Light {0} status -> {1}'.format(d.address, contact))
+        #                     self._onCommand(address="{0}".format(d.address),command=contact)
+        #     except Exception as ex:
+        #         self._logger.error('Could not process data from bridge: '+ str(ex))
+        #
+        # else:
+        #     self._iteration+=.1
+        #     #time.sleep(self._iteration) # one sec iteration
+        #     time.sleep(1)  # one sec iteration
 
     def on(self, address):
         # TODO Check the type of bulb and then command accordingly
