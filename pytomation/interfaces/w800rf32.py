@@ -48,6 +48,7 @@ Versions and changes:
     2012/12/10 - 1.4 - New logging system
     2016/12/19 - 1.5 - Changed timeout Don't decode bytes 2 and 4, they are not required.
                        Add error check
+    2018/02/01 - 2.0 - Port to Python3
 """
 import threading
 import time
@@ -59,8 +60,7 @@ from .common import *
 from .ha_interface import HAInterface
 
 class W800rf32(HAInterface):
-    VERSION = '1.5'
-    MODEM_PREFIX = ''
+    VERSION = '2.0'
 
     hcodeDict = {
 0b0110:'A', 0b1110:'B', 0b0010:'C', 0b1010:'D',
@@ -85,21 +85,17 @@ class W800rf32(HAInterface):
         responses = self._interface.read()
 
         if len(responses) >= 4:
-            byte1 = ord(responses[0])
-            byte2 = ord(responses[1])
-            byte3 = ord(responses[2])
-            byte4 = ord(responses[3])
+            byte1 = responses[0]
+            byte2 = responses[1]
+            byte3 = responses[2]
+            byte4 = responses[3]
 
             if byte1 + byte2 != 255 or byte3 + byte4 != 255:
                 return
             xb3 = "{0:08b}".format(byte1)  # format binary string
             b3 = int(xb3[::-1],2)   # reverse the string and assign to byte 3
-#            xb4 = "{0:08b}".format(byte2)  # format binary string
-#            b4 = int(xb4[::-1],2)   # reverse the string and assign to byte 4
             xb1 = "{0:08b}".format(byte3)  # format binary string
             b1 = int(xb1[::-1],2)   # reverse the string and assign to byte 1
-#            xb2 = "{0:08b}".format(byte4)  # format binary string
-#            b2 = int(xb2[::-1],2)   # reverse the string and assign to byte 2
 
             # Get the house code
             self.houseCode = self.hcodeDict[b3 & 0x0f]
@@ -133,7 +129,7 @@ class W800rf32(HAInterface):
 
             self._processDigitalInput(self.x10, self.command)
         elif len(responses) < 3 and len(responses) > 0:
-            self._logger.error('Short packet...' + str(bytearray(responses)).encode('hex'))
+            self._logger.error('Short packet...' + bytearray(responses).hex())
         else:
 #            too fast and we get multiple responses - consider it debounce
 #            time.sleep(0.5)
@@ -142,28 +138,6 @@ class W800rf32(HAInterface):
 
     def _processDigitalInput(self, addr, cmd):
         self._onCommand(address=addr, command=cmd)
-
-
-    def _processRegister(self, response, lastPacketHash):
-        foundCommandHash = None
-
-        #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
-            if commandDetails['modemCommand'] == self._modemCommands['read_register']:
-                #Looks like this is our command.  Lets deal with it
-                self._commandReturnData[commandHash] = response[4:]
-
-                waitEvent = commandDetails['waitEvent']
-                waitEvent.set()
-
-                foundCommandHash = commandHash
-                break
-
-        if foundCommandHash:
-            del self._pendingCommandDetails[foundCommandHash]
-        else:
-            self._logger.warning("Unable to find pending command details for the following packet:")
-            self._logger.warning(hex_dump(response) + " " + len(response))
 
     def _processNewW800RF32(self, response):
         pass

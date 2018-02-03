@@ -96,6 +96,7 @@ Notes:
 Versions and changes:
     Initial version created on Feb 14, 2013
     2013/02/14 - 1.0 - Initial version
+    2018/02/01 - 2.0 - Python 3 port
 
 """
 import threading
@@ -109,8 +110,7 @@ from .ha_interface import HAInterface
 
 
 class Arduino(HAInterface):
-    VERSION = '1.0'
-    MODEM_PREFIX = ''
+    VERSION = '2.0'
 
 
     def __init__(self, interface, *args, **kwargs):
@@ -121,20 +121,13 @@ class Arduino(HAInterface):
 
         self.version()
         self.boardSettings = []
-        self._modemRegisters = ""
 
-        self._modemCommands = {
-                               }
-
-        self._modemResponse = {
-                               }
         # for inverting the I/O point
         self.d_inverted = [False for x in range(19)]
-        #self._interface.read(100)
 
     def _readInterface(self, lastPacketHash):
         #check to see if there is anyting we need to read
-        responses = self._interface.read()
+        responses = self._interface.read().decode("utf-8")
         if len(responses) != 0:
             for response in responses.split():
                 self._logger.debug("[Arduino] Response> " + hex_dump(response))
@@ -169,26 +162,26 @@ class Arduino(HAInterface):
         self._onCommand(address=response[:2],command=(Command.LEVEL, response[2:]))
 
 
-    def _processRegister(self, response, lastPacketHash):
-        foundCommandHash = None
-
-        #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
-            if commandDetails['modemCommand'] == self._modemCommands['read_register']:
-                #Looks like this is our command.  Lets deal with it
-                self._commandReturnData[commandHash] = response[4:]
-
-                waitEvent = commandDetails['waitEvent']
-                waitEvent.set()
-
-                foundCommandHash = commandHash
-                break
-
-        if foundCommandHash:
-            del self._pendingCommandDetails[foundCommandHash]
-        else:
-            self._logger.debug("[Arduino] Unable to find pending command details for the following packet:\n")
-            self._logger.debug((hex_dump(response, len(response)) + '\n'))
+    # def _processRegister(self, response, lastPacketHash):
+    #     foundCommandHash = None
+    #
+    #     #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
+    #     for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
+    #         if commandDetails['modemCommand'] == self._modemCommands['read_register']:
+    #             #Looks like this is our command.  Lets deal with it
+    #             self._commandReturnData[commandHash] = response[4:]
+    #
+    #             waitEvent = commandDetails['waitEvent']
+    #             waitEvent.set()
+    #
+    #             foundCommandHash = commandHash
+    #             break
+    #
+    #     if foundCommandHash:
+    #         del self._pendingCommandDetails[foundCommandHash]
+    #     else:
+    #         self._logger.debug("[Arduino] Unable to find pending command details for the following packet:\n")
+    #         self._logger.debug((hex_dump(response, len(response)) + '\n'))
 
 
     # Initialize the Uno board, input example "ADIC"
@@ -203,24 +196,24 @@ class Arduino(HAInterface):
 
         self._logger.debug("[Arduino] Setting channel " + boardChannelType + '\n')
         command = boardChannelType
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
 
     def dio_invert(self, channel, value=True):
         self.d_inverted[ord(channel) - 65] = value
 
     def on(self, address):
         command = address[0] + 'H' + address[1]
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
 #        return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
 
     def off(self, address):
         command = address[0] + 'L' + address[1]
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
 #        return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
 
     def level(self, address, level, timeout=None, rate=None):
         command = address[0] + '%' + address[1] + level
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
 
 
     def listBoards(self):

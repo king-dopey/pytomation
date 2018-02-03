@@ -150,7 +150,6 @@ class HAInterface(AsynchronousInterface, PytomationObject):
     def _sendInterfaceCommand(self, modemCommand,
                           commandDataString=None,
                           extraCommandDetails=None, modemCommandPrefix=None):
-
         returnValue = False
         try:
             if self._interface.disabled == True:
@@ -159,15 +158,14 @@ class HAInterface(AsynchronousInterface, PytomationObject):
             pass
 
         try:
-#            bytesToSend = self.MODEM_PREFIX + binascii.unhexlify(modemCommand)
             if modemCommandPrefix:
                 bytesToSend = modemCommandPrefix + modemCommand
             else:
                 bytesToSend = modemCommand
             if commandDataString != None:
                 bytesToSend += commandDataString
-            commandHash = hashPacket(bytesToSend)
 
+            commandHash = hashPacket(bytesToSend)
             self._commandLock.acquire()
             if commandHash in self._outboundCommandDetails:
                 #duplicate command.  Ignore
@@ -251,7 +249,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 response = self._interface.read()
             except Exception as ex:
                 self._logger.debug("Error reading from interface {interface} exception: {ex}".format(
-                                                                                     interaface=str(self._interface),
+                                                                                     interface=str(self._interface),
                                                                                      ex=str(ex)
                                                                                      )
                                    )
@@ -307,6 +305,8 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         if type(commandExecutionDetails) != type(dict()):
             self._logger.error("Unable to wait without a valid commandExecutionDetails parameter")
             return False
+        # commandExecutionDetails
+        # {'commandHash': '3f15d2889dcdb1ee72c9dee08ea2c895', 'waitEvent': <threading.Event object at 0x7feab411cc88>}
 
         waitEvent = commandExecutionDetails['waitEvent']
         commandHash = commandExecutionDetails['commandHash']
@@ -315,21 +315,12 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         if timeout:
             realTimeout = timeout
 
-        timeoutOccured = False
+        timeoutOccured = not waitEvent.wait(realTimeout)
 
-        if sys.version_info[:2] > (2, 6):
-            #python 2.7 and above waits correctly on events
-            timeoutOccured = not waitEvent.wait(realTimeout)
-        else:
-            #< then python 2.7 and we need to do the waiting manually
-            while not waitEvent.isSet() and realTimeout > 0:
-                time.sleep(0.1)
-                realTimeout -= 0.1
-
-            if realTimeout == 0:
-                timeoutOccured = True
-
+        # print("timeout", timeoutOccured)
         if not timeoutOccured:
+            # print("commandhash  --  self._commandReturnData", commandHash, self._commandReturnData)
+
             if commandHash in self._commandReturnData:
                 return self._commandReturnData[commandHash]
             else:

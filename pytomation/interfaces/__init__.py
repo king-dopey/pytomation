@@ -45,9 +45,9 @@ try:
 except:
     print("Could not import Stargate Library")
 try:
-    from .phillips_hue import *
+    from .philips_hue import *
 except:
-    print("Could not import Phillips Hue Library")
+    print("Could not import Philips Hue Library")
 try:
     from .wtdio import *
 except:

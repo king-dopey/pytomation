@@ -61,6 +61,7 @@ Versions and changes:
     2012/12/07 - 1.6 - Update to new logging stuff
     2012/12/17 - 1.7 - readModem command now readInterface
     2013/02/15 - 1.8 - Fix output to channel
+    2018/02/01 - 2.0 - Port to Python3
 
 """
 import threading
@@ -74,8 +75,7 @@ from .ha_interface import HAInterface
 
 
 class Wtdio(HAInterface):
-    VERSION = '1.8'
-    MODEM_PREFIX = ''
+    VERSION = '2.0'
 
     def __init__(self, interface, *args, **kwargs):
         super(Wtdio, self).__init__(interface, *args, **kwargs)
@@ -85,13 +85,7 @@ class Wtdio(HAInterface):
 
         self.version()
         self.boardSettings = []
-        self._modemRegisters = ""
 
-        self._modemCommands = {
-                               }
-
-        self._modemResponse = {
-                               }
         # for inverting the I/O point
         self.d_inverted = [False for x in range(14)]
 
@@ -100,7 +94,8 @@ class Wtdio(HAInterface):
 
     def _readInterface(self, lastPacketHash):
         #check to see if there is anyting we need to read
-        responses = self._interface.read()
+        # decode bytes back to strings
+        responses = self._interface.read().decode("utf-8")
         if len(responses) != 0:
             for response in responses.split():
                 self._logger.debug("[WTDIO] Response> " + hex_dump(response))
@@ -116,10 +111,7 @@ class Wtdio(HAInterface):
                     self._logger.debug("[WTDIO] Board [" + response[0] + "] received invalid command or variable...\n")
 
         else:
-            #print "Sleeping"
-            #X10 is slow.  Need to adjust based on protocol sent.  Or pay attention to NAK and auto adjust
-            #time.sleep(0.1)
-            time.sleep(0.5)
+            time.sleep(0.2)
 
     # response[0] = board, resonse[1] = channel, response[2] = L or H
     def _processDigitalInput(self, response, lastPacketHash):
@@ -130,36 +122,13 @@ class Wtdio(HAInterface):
             contact = Command.ON
         self._onCommand(address=response[:2],command=contact)
 
-
-    def _processRegister(self, response, lastPacketHash):
-        foundCommandHash = None
-
-        #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
-            if commandDetails['modemCommand'] == self._modemCommands['read_register']:
-                #Looks like this is our command.  Lets deal with it
-                self._commandReturnData[commandHash] = response[4:]
-
-                waitEvent = commandDetails['waitEvent']
-                waitEvent.set()
-
-                foundCommandHash = commandHash
-                break
-
-        if foundCommandHash:
-            del self._pendingCommandDetails[foundCommandHash]
-        else:
-            self._logger.debug("[WTDIO] Unable to find pending command details for the following packet:\n")
-            self._logger.debug((hex_dump(response, len(response)) + '\n'))
-
     def _processNewWTDIO(self, response):
         pass
 
         # Turn echo mode off on Weeder board
     def echoMode(self, timeout=None):
-        command = 'AX0\r'
-        commandExecutionDetails = self._sendInterfaceCommand(
-                             command)
+        command = b'AX0\r'
+        commandExecutionDetails = self._sendInterfaceCommand(command)
 
     # Initialize the Weeder board, input example "ASA"
     def setChannel(self, boardChannelType):
@@ -172,20 +141,19 @@ class Wtdio(HAInterface):
             self.boardSettings.append(boardChannelType)
 
         command = boardChannelType + '\r'
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
 
     def dio_invert(self, channel, value=True):
         self.d_inverted[ord(channel) - 65] = value
 
     def on(self, address):
         command = address[0] + 'H' + address[1] + '\r'
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
 #        return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
 
     def off(self, address):
         command = address[0] + 'L' + address[1] + '\r'
-        commandExecutionDetails = self._sendInterfaceCommand(command)
-#        return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
+        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
 
     def listBoards(self):
         self._logger.info(self.boardSettings + '\n')
