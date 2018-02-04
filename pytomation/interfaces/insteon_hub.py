@@ -39,15 +39,13 @@ Based on InsteonPLN created by
 This file's authors
 David Heaps - <king.dopey.10111@gmail.com>
 """
-from .common import Interface, Command
+from .common import Command
 from pytomation.devices import State
 from .ha_interface import HAInterface
 from time import sleep
 from collections import OrderedDict
 from io import StringIO
 import pprint
-import pkg_resources
-import json
 
 def simpleMap(value, in_min, in_max, out_min, out_max):
     #stolen from the arduino implimentation.  I am sure there is a nice python way to do it, but I have yet to stublem across it
@@ -58,9 +56,6 @@ class InsteonHub(HAInterface):
 
     def __init__(self, *args, **kwargs):
         super(InsteonHub, self).__init__(*args, **kwargs)
-        json_cats = pkg_resources.resource_string(__name__, 'insteon/device_categories.json')
-        json_cats_str = json_cats.decode('utf-8')
-        self.device_categories = json.loads(json_cats_str)
         self._previous_buffer = ''
         self._previous_buffer_end = 0
         self._previous_command_hash = ''
@@ -68,10 +63,6 @@ class InsteonHub(HAInterface):
 
         #Clear the command buffer upon startup
         self._interface.write('1?XB=M=1')
-
-        json_models = pkg_resources.resource_string(__name__, 'insteon/device_models.json')
-        json_models_str = json_models.decode('utf-8')
-        self.device_models = json.loads(json_models_str)
 
     def _writeInterface(self):
         try:
@@ -130,17 +121,24 @@ class InsteonHub(HAInterface):
                     if cmd == '13' or cmd == '14':
                         if d.state != State.OFF:
                             self._onCommand(address=address, command=State.OFF)
-                    elif cmd == '11' or cmd == '12':
-                        if d.verify_on_level:
-                            self._logger.debug('Received "On" command and "Verify On Level" set, sending status request for: {0}..........'.format(address))
-                            self._sendInterfaceCommand(address, '19', '00')
-                        elif d.on_level:
-                            if d.state != (State.LEVEL, d.on_level):
-                                self._logger.debug('Received "On" command and "On Level" set, setting appropriate command: {0}..........'.format(address))
-                                self._onCommand(address=address, command=(Command.LEVEL,d.on_level))
-                        else:
+                    elif cmd == '12':
+                        self._onCommand(address=address, command=Command.ON)
+                    elif cmd == '11':
+                        if cmd2 == 'FF' or cmd2 == 'FE':
                             if d.state != State.ON:
                                 self._onCommand(address=address, command=Command.ON)
+                        elif cmd2=='00' or cmd2=='01':
+                            if d.on_level:
+                                if d.state != (State.LEVEL, d.on_level):
+                                    self._logger.debug('Received "On" command and "On Level" set, setting appropriate command: {0}..........'.format(address))
+                                    self._onCommand(address=address, command=(Command.LEVEL,d.on_level))
+                            elif d.verify_on_level:
+                                self._logger.debug('Received "On" command and "Verify On Level" set, sending status request for: {0}..........'.format(address))
+                                self._sendInterfaceCommand(address, '19', '00')
+                            elif d.state != (State.LEVEL, cmd2):
+                                self._onCommand(address=address, command=Command.ON)
+                        elif d.state != (State.LEVEL, cmd2):
+                            self._onCommand(address=address, command=(Command.LEVEL,self.hex_to_brightness(cmd2)))
                     elif cmd == '02' or cmd == '04': # response from status, includes level
                         try:
                             self._commandLock.acquire()
@@ -170,8 +168,13 @@ class InsteonHub(HAInterface):
         else: # No devices to check state, so send anyway
             if cmd == '13' or cmd == '14':
                 self._onCommand(address=address, command=Command.OFF)
-            elif cmd == '11' or cmd == '12':
+            elif cmd == '12':
                 self._onCommand(address=address, command=Command.ON)
+            elif cmd == '11':
+                if cmd2 == 'FF' or cmd2 == 'FE' or cmd2 == '00' or cmd2 == '01':
+                        self._onCommand(address=address, command=Command.ON)
+                else:
+                    self._onCommand(address=address, command=(Command.LEVEL,self.hex_to_brightness(cmd2)))
             elif cmd == '02' or cmd == '04': # response from status, includes level
                 try:
                     self._commandLock.acquire()
