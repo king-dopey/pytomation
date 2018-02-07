@@ -50,11 +50,11 @@ Versions and changes:
                        Add error check
     2018/02/01 - 2.0 - Port to Python3
 """
-import threading
+# import threading
 import time
-import re
-from queue import Queue
-from binascii import unhexlify
+# import re
+# from queue import Queue
+# from binascii import unhexlify
 
 from .common import *
 from .ha_interface import HAInterface

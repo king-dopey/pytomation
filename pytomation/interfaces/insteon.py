@@ -46,16 +46,16 @@ Versions and changes:
     
 '''
 
-import select
+# import select
 import traceback
-import threading
+# import threading
 import time
 import binascii
 import struct
-import sys
-import string
+# import sys
+#import string
 import hashlib
-from collections import deque
+#from collections import deque
 from .common import *
 from .ha_interface import HAInterface
 from pytomation.devices import State
