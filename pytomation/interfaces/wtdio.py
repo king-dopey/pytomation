@@ -64,12 +64,8 @@ Versions and changes:
     2018/02/01 - 2.0 - Port to Python3
 
 """
-#import threading
 import time
 import re
-#from queue import Queue
-#from binascii import unhexlify
-
 from .common import *
 from .ha_interface import HAInterface
 
@@ -93,7 +89,7 @@ class Wtdio(HAInterface):
 
 
     def _readInterface(self, lastPacketHash):
-        #check to see if there is anyting we need to read
+        #check to see if there is anything we need to read
         # decode bytes back to strings
         responses = self._interface.read().decode("utf-8")
         if len(responses) != 0:
@@ -111,7 +107,7 @@ class Wtdio(HAInterface):
                     self._logger.debug("[WTDIO] Board [" + response[0] + "] received invalid command or variable...\n")
 
         else:
-            time.sleep(0.2)
+            time.sleep(0.3)
 
     # response[0] = board, resonse[1] = channel, response[2] = L or H
     def _processDigitalInput(self, response, lastPacketHash):
