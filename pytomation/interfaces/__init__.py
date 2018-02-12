@@ -49,13 +49,17 @@ try:
 except:
     print("Could not import Philips Hue Library")
 try:
+    from .rpi_gpio import *
+except:
+    print("Could not import Raspberry Pi RpiGpio Library")
+try:
     from .wtdio import *
 except:
     print("Could not import Weeder WTDIO Library")
 try:
     from .w800rf32 import *
 except:
-    print("Could not import Weeder WTDIO Library")
+    print("Could not import W800rf32 Library")
 try:
     from .arduino import *
 except:
