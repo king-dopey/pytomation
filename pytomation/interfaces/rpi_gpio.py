@@ -19,16 +19,20 @@ License:
     This free software is licensed under the terms of the GNU public license, Version 3
 
 Usage:
-    There are two ways of numbering the IO pins on a Raspberry Pi within RPi.GPIO. The first is using the BOARD
-    numbering system. This refers to the pin numbers on the P1 header of the Raspberry Pi board. The advantage
-    of using this numbering system is that your hardware will always work, regardless of the board revision
-    of the RPi. You will not need to rewire your connector or change your code.  We use BOARD numbering in this
-    interface.
+    There are two ways of numbering the IO pins on a Raspberry Pi. The first is using the
+    BOARD numbering system which equates to the physical pin numbers on the P1 header of
+    the Raspberry Pi.
 
-    GPIO pins are set as follows:
+    The second is using the BCM numbering systems which equates to the Broadcom chip GPIO
+    numbering scheme.
 
-    #### 40 pin
+    The advantage of using the BOARD numbering system is that your hardware will always work,
+    regardless of the board revision of the RPi. You will not need to rewire your connector
+    or change your code. I have, however, noticed that many projects seem to use the BCM scheme.
 
+    You may choose either one.
+
+    GPIO pins on the 40 pin header are as follows:
                3V3  (1) (2)  5V
              GPIO2  (3) (4)  5V
              GPIO3  (5) (6)  GND
@@ -52,34 +56,47 @@ Usage:
 
 
     In your instance file setup interface and pins as follows:
-
-    # Pytomation running on this raspberry pi with pin layout of type BOARD
-    rpi = RpiGpio(pin_layout='BOARD')
-
     # Pytomation running on this raspberry pi with pin layout of type BCM
-    rpi = RpiGpio(pin_layout='BCM')
+      rpi = RpiGpio(pin_layout='BCM', address=None, port=None, poll=None)
+    # pin_layout can be BCM or BOARD
 
+    # Address , port and poll time are not used yet, this interface only
+    # supports Pytomation running locally on the RPi.
 
-    # Pytomation using remote Raspberry Pi with ip 192.168.1.1 and poll time of 5 seconds
-    rpi = RpiGpio(pin_layout='BOARD', address='192.168.1.1', poll=5)
-
-
-    # Set the I/O points as inputs or outputs with optional debounce in milliseconds and
-    # invert for inputs and initial state for ouputs
+    # Set the I/O points as INPUTS or OUTPUTS with optional debounce in
+    # milliseconds, invert for INPUTS and initial state for OUTPUTS
     #
     # These examples use type BOARD pins
 
-    # Set pin 3, GPIO-2 as input with pullup resister inverted state and 100ms debounce
-    rpi.setPin(3, 'IN', 'PULL_UP', invert=True ,debounce=100)
+    # Set pin 3, GPIO-2 as INPUT with pullup resister, inverted state and
+    # 100ms debounce.
+      rpi.setPin(3, 'IN', 'PULL_UP', invert=True ,debounce=100)
 
-    # Set pin 5, GPIO-2 as input with pulldown resister and 200ms debounce
-    rpi.setPin(5, 'IN', 'PULL_DOWN', debounce=200)
+    # Set pin 5, GPIO-3 as INPUT with pulldown resister and 200ms debounce
+      rpi.setPin(5, 'IN', 'PULL_DOWN', debounce=200)
 
-    # Set pin 7, GPIO-3 as output, with initial value set to LOW state
-    rpi.setPin(7, 'OUT') or rpi.setPin(7, 'OUT', init='LOW')
+    # Set pin 7, GPIO-4 as OUTPUT, with initial value set to LOW state
+      rpi.setPin(7, 'OUT') or rpi.setPin(7, 'OUT', init='LOW')
 
-    # Set pin 7, GPIO-3 as output, with initial value set to HIGH state
-    rpi.setPin(7, 'OUT', init='HIGH')
+    # Set pin 7, GPIO-4 as OUTPUT, with initial value set to HIGH state
+      rpi.setPin(7, 'OUT', init='HIGH')
+
+    Please note that INVERT on an input is particularly useful when an input is pulled
+    high and the pin must be grounded to operate.  INVERT does not change the value of
+    the pin just the ON state within Pytomation
+
+    Using the pins in the instance file:
+
+    This is used just like any other Pytomation interface.  Example:
+
+    #Inputs
+    m_room_motion = Motion(address=17,
+                       devices=rpi,
+                       name="Room motion detectormytest")
+    # Outputs
+    l_room_lamp = Light(address=26,
+                    devices=(rpi),
+                    name='Room Lamp')
 
 
 Notes:
