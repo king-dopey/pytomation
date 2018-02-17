@@ -39,14 +39,13 @@ Based on InsteonPLN created by
 This file's authors
 David Heaps - <king.dopey.10111@gmail.com>
 """
-from .common import Command
+from .common import Command, Serial
 from pytomation.devices import State
 from .ha_interface import HAInterface
 from time import sleep
 from collections import OrderedDict
 from io import StringIO
 import pprint
-from interfaces.common import Serial
 import time
 import binascii
 
