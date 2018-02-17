@@ -63,6 +63,7 @@ logging_modules = {
                    #'Stargate': 'DEBUG',
                    #'InsteonPLM': 'DEBUG',
                    #'W800rf32': 'DEBUG',
+                   #'RpiGpio': 'DEBUG',
                    #'Wtdio': 'DEBUG',
                    #'UPB': 'DEBUG',
                    #"Light": "DEBUG",
