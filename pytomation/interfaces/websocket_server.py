@@ -53,12 +53,14 @@ class PytoWebSocketServer(HAInterface):
         self.unrestricted = True  # To override light object restrictions
 
     def _init(self, *args, **kwargs):
-        self._ssl_path = None
+        self._ssl_path = './ssl'
         self.ws = None
         try:
             self._ssl_path = config.ssl_path
         except:
             pass
+        if not os.path.isdir(self._ssl_path):
+                self._ssl_path = None
         super(PytoWebSocketServer, self)._init(*args, **kwargs)
 
     def run(self):

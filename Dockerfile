@@ -11,16 +11,16 @@ RUN mv /home/pytomation/pytomation/common/config_docker_default.py /home/pytomat
 
 #Install system dependencies
 RUN apt-get update
-RUN apt-get -y install apt-utils 
-RUN dpkg --configure -a
-RUN apt-get upgrade -y
 RUN apt-get -y install libudev-dev
 
 #Install requirements
 RUN pip3 install --trusted-host pypi.python.org -r requirements.txt
 
+#link openzwave config to /etc
+RUN ln -s /usr/local/lib/python3.6/site-packages/python_openzwave/ozw_config /etc/openzwave
+
 #Expose 8080
 EXPOSE 8080
 
 #Run Pytomation
-CMD ["su", "-", "pyto", "-c", "python3 /home/pytomation/pytomation.py"]
+CMD ["./dockerentry.sh"]

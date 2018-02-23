@@ -39,20 +39,35 @@ Based on InsteonPLN created by
 This file's authors
 David Heaps - <king.dopey.10111@gmail.com>
 """
-from .common import Command
+from .common import Command, Serial
 from pytomation.devices import State
 from .ha_interface import HAInterface
 from time import sleep
 from collections import OrderedDict
 from io import StringIO
 import pprint
+import time
+import binascii
 
 def simpleMap(value, in_min, in_max, out_min, out_max):
-    #stolen from the arduino implimentation.  I am sure there is a nice python way to do it, but I have yet to stublem across it
+    #stolen from the arduino implementation.  I am sure there is a nice python way to do it, but I have yet to stumble across it
     return (float(value) - float(in_min)) * (float(out_max) - float(out_min)) / (float(in_max) - float(in_min)) + float(out_min);
 
 class InsteonHub(HAInterface):
-    VERSION = '1.0.0'
+    VERSION = '1.1.0'
+    
+    #Simple class to convert the serial interface's responses to hex strings just as the hub uses
+    class BytesToHexString(object):
+        def __init__(self, interface):
+            self._interface = interface
+            
+        def read(self,string_byte_count):
+            msg = ''
+            while len(msg) < string_byte_count:
+                string = hex(self._interface.read(1))[2:1]
+                if len(string) == 1:
+                    string = '0' + string 
+                msg += string
 
     def __init__(self, *args, **kwargs):
         super(InsteonHub, self).__init__(*args, **kwargs)
@@ -60,52 +75,74 @@ class InsteonHub(HAInterface):
         self._previous_buffer_end = 0
         self._previous_command_hash = ''
         self._command_wait_count = 0
-
-        #Clear the command buffer upon startup
-        self._interface.write('1?XB=M=1')
+        self.serial = False
+        self.spintime_max = 4
+        self.spintime_default = 0.5
+        self.spintime = 0.5
+        if self._interface is Serial:
+            self.serial = True
+        else:
+            #Clear the command buffer upon startup
+            self._interface.write('1?XB=M=1')
+        self._intersend_delay = 0.85 # 850ms between network sends
+        self._lastReadTime = 0
 
     def _writeInterface(self):
-        try:
-            self._commandLock.acquire()
-            #Only write one command at a time
-            if (len(self._pendingCommandDetails) != 0):
-                #Don't allow a stale command to sit, wait for a while, then retry, then fail
-                for commandHash, commandDetails in list(self._pendingCommandDetails.items()):
-                    if (commandHash == self._previous_command_hash):
-                        if (self._command_wait_count < 4):
-                            self._command_wait_count += 1
+        if not self.serial:
+            try:
+                self._commandLock.acquire()
+                #Only write one command at a time
+                if (len(self._pendingCommandDetails) != 0):
+                    #Don't allow a stale command to sit, wait for a while, then retry, then fail
+                    for commandHash, commandDetails in list(self._pendingCommandDetails.items()):
+                        if (commandHash == self._previous_command_hash):
+                            if (self._command_wait_count < 4):
+                                self._command_wait_count += 1
+                            else:
+                                self._command_wait_count = 0
+                                self._resend_failed_command(commandHash, commandDetails)
                         else:
-                            self._command_wait_count = 0
-                            self._resend_failed_command(commandHash, commandDetails)
-                    else:
-                        self._previous_command_hash = commandHash
+                            self._previous_command_hash = commandHash
+                    return
+                else:
+                    self._command_wait_count = 0
+            except:
+                self._logger.debug("Error checking for waiting events")
                 return
-        except:
-            self._logger.debug("Error checking for waiting events")
-            return
-        finally:
-            self._commandLock.acquire(False)
-            self._commandLock.release()
+            finally:
+                self._commandLock.acquire(False)
+                self._commandLock.release()
         super(InsteonHub, self)._writeInterface()
 
     def _readInterface(self, lastPacketHash):
-        # only used if device_from passed in
-        return_record = OrderedDict()
-        return_record['success'] = False
-        return_record['error'] = True
+        if self.serial:
+            raw_text = InsteonHub.BytesToHexString(self._interface)
+        else:
+            #slow down the hub reads to be as slow as the sends
+            sleeptime = self._intersend_delay - (time.time() - self._lastReadTime)
+            if sleeptime >0:
+                time.sleep(sleeptime)
+            self._lastReadTime = time.time()
+            
+            raw_text = self._interface.read('buffstatus.xml')
+            raw_text = raw_text.replace('<response><BS>', '')
+            raw_text = raw_text.replace('</BS></response>', '')
+            raw_text = raw_text.strip()
 
-        raw_text = self._interface.read('buffstatus.xml')
-        raw_text = raw_text.replace('<response><BS>', '')
-        raw_text = raw_text.replace('</BS></response>', '')
-        raw_text = raw_text.strip()
-
-        for status in self._get_current_buffer_status(raw_text)['msgs']:
+        buffer_status = self._get_current_buffer_status(raw_text)
+        if buffer_status['error'] == True and self.spintime < self.spintime_max:
+            self._logger.debug("Received modem NAK, waiting and increasing spin time: {spintime}", self.spintime + 0.2)
+            sleep(self.spintime)
+            self.spintime += 0.5
+        elif self.spintime != self.spintime_default and buffer_status['msgs']:
+            self.spintime = self.spintime_default
+            self._logger.debug("Getting normal commands now resetting spintime back to default: {spintime}", self.spintime)
+        for status in buffer_status['msgs']:
             modem_command = status.get('im_code','')
             if (modem_command == '50'): #Standard message
                 self._handleStandardMessage(status)
             elif (modem_command == '62'): #Response from command
                 self._handleStandardResponse(status)
-        sleep(1) ##TODO: Put in time based wait
 
     def _handleStandardMessage(self, status):
         address = status.get('id_from','')
@@ -220,9 +257,18 @@ class InsteonHub(HAInterface):
                         if (commandDetails['commandId1'] != '19'):
                             commandDetails['waitEvent'].set()
                             del self._pendingCommandDetails[commandHash]
+                            #We received an ack, so reset the command_wait_count
+                            self._command_wait_count = 0
+                            
+                            if self.spintime != self.spintime_default:
+                                self.spintime = self.spintime_default
+                                self._logger.debug("Getting normal commands now resetting spintime back to default: {spintime}", self.spintime)
                             break
                     else:
-                        #Resend failed command
+                        if self.spintime < self.spintime_max:
+                            self._logger.debug("Received modem NAK, waiting and increasing spin time: {spintime}", self.spintime + 0.2)
+                            sleep(self.spintime)
+                            self.spintime += 0.5
                         self._resend_failed_command(commandHash, commandDetails)
         except:
             self._logger.debug("Error setting waiting events")
@@ -239,15 +285,15 @@ class InsteonHub(HAInterface):
         """Convert numeric brightness percentage into hex for insteon"""
         return str(int(int(level_hex, 16)/2.55))
 
-    def _sendInterfaceCommand(self, device_id, command, command2, extended_payload=None):
+    def _sendInterfaceCommand(self, device_id, command, command2, extended_payload=None, modem_command='62'):
         """Wrapper to queue posted direct command, with queued response (thread-safe). Level is 0-100.
         extended_payload is 14 bytes/28 chars..but last 2 chars is a generated checksum so leave off"""
         extended_payload = extended_payload or ''
         if not extended_payload:
-            msg_type = '0'
+            msg_type = '0F'
             msg_type_desc = 'Standard'
         else:
-            msg_type = '1'
+            msg_type = '1F'
             msg_type_desc = 'Extended'
 
             extended_payload = extended_payload.ljust(26, '0')
@@ -280,43 +326,65 @@ class InsteonHub(HAInterface):
 
         self._logger.info("_direct_command: Device: %s Command: %s Command 2: %s Extended: %s MsgType: %s", device_id, command, command2, extended_payload, msg_type_desc)
         device_id = device_id.upper()
-        return super(InsteonHub, self)._sendInterfaceCommand('62', device_id + msg_type + "F"
-                                   + command + command2 + extended_payload + "=I=3",
-                                   extraCommandDetails = { 'destinationDevice': device_id, 'commandId1': command, 'commandId2': command2},
-                                   modemCommandPrefix='3?02')
+        
+        if self.serial:
+            if device_id:
+                return super(InsteonHub, self)._sendInterfaceCommand(binascii.unhexlify(modem_command), binascii.unhexlify(device_id + msg_type + command + command2 + extended_payload),
+                                                                      extraCommandDetails = { 'destinationDevice': device_id, 
+                                                                                             'commandId1': command, 
+                                                                                             'commandId2': command2},
+                                                                      modemCommandPrefix=binascii.unhexlify('02'))
+            else:
+                return super(InsteonHub, self)._sendInterfaceCommand(binascii.unhexlify(modem_command),
+                                                                      modemCommandPrefix=binascii.unhexlify('02'))
+                
+        else:
+            if device_id:
+                return super(InsteonHub, self)._sendInterfaceCommand(modem_command, device_id + msg_type + command + command2 + extended_payload + "=I=3",
+                                                                       extraCommandDetails = { 'destinationDevice': device_id, 
+                                                                                              'commandId1': command, 
+                                                                                              'commandId2': command2},
+                                                                       modemCommandPrefix='3?02')
+            else:
+                return super(InsteonHub, self)._sendInterfaceCommand(modem_command,
+                                                                      modemCommandPrefix='3?02')
 
     def _get_current_buffer_status(self, modem_buffer):
         """Translates the buffer string into command lists.
         Will also strip any part of the buffer that it already received before
         and ignore pieces of the buffer that is not complete"""
-        buffer_length = len(modem_buffer)
-        self._logger.info('_get_current_buffer_status: Got raw text with size %s and contents: %s',
-                         buffer_length, modem_buffer)
-
-        previous_buffer = ''
-        if buffer_length == 202:
-            # 2015 hub
-            # The last byte in the buffer indicates where it stopped writing.
-            # It however, wraps around from the right, with no indication of start
-            # We get the start from the previous entry, however, if one exists
-            # This will fail if the the buffer is being wrapped upon startup
-            # But only the initial command will get ignored
-            buffer_end = modem_buffer[-2:]
-            buffer_end_int = int(buffer_end, 16)
-            if (buffer_end_int < self._previous_buffer_end):
-                modem_buffer = modem_buffer[self._previous_buffer_end:-2] + modem_buffer[0:buffer_end_int]
-                previous_buffer = modem_buffer[0:buffer_end_int]
-            else:
-                modem_buffer = modem_buffer[0:buffer_end_int]
-                previous_buffer = modem_buffer
+        if self.serial:
+            buffer_contents = modem_buffer
         else:
-            previous_buffer = modem_buffer
-
-        modem_buffer = modem_buffer.replace(self._previous_buffer, '')
-        self._previous_buffer = previous_buffer
-        self._logger.info('bufferEnd hex %s dec %s', buffer_end, buffer_end_int)
-        self._logger.info('get_buffer_status: non wrapped %s', modem_buffer)
-
+            buffer_length = len(modem_buffer)
+            self._logger.info('_get_current_buffer_status: Got raw text with size %s and contents: %s',
+                             buffer_length, modem_buffer)
+    
+            previous_buffer = ''
+            if buffer_length == 202:
+                # 2015 hub
+                # The last byte in the buffer indicates where it stopped writing.
+                # It however, wraps around from the right, with no indication of start
+                # We get the start from the previous entry, however, if one exists
+                # This will fail if the the buffer is being wrapped upon startup
+                # But only the initial command will get ignored
+                buffer_end = modem_buffer[-2:]
+                buffer_end_int = int(buffer_end, 16)
+                if (buffer_end_int < self._previous_buffer_end):
+                    modem_buffer = modem_buffer[self._previous_buffer_end:-2] + modem_buffer[0:buffer_end_int]
+                    previous_buffer = modem_buffer[0:buffer_end_int]
+                else:
+                    modem_buffer = modem_buffer[0:buffer_end_int]
+                    previous_buffer = modem_buffer
+            else:
+                previous_buffer = modem_buffer
+    
+            modem_buffer = modem_buffer.replace(self._previous_buffer, '')
+            self._previous_buffer = previous_buffer
+            self._logger.info('bufferEnd hex %s dec %s', buffer_end, buffer_end_int)
+            if modem_buffer:
+                self._logger.info('get_buffer_status: non wrapped %s', modem_buffer)
+            buffer_contents = StringIO(modem_buffer)
         buffer_status = OrderedDict()
 
         buffer_status['error'] = False
@@ -324,14 +392,18 @@ class InsteonHub(HAInterface):
         buffer_status['message'] = ''
         buffer_status['msgs'] = []
 
-        buffer_contents = StringIO(modem_buffer)
         while True:
             msg = buffer_contents.read(2)
-            while (msg != '02' and msg != ''):
+            while (msg != '02' and msg != '15' and msg != ''):
                 msg = buffer_contents.read(2)
 
             if (msg == ''):
                 break
+            elif msg == '15':
+                buffer_status['error'] = True
+                buffer_status['success'] = False
+                buffer_status['message'] = 'Device returned nak'
+                return buffer_status
 
             msg = msg + buffer_contents.read(2)
 
@@ -879,7 +951,7 @@ class InsteonHub(HAInterface):
         else:
             if rate == None:
                 # make it 0 to 255
-                level = int((int(level) / 100.0) * int(0xFF))
+                level = int((int(level) / 100.0) * 255)
                 commandExecutionDetails = self._sendInterfaceCommand(deviceId, '11', '%02X' % level)
                 return self._waitForCommandToFinish(commandExecutionDetails, timeout = timeout)
             else:
