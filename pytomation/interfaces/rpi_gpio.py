@@ -70,10 +70,10 @@ Usage:
 
     # Set pin 3, GPIO-2 as INPUT with pullup resister, inverted state and
     # 100ms debounce.
-      rpi.setPin(3, 'IN', 'PULL_UP', invert=True ,debounce=100)
+      rpi.setPin(3, 'IN', pud='PULL_UP', invert=True ,debounce=100)
 
     # Set pin 5, GPIO-3 as INPUT with pulldown resister and 200ms debounce
-      rpi.setPin(5, 'IN', 'PULL_DOWN', debounce=200)
+      rpi.setPin(5, 'IN', pud='PULL_DOWN', debounce=200)
 
     # Set pin 7, GPIO-4 as OUTPUT, with initial value set to LOW state
       rpi.setPin(7, 'OUT') or rpi.setPin(7, 'OUT', init='LOW')
@@ -126,7 +126,7 @@ class RpiGpio(HAInterface):
     def __init__(self, *args, **kwargs):
         super(RpiGpio, self).__init__(None, *args, **kwargs)
 
-    # Instance should be rpi = RpiGpio(pin_layout='BOARD|BCM', address=None|IPAdress, poll=None)
+    # Instance should be rpi = RpiGpio(pin_layout='BOARD|BCM', poll=None)
     def _init(self, *args, **kwargs):
         super(RpiGpio, self)._init(*args, **kwargs)
         self._pin_layout = kwargs.get('pin_layout', 'BOARD')
@@ -150,26 +150,6 @@ class RpiGpio(HAInterface):
                 "Illegal pin layout [" + self._pin_layout + "] must be of type \'BOARD\' or \'BCM\' ...")
             print("[RpiGpio] Illegal pin layout [" + self._pin_layout + "] must be of type \'BOARD\' or \'BCM\' ...")
             sys.exit()
-
-        # if ip address try connect to the remote pi
-        if self._ip_address != None:
-            print("Raspberry Pi address -> {0} Poll time -> {1}".format(self._ip, self._poll_secs))
-            print("Remote pi not supported yet, please remove from instance file and")
-            print("restart Pytomation...")
-            sys.exit()
-            # try:
-            #     pass
-            #     #self.interface = remotepi(self._ip)
-            #     #self.interface.connect()
-            #     #self._logger.debug("[RpiGpio] Connected to interface at {0}...\n".format(self._ip))
-            # except Exception as ex:
-            #     #self._logger.debug('[RpiGpio] Could not connect to remote Pi: {0}'.format(str(ex)))
-            #     #print("\nCouldn't connect to remote Pi, please try again or disable\n")
-            #     #print("this interface in your instance file and restart Pytomation...")
-            #     #sys.exit()
-            #     pass
-
-
 
 
     def _readInterface(self, lastPacketHash):
@@ -209,7 +189,7 @@ class RpiGpio(HAInterface):
                 elif pud == 'PULL_DOWN':
                     GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
                     self._logger.debug("Set pin [" + str(pin) + "] to INPUT / PULL_DOWN with " + str(debounce) + "ms debounce...")
-                self._pin_data = {pin: {'state': 'unknown', 'invert': invert}}
+                self._pin_data.update({pin: {'state': 'unknown', 'invert': invert}})
                 self._configured_pins.append(pin)
             elif type == 'OUT':
                 if init == 'LOW':
