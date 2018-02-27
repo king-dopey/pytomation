@@ -53,6 +53,10 @@ try:
 except:
     print("Could not import Raspberry Pi RpiGpio Library")
 try:
+    from .rpi_gpio_remote import *
+except:
+    print("Could not import Raspberry Pi RpiGpioRemote Library")
+try:
     from .wtdio import *
 except:
     print("Could not import Weeder WTDIO Library")
@@ -105,10 +109,6 @@ try:
 except:
     print("Could not import Harmony Library")
 try:
-    from .rpi_input import *
-except:
-    print("Could not import RPI library")
-try:    
     from .honeywell_thermostat import *
 except:
     print("Could not load Honeywell Thermostat library")
