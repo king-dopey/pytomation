@@ -19,10 +19,10 @@ First make sure the rpi_remote_client.py file is executable.
 "sudo chmod +x rpi_remote_client.py"  will do the trick or use your favorite
 file manager.
 
-For manual run from the current directory, ./rpi_remote_client.py
+For manual, run from the current directory, ./rpi_remote_client.py
 
-For automatic run at boot, first make then /etc/rc.local file executable so it 
-runs at boot.  Now add this line to your /etc/rc.local file:
+For automatically running at boot, first make sure /etc/rc.local file is
+executable so it runs at boot.  Now add this line to your /etc/rc.local file:
   su pyto -c "sleep 20;/home/pyto/rpi_remote_client.py 1>/dev/null" &
 
 This assumes you have a user "pyto" and the rpi_remote_client.py file 
@@ -39,12 +39,14 @@ parameters before execution.
 
 host=<string>       Host name or IP address of your Pytomation server.
 port=<int>          IP port of your Pytomation server.
-secret=<string>     Shared secret contained both here and on your server.  
-                    This is a string that should be between 8 and 32 characters
-                    in length and contains ascii printable characters.
+secret=<string>     Shared secret contained both here and set in your Instance  
+                    file on the server.  This is a string that should be 
+                    between 8 and 32 characters in length and contains 
+                    ascii printable characters.
 
 sslcert=<string>    OPTIONAL: Path to an openssl cert for encrypting the link.
                     You do not require encryption.
+                    
 If you want to use encryption you must generate a certificate|key pair for your
 Pytomation server.  You can use the following command and I have provided an 
 example run as well.
@@ -82,3 +84,4 @@ server.  Here is an example:
 
     Store your cert file in the same location as this file.
 
+Enjoy!
