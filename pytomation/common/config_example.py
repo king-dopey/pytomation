@@ -64,6 +64,7 @@ logging_modules = {
                    #'InsteonPLM': 'DEBUG',
                    #'W800rf32': 'DEBUG',
                    #'RpiGpio': 'DEBUG',
+                   #'RpiGpioRemote': 'DEBUG',
                    #'Wtdio': 'DEBUG',
                    #'UPB': 'DEBUG',
                    #"Light": "DEBUG",
