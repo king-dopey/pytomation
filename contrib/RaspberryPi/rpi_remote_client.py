@@ -79,8 +79,7 @@ import asyncio
 import RPi.GPIO as GPIO
 
 # --------------------- User configurable settings ---------------------------------
-#host = '127.0.0.1'
-host = '199.60.63.2'
+host = '127.0.0.1'
 port = 8088
 secret = 'my shared secret'
 #sslcert = './mycert.cert'
@@ -205,7 +204,7 @@ def rcvr(r):
             print("Pin {} remotely set to {}".format(pin, args[0]))
         elif args[0] == 'RESET':
             pass
-        yield from asyncio.sleep(.1)
+        yield from asyncio.sleep(.05)
 
 
 @asyncio.coroutine
