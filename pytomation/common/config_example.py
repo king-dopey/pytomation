@@ -82,11 +82,24 @@ logging_format = '[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s'
 # Logging entry date format
 logging_datefmt = "%Y/%m/%d %H:%M:%S"
 
-#*************  NOTE ********************************
-# Log rotation is currently not working, we will update this section when
-# it changes but for now please leave it set to "None"
+#You can use the when to specify the type of interval (when). The list of
+# possible values is below.  Note that they are not case sensitive.
+#Value 	Type of interval
+#'S' 	Seconds
+#'M' 	Minutes
+#'H' 	Hours
+#'D' 	Days
+#'W0'-'W6' 	Weekday (0=Monday)
+#'midnight' 	Roll over at midnight
 #
-#logging_rotate_when = 'midnight' # s, m, h, d, w (interval 0=Monday), midnight, None
-logging_rotate_when = None # s, m, h, d, w (interval 0=Monday), midnight, None
+#When using weekday-based rotation, specify ‘W0’ for Monday, ‘W1’ for Tuesday,
+# and so on up to ‘W6’ for Sunday.  In this case, the value passed for interval
+# isn’t used.
+#
+#If logging_rotate_backup is nonzero, at most logging_rotate_backup files will
+# be kept, and if more would be created when rollover occurs, the oldest one
+# is deleted. The deletion logic uses the interval to determine which files to
+# delete, so changing the interval may leave old files lying around.
+logging_rotate_when = None # s, m, h, d, w ,(W0-W6 0=Monday), midnight, None
 logging_rotate_interval = 1
 logging_rotate_backup = 4
