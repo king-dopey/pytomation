@@ -17,6 +17,10 @@ sdist
 develop-eggs
 .installed.cfg
 
+# Certificates and keys
+*.cert
+*.key
+
 # Installer logs
 pip-log.txt
 
