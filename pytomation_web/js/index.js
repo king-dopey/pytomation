@@ -563,7 +563,7 @@ function update_device_state(data) {
             if (statePart[0] === 'setpoint') {setpoint = statePart[1]; buttonLabel=setpoint + '°';}
         }); //each
         $('div[data-id="' + id + '"] .temperature').html(temp);
-        $('div[data-id="' + id + '"] button.toggle').html(buttonLabel);
+        $('div[data-id="' + id + '"] button.thermSetpoint').html(buttonLabel);
         var element = $('div[data-id="' + id + '"] .thermostatMode ');
         element.val(mode);
 
