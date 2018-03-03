@@ -2,11 +2,22 @@
 # Move contents of the secured mounted volume to the correct locations
 # and give the only the pyto user read-only access to them
 
-#Set local time based in environment variable given
-if [ "x" != "x$TZ" ]
+# Set local time based on environment variable given
+if [ ! -z {$TZ+x} ]
 then
 	echo "Setting Timezone $TZ"
 	echo $TZ > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+fi
+
+# Change device permissions based on environment variable given
+if [ ! -z {$DEVICES+x} ]
+then
+	IFS=';'
+	read -ra DEVS <<< "$DEVICES"
+	for dev in "${DEVS[@]}"; do
+		echo "Setting Permission for device $dev"
+	    chown pyto:pyto $dev
+	done
 fi
 
 # Copy OpenZwave options.xml 
