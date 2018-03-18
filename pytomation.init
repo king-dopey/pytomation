@@ -14,7 +14,7 @@ DESC="Pytomation Home Automation Server"
 SCRIPT_NAME="/etc/init.d/$NAME"
 
 # Python interpreter and Pytomation script location
-INTERPRETER="/usr/bin/python"
+INTERPRETER="/usr/bin/python3"
 PYTOMATION_DIR="/home/pytomation"
 PYTOMATION_SCRIPT="$PYTOMATION_DIR/pytomation.py"
 

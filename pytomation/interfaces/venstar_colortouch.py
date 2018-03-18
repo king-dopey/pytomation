@@ -11,7 +11,7 @@ which was reused from:
  George Farris <farrisg@gmsys.com>
 """
 
-import json,urllib.request,urllib.parse,urllib.error,time
+import json,urllib.parse,time
 
 from .ha_interface import HAInterface
 from .common import Interface, Command
