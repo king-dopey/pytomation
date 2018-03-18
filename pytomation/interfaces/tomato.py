@@ -7,7 +7,6 @@ jason@sharpee.com
 
 """
 import json
-import re
 import time
 
 from .ha_interface import HAInterface
@@ -101,6 +100,6 @@ _http_id:
 
     def _send_state(self):
         command = Command.ON
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        self._sendInterfaceCommand(command)
         return True
         #return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)

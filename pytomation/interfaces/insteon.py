@@ -46,7 +46,6 @@ Versions and changes:
     
 '''
 
-import traceback
 import time
 import binascii
 import struct
@@ -343,7 +342,6 @@ class InsteonPLM(HAInterface):
                         if lastPacketHash and lastPacketHash == currentPacketHash:
                             # duplicate packet.  Ignore
                             self._logger.debug("Duplicate packet, ignoring...")
-                            pass
                         else:
                             if callBack:
                                 callBack(firstByte + secondByte + remainingBytes)
@@ -742,9 +740,9 @@ class InsteonPLM(HAInterface):
                     if commandDetails['modemCommand'] in [0x60,0x61,0x62]:
                         print ("deleting commandhash ", commandHash)
                         print (commandDetails)
-                        cmd1 = commandDetails['commandId1']  # example SD11
-                        cmd2 = commandDetails['commandId2']
-                        deviceId = commandDetails['destinationDevice']
+                        #cmd1 = commandDetails['commandId1']  # example SD11
+                        #cmd2 = commandDetails['commandId2']
+                        #deviceId = commandDetails['destinationDevice']
                         waitEvent = commandDetails['waitEvent']
                         waitEvent.set()
                         del self._pendingCommandDetails[commandHash]
@@ -974,17 +972,16 @@ class InsteonPLM(HAInterface):
             self._logger.debug("All-Link Cleanup completed...")
             for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
                 if commandDetails['modemCommand'] == '\x61':
-                    originatingCommandId1 = None
+                    #originatingCommandId1 = None
                 
-                    if 'commandId1' in commandDetails:  #example SD11
-                        originatingCommandId1 = commandDetails['commandId1']  # = SD11
+                    #if 'commandId1' in commandDetails:  #example SD11
+                    #    originatingCommandId1 = commandDetails['commandId1']  # = SD11
 
-                    if 'commandId2' in commandDetails:  #example FF
-                        originatingCommandId2 = commandDetails['commandId2']
+                    #if 'commandId2' in commandDetails:  #example FF
+                    #    originatingCommandId2 = commandDetails['commandId2']
                 
-                    destDeviceId = None
-                    if 'destinationDevice' in commandDetails:
-                        destDeviceId = commandDetails['destinationDevice']
+                    #if 'destinationDevice' in commandDetails:
+                    #    destDeviceId = commandDetails['destinationDevice']
                 
                     waitEvent = commandDetails['waitEvent']
                     foundCommandHash = commandHash

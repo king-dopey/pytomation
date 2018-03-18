@@ -49,7 +49,7 @@ class InsteonInterface2Tests(TestCase):
 #        self.ms.add_response({Conversions.hex_to_ascii('026219057B0F11FF'):
 #                              Conversions.hex_to_ascii('026219057B0F11FF06') + \
 #                              Conversions.hex_to_ascii('025019057B16F9EC2B11FF')})
-        response = self.insteon.on('19.05.7b')
+        self.insteon.on('19.05.7b')
         self.assertIn(Conversions.hex_to_ascii('026219057B0F11FF'), self.ms.query_write_data())
         self.ms.put_read_data(Conversions.hex_to_ascii('026219057B0F11FF06'))
         self.ms.put_read_data(Conversions.hex_to_ascii('025019057B16F9EC2B11FF'))

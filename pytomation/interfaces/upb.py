@@ -35,9 +35,7 @@ Versions and changes:
     2012/11/30 - 1.3 - Unify Command and State magic strings across the system
 
 """
-import threading
 import time
-from queue import Queue
 from binascii import unhexlify
 
 from .common import *

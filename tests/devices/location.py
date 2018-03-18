@@ -1,8 +1,7 @@
-import time
 
 from datetime import datetime
 
-from unittest import TestCase, main
+from unittest import TestCase
 from mock import Mock, patch
 
 from pytomation.devices import Location, State, Light, Command, Attribute

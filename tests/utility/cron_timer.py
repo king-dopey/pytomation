@@ -2,7 +2,7 @@ import time
 
 from unittest import TestCase, main
 from mock import Mock
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from pytomation.utility import CronTimer, AllMatch
 

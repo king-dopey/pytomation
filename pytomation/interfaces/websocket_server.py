@@ -7,7 +7,6 @@ David Heaps - king.dopey.10111@gmail.com
 
 import mimetypes
 import os
-import base64
 import collections
 
 from geventwebsocket import WebSocketServer, WebSocketApplication, Resource

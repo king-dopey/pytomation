@@ -15,7 +15,6 @@ reuse from:
  George Farris <farrisg@gmsys.com>
 """
 import json
-import re
 import time
 
 from .ha_interface import HAInterface
@@ -145,6 +144,6 @@ class HW_Thermostat(HAInterface):
         except Exception as ex:
             self._logger.error('Could not formulate command to send: ' + str(ex))
 
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        self._sendInterfaceCommand(command)
         return True
         #return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)

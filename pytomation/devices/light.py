@@ -44,8 +44,6 @@ class Light(InterfaceDevice):
 
     def _command_state_map(self, command, *args, **kwargs):
         source = kwargs.get('source', None)
-        if command == Command.ON:
-            a = 1
         (m_state, m_command) = super(Light, self)._command_state_map(command, *args, **kwargs)
         primary_command = m_command
         if isinstance(m_command, tuple):

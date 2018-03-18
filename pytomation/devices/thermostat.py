@@ -65,7 +65,6 @@ class Thermostat(InterfaceDevice):
                 self._last_temp = previous_temp
 
     def command(self, command, *args, **kwargs):
-        source = kwargs.get('source', None)
         primary_command = command
         secondary_command = None
         if len(args) > 0:

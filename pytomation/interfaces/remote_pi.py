@@ -1,5 +1,4 @@
 import pigpio
-import time
 from pytomation.common.pyto_logging import PytoLogging
 from pytomation.common.pytomation_api import PytomationAPI
 from .ha_interface import HAInterface

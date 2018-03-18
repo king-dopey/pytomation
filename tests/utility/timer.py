@@ -2,7 +2,6 @@ import time
 
 from mock import Mock
 from unittest import TestCase, main
-from datetime import datetime, timedelta
 
 from pytomation.utility.timer import Timer as CTimer
 

@@ -663,7 +663,6 @@ class StateTests(TestCase):
         s1.devices(s2)
         s2.devices(s1)
         s1.on()
-        pass
 
     def test_state_remove_device(self):
         s1 = StateDevice()

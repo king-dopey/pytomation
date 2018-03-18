@@ -124,7 +124,7 @@ class Wtdio(HAInterface):
         # Turn echo mode off on Weeder board
     def echoMode(self, timeout=None):
         command = b'AX0\r'
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        self._sendInterfaceCommand(command)
 
     # Initialize the Weeder board, input example "ASA"
     def setChannel(self, boardChannelType):
@@ -137,19 +137,19 @@ class Wtdio(HAInterface):
             self.boardSettings.append(boardChannelType)
 
         command = boardChannelType + '\r'
-        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
+        self._sendInterfaceCommand(command.encode('ascii'))
 
     def dio_invert(self, channel, value=True):
         self.d_inverted[ord(channel) - 65] = value
 
     def on(self, address):
         command = address[0] + 'H' + address[1] + '\r'
-        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
+        self._sendInterfaceCommand(command.encode('ascii'))
 #        return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
 
     def off(self, address):
         command = address[0] + 'L' + address[1] + '\r'
-        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
+        self._sendInterfaceCommand(command.encode('ascii'))
 
     def listBoards(self):
         self._logger.info(self.boardSettings + '\n')
