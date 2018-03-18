@@ -1,4 +1,3 @@
-import time
 
 from unittest import TestCase
 from tests.common import MockInterface

@@ -26,7 +26,10 @@
 # Jan 07, 2016 - V1.2  Added Group support and light on/off in colours
 
 
-import curses, time, sys, math, datetime
+import curses
+import datetime
+import sys
+import time
 import json, os, socket, http.client
 
 from phue import Bridge
@@ -94,7 +97,7 @@ class Hue():
         scn.addstr(12,5, "will have to authorize it.")
         scn.addstr(15,5,"Hit any key to continue...")
         scn.nodelay(0)
-        k = scn.getch()
+        scn.getch()
         scn.erase()
         scn.refresh()
 
@@ -167,7 +170,6 @@ class Hue():
         pady = max(len(data)+1,wy)
         padx = wx
 
-        max_x = wx
         max_y = pady-wy
 
         pad = curses.newpad(pady,padx)
@@ -237,14 +239,14 @@ class Hue():
         scn.addstr(17,5,"Trying to connect to " + ip)
         scn.addstr(18,5,"Press button on Bridge then hit Enter...")
         scn.nodelay(0)
-        k = scn.getch()
+        scn.getch()
 
         try:
             hub = Bridge(ip)
         except:
             scn.addstr(20,5, "Error connecting to Bridge, check your IP address and try again.")
             scn.addstr(21,5, "Hit any key to go to menu.")
-            k = scn.getch()
+            scn.getch()
             scn.erase()
             scn.refresh()
             hub = False
@@ -259,7 +261,7 @@ class Hue():
 # {u'lastscan': u'2015-12-31T21:18:52', u'5': {u'name': u'Hue white lamp 2'}}
 
     def add_new_bulb(self, scn, hub):
-        lights = self.request(scn, 'POST', '/api/' + self.username + '/lights/')
+        self.request(scn, 'POST', '/api/' + self.username + '/lights/')
         try:
             popup = curses.newwin(7, 40, 10, 20)
             popup.addstr(2, 5, "Searching for new lights...")
@@ -281,13 +283,13 @@ class Hue():
         if len(newlights) > 1:
             popup.addstr(3,5, "Found new lights...", curses.A_BOLD)
             popup.addstr(4,5, "Press any key to continue...")
-            c = popup.getch()
+            popup.getch()
             popup.refresh()
             self.list_bulbs(scn, hub)
         else:
             popup.addstr(3,5, "No new lights found...")
             popup.addstr(4,5, "Press any key to continue...")
-            c = popup.getch()
+            popup.getch()
             popup.refresh()
         curses.curs_set(CURSOR_NORMAL)
         scn.touchwin()
@@ -389,17 +391,17 @@ class Hue():
 
             elif c == curses.KEY_LEFT:
                 if self.light != None:
-                    result = hub.set_light(self.light, 'on', True)
+                    hub.set_light(self.light, 'on', True)
                 else:  # it's a group
-                    result = hub.set_group(self.group, 'on', True)
+                    hub.set_group(self.group, 'on', True)
                 popup.addstr(4,45,'ON', curses.A_REVERSE)
                 popup.addstr(4,51,'OFF', curses.A_NORMAL)
 
             elif c == curses.KEY_RIGHT:
                 if self.light != None:
-                    result = hub.set_light(self.light, 'on', False)
+                    hub.set_light(self.light, 'on', False)
                 else:  # it's a group
-                    result = hub.set_group(self.group, 'on', False)
+                    hub.set_group(self.group, 'on', False)
                 popup.addstr(4,45,'ON', curses.A_NORMAL)
                 popup.addstr(4,51,'OFF', curses.A_REVERSE)
 
@@ -444,9 +446,9 @@ class Hue():
                     cmd =  {'transitiontime' : 0, 'on' : True, 'xy' : xy}
 
                 if self.light:
-                    result = hub.set_light(self.light, cmd)
+                    hub.set_light(self.light, cmd)
                 elif self.group:
-                    result = hub.set_group(self.group, cmd)
+                    hub.set_group(self.group, cmd)
                 popup.addstr(4,45,'ON', curses.A_REVERSE)
                 popup.addstr(4,51,'OFF', curses.A_NORMAL)
 
@@ -534,7 +536,6 @@ class Hue():
 
     def create_group(self, scn, hub):
         title = 'Create new group'
-        value = [0,0,0,0,0,0,0,0,0]
         data = ('Name of new group                :',\
                 'Lights to add coma seperated     :')
 
@@ -891,9 +892,8 @@ class Hue():
     def main(self, scr, term):
         scn = self.setup_screen()
 
-        dateString = ''
         self.firstChar = True
-        today = datetime.datetime.today()
+        datetime.datetime.today()
 
         curses.curs_set(CURSOR_INVISIBLE)
         self.show_intro(scn)

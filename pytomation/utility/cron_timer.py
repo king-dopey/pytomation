@@ -5,9 +5,7 @@
 # references:
 # http://docs.python.org/library/sched.html
 
-import time
-from datetime import datetime, timedelta
-from threading import Timer, Event
+from datetime import datetime
 
 from .periodic_timer import PeriodicTimer
 

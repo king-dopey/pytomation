@@ -123,7 +123,7 @@ class VenstarThermostat(HAInterface):
 
                     fan = status['fan']
                     if fan and int(fan) != self._fan:
-                        _fan = int(fan)
+                        self._fan = int(fan)
 
                 except Exception as ex:
                     self._logger.error('Could not decode status request' + str(ex))

@@ -25,10 +25,10 @@ def to_datetime(now, string):
         mon = now.month
     else:
         mon = string[4]
-    if string[5] == '*':
-        dow = now.weekday()
-    else:
-        dow = string[5]
+    #if string[5] == '*':
+    #    dow = now.weekday()
+    #else:
+    #    dow = string[5]
 
     return (datetime(now.year,mon,dom,hours,mins,secs))
 

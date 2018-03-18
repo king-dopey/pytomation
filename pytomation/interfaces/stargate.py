@@ -31,9 +31,7 @@ Versions and changes:
     2012/11/30 - 1.3 - Unify Command and State magic strings across the system
     2012/12/09 - 1.4 - Bump version number
 """
-import threading
 import time
-from queue import Queue
 from binascii import unhexlify
 
 from .common import *
@@ -93,8 +91,8 @@ class Stargate(HAInterface):
 
         last_input_map = self._last_input_map_low
 
-        if response[-1] == 'f':
-            a=1
+        #if response[-1] == 'f':
+        #    a=1
         range = self._decode_echo_mode_activity(response)['j']
         io_map = Conversions.ascii_to_int( Conversions.hex_to_ascii(
                 self._decode_echo_mode_activity(response)['l'] + \

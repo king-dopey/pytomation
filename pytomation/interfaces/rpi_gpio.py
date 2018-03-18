@@ -109,7 +109,6 @@ Versions and changes:
 
 """
 import time
-import re
 import RPi.GPIO as GPIO
 from .common import *
 from .ha_interface import HAInterface

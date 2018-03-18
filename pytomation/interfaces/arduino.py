@@ -99,10 +99,8 @@ Versions and changes:
     2018/02/01 - 2.0 - Python 3 port
 
 """
-import threading
 import time
 import re
-from queue import Queue
 from binascii import unhexlify
 
 from .common import *
@@ -174,24 +172,24 @@ class Arduino(HAInterface):
 
         self._logger.debug("[Arduino] Setting channel " + boardChannelType + '\n')
         command = boardChannelType
-        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
+        self._sendInterfaceCommand(command.encode('ascii'))
 
     def dio_invert(self, channel, value=True):
         self.d_inverted[ord(channel) - 65] = value
 
     def on(self, address):
         command = address[0] + 'H' + address[1]
-        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
+        self._sendInterfaceCommand(command.encode('ascii'))
 #        return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
 
     def off(self, address):
         command = address[0] + 'L' + address[1]
-        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
+        self._sendInterfaceCommand(command.encode('ascii'))
 #        return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)
 
     def level(self, address, level, timeout=None, rate=None):
         command = address[0] + '%' + address[1] + level
-        commandExecutionDetails = self._sendInterfaceCommand(command.encode('ascii'))
+        self._sendInterfaceCommand(command.encode('ascii'))
 
 
     def listBoards(self):

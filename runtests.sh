@@ -1,2 +1,2 @@
 #!/bin/sh
-python -m unittest tests
+python3 -m unittest tests

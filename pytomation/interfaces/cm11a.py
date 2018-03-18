@@ -118,10 +118,7 @@ Versions and changes:
     2013/03/04 - 1.0 - Initial version
 
 """
-import threading
 import time
-import re
-from queue import Queue
 from binascii import unhexlify
 
 from .common import *

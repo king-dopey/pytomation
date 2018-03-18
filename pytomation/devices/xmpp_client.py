@@ -1,11 +1,9 @@
-import ssl
 
 try:
     import xmpp
 except:
     pass
 import re
-import time
 
 from pytomation.devices import Door, StateDevice, State
 from pytomation.interfaces import Command

@@ -235,7 +235,6 @@ class StateDevice(PytomationObject):
                                                                                            ))
 
     def _command_state_map(self, command, *args, **kwargs):
-        source = kwargs.get('source', None)
         state = None
         state = self._command_to_state(command, state)
         m_command = self._state_to_command(state, command)
@@ -382,7 +381,6 @@ class StateDevice(PytomationObject):
     def _process_maps(self, *args, **kwargs):
         source = kwargs.get(Attribute.SOURCE, None)
         command = kwargs.get(Attribute.COMMAND, None)
-        mapped = None
 
         self._logger.debug("{name} MAPS dump: {maps}".format(
                                                 name=self.name,
@@ -734,7 +732,6 @@ class StateDevice(PytomationObject):
                                                                                         ));
 
     def _is_ignored(self, command, source):
-        is_ignored = False
         self._logger.debug("{name} check ignore for {command} from {source}".format(
                                         name=self.name,
                                         command=command,
@@ -928,7 +925,6 @@ class StateDevice(PytomationObject):
         """
         If there is a need to squelch multiple of the same command within a certain timeframe
         """
-        command = kwargs.get('command', None)
         original_state = kwargs.get('original_state', None)
         new_state = kwargs.get('new_state', None)
         if new_state == original_state and self._retrigger_delay and self._retrigger_delay.isAlive():
