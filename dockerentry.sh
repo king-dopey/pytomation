@@ -6,7 +6,7 @@
 if [ ! -z {$TZ+x} ]
 then
 	echo "Setting Timezone $TZ"
-	echo $TZ > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+	echo $TZ > /etc/timezone && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
 fi
 
 # Change device permissions based on environment variable given
