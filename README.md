@@ -29,15 +29,12 @@ more planned in the future.
    - Z-Wave (Aeon Labs via python-Openzwave) DSA02203-ZWUS 
    - [Phillips HUE](http://www.meethue.com) Phillips HUE, Zigbee lighting
 
-### Near Future
-   - Python 3 support
-   - Restrictive User security (beyond the current admin user)
-
 ### FEATURES
-   - Written in Python
+   - Written in Python 3
    - REST API
    - Mobile Web and Android clients w/ continuous device state updates (web-sockets)
    - Voice Commands from Android (“Home Control” app)
+   - Restrictive User security (beyond the current admin user)
    - Local Telnet and Web access
    - Unique language to describe devices and actions
    - Smart objects: Doors, Lights, Motion, Photocell etc.
@@ -60,7 +57,7 @@ INSTALLATION
 
 #### DEPENDENCIES
 
-Before you can create an instance and run Pytomation automation software you must satisfy a few dependencies. Pytomation is written in Python and currently has been tested under versions 2.6.x and 2.7.x. 
+Before you can create an instance and run Pytomation automation software you must satisfy a few dependencies. Pytomation is written in Python and is currently being tested well with version 3.6.x, on the Raspberry Pi and Amd64 architectures. There are also pre-built docker images (auto-built by Docker Hub) available at https://hub.docker.com/r/dheaps/pytomation/, or you can build a Docker image, with the Dockerfile.
 
 Pytomation also requires the following packages to be installed for normal operation:
  
@@ -81,24 +78,26 @@ Debian packages are available for pySerial, pytz, python-gevent, and python-open
 
 For other operating systems, search your package manager for the equivalent packages or use pip to install the Python dependencies.
 
-The remaining dependencies can be installed with `pip`. Pip is a tool for installing and managing Python packages, such as those found in the Python Package Index.
+The remaining dependencies can be installed with `pip3`. Pip3 is a tool for installing and managing Python packages, such as those found in the Python Package Index.
 
-Again, under Debian distributions you can install the python-pip package: 
+Again, under Debian distributions you can install the python3-pip package: 
 
-    sudo apt-get install python-pip
+    sudo apt-get install python3-pip
 
 Once pip is installed it is easy to install the rest of the dependencies with the following commands:
 
-        sudo pip install pyephem 
-        sudo pip install APScheduler
+        sudo pip3 install pyephem 
+        sudo pip3 install APScheduler
 
 To use the optional websocket server:
 
-    sudo pip install gevent-websocket
+    sudo pip3 install gevent-websocket
 
 The gevent-websocket server is pretty fast, but can be accelerated further by installing wsaccel and ujson or simplejson
 
-    sudo pip install wsaccel ujson
+    sudo pip3 install wsaccel ujson
+    
+The other pip3 packages are listed in requirments.txt and are optional. They are only necessary to use the interface that, which uses that package. For Example, for Phillps Hue support, install the phue package.
 
 #### Website encryption (SSL)
 1) Follow steps 1-5 from:
@@ -168,7 +167,7 @@ Add the following either `/etc/udev/rules.d` or `/lib/udev/rules.d` (Similar pro
 
 INSTALL
 =======
-You are now ready to install pytomation. First, clone the pytomation git repository. Change into the pytomation repo directory and run `./install.sh`. You may have to make it executable with the command `chmod +x ./install.sh` first. Install.sh can take an optional argument which points to an alternate installation directory:
+You are now ready to install Pytomation. First, clone the Pytomation git repository. Change into the Pytomation repo directory and run `./install.sh`. You may have to make it executable with the command `chmod +x ./install.sh` first. Install.sh can take an optional argument which points to an alternate installation directory. If you chose that option, be sure to update /etc/init.d/pytomation with the correct installation directory:
 
      ./install.sh /some/other/folder/pytomation
 

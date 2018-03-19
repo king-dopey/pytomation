@@ -1,6 +1,4 @@
-import time
-from datetime import datetime, timedelta
-from threading import Timer as PTimer, Event
+from threading import Timer as PTimer
 
 
 # The actual Event class

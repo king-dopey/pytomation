@@ -12,7 +12,6 @@ import speech_recognition as sr
 import requests
 import json
 import base64
-import time
 from sys import byteorder
 from array import array
 

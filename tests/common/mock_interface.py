@@ -1,4 +1,3 @@
-import queue
 from pytomation.interfaces import Conversions
 from pytomation.interfaces.common import *
 

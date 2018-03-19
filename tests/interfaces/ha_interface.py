@@ -1,5 +1,5 @@
 
-from unittest import TestCase, main
+from unittest import TestCase
 
 from pytomation.interfaces import HAInterface
 from pytomation.devices import StateDevice, InterfaceDevice, State

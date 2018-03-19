@@ -15,7 +15,6 @@
 try:
     import sys,os
     from socket import *
-    from urllib.error import URLError, HTTPError
     from platform import system as thisSystem
     import xml.dom.minidom as minidom
     import urllib.request,urllib.parse,urllib.error,urllib.request,urllib.error,urllib.parse
@@ -580,7 +579,6 @@ class upnp:
 
     #Parse details about each service (arguements, variables, etc)
     def parseServiceInfo(self,service,index):
-        argIndex = 0
         argTags = ['direction','relatedStateVariable']
         actionList = 'actionList'
         actionTag = 'action'
@@ -954,7 +952,6 @@ def seti(argc,argv,hp):
 #Host command. It's kind of big.
 def host(argc,argv,hp):
 
-    indexList = []
     indexError = "Host index out of range. Try the 'host list' command to get a list of known hosts"
     if argc >= 2:
         action = argv[1]
@@ -1673,7 +1670,6 @@ def main(argc,argv):
     hp.UNIQ = True
     hp.VERBOSE = False
     action = False
-    funPtr = False
 
     #Check command line options
     parseCliOpts(argc,argv,hp)

@@ -13,7 +13,6 @@ jason@sharpee.com
 
 """
 import json
-import re
 import time
 import urllib.request, urllib.parse, urllib.error
 
@@ -75,7 +74,7 @@ class SparkIO(HAInterface):
 #        command = (url, json.dumps(attributes))
         command = (url, urllib.parse.urlencode(attributes))
 
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        self._sendInterfaceCommand(command)
         return True
 
         #return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)

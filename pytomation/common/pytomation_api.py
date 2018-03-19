@@ -156,15 +156,11 @@ class PytomationAPI(PytomationObject):
             try:
                 v.update({'id': k})
                 a = v['instance']
-                b = a.state
+                a.state #Ensure this is a state device
                 del v['instance']
-#                devices.append({k: v})
                 devices.append(v)
             except Exception as ex:
                 pass
-#        f = OrderedDict(sorted(devices.items()))
-#        odevices = OrderedDict(sorted(f.items(), key=lambda k: k[1]['type_name'])
-#                            )
         return devices
 
     @staticmethod

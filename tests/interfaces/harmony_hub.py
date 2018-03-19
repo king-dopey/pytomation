@@ -1,4 +1,3 @@
-import time
 
 from unittest import TestCase
 
@@ -20,7 +19,7 @@ class HarmonyHubTests(TestCase):
         self.assertEqual(result, None)
 
     def test_off(self):
-        result = self.interface.off('Doesnt matter')
+        self.interface.off('Doesnt matter')
 
     def test_get_config(self):
         print(str(self.interface.get_config()))

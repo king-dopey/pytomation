@@ -35,12 +35,6 @@ try:
 except:
     print("Could not import Insteon Hub Library")
 try:
-    from .insteon_message import *
-    from .insteon_command import *
-    from .insteon2 import *
-except:
-    print("Could not import Insteon 2 (not newer) library")
-try:
     from .stargate import *
 except:
     print("Could not import Stargate Library")

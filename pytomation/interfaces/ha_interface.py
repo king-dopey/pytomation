@@ -22,11 +22,9 @@ Notes:
 
 Created on Mar 26, 2011
 '''
-import hashlib
 import threading
 import time
 import binascii
-import sys
 from collections import deque
 
 from .common import *

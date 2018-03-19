@@ -142,11 +142,11 @@ class UPBInterfaceTests(TestCase):
 
 
     def test_level(self):
-        response = self.upb.l40((39, 4))
+        self.upb.l40((39, 4))
         self.assertTrue(True)
 
     def test_level2(self):
-        response = self.upb.level((39, 4), 40)
+        self.upb.level((39, 4), 40)
         self.assertTrue(True)
 
     def test_link_activate(self):

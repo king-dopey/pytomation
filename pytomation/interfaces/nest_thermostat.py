@@ -10,8 +10,6 @@ Jeffrey C. Ollie
 https://github.com/jcollie/pyenest
 
 """
-import json
-import re
 import time
 try:
     from pyjnest import Connection

@@ -55,7 +55,9 @@ or bug fixes.  Thanks.  George farrisg@shaw.ca
 """
 
 
-import sys, os, serial, string, binascii, time, tempfile
+import binascii
+import os
+import serial
 
 # -------------- User modifiable settings -----------------------------
 

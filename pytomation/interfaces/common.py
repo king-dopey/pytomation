@@ -30,13 +30,10 @@ Created on Apr 3, 2011
 '''
 
 import threading
-import traceback
 import socket
 import binascii
 import serial
 import hashlib
-import sys
-import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import requests
 
 from pytomation.common.pytomation_object import PytomationObject
@@ -173,7 +170,6 @@ class TCP(Interface):
             pass
         except Exception as ex:
             print("Exception:", type(ex))
-            pass
 #            print traceback.format_exc()
         return data
 
@@ -432,7 +428,6 @@ class HACommand(Lookup):
                                      },
                        }
                       )
-        pass
 
 
 import time
