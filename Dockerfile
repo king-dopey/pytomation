@@ -17,7 +17,7 @@ RUN apt-get -y install libudev-dev
 RUN pip3 install --trusted-host pypi.python.org -r requirements.txt
 
 #link openzwave config to /etc
-RUN ln -s /usr/local/lib/python3.6/site-packages/python_openzwave/ozw_config /etc/openzwave
+RUN ln -s /usr/local/lib/python3.7/site-packages/python_openzwave/ozw_config /etc/openzwave
 
 #Expose 8080
 EXPOSE 8080
