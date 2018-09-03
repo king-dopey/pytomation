@@ -89,8 +89,8 @@ Again, under Debian distributions you can install the python-pip package:
 
 Once pip is installed it is easy to install the rest of the dependencies with the following commands:
 
-        sudo pip install pyephem 
-        sudo pip install APScheduler
+    sudo pip install pyephem 
+    sudo pip install APScheduler
 
 To use the optional websocket server:
 
@@ -109,7 +109,8 @@ https://help.ubuntu.com/lts/serverguide/certificates-and-security.html#generatin
 
 3) Now generate server.crt, with the Subject Alternative Names specified (Ubuntu steps no longer work in Chrome/Android)
     ```
-    openssl x509 -req -extfile <(printf "subjectAltName=DNS:Name.that.you.gave.in.csr") -days 365 -in server.csr -CA /etc/ssl/certs/cacert.pem -CAkey /etc/ssl/private/cakey.pem -CAcreateserial -out server.crt
+    echo "\n[SAN]\nsubjectAltName=pytomation.yourdomain.net,DNS:pytomation" > extfile
+    openssl x509 -req -extfile ./extfile -days 365 -in server.csr -CA /etc/ssl/certs/cacert.pem -CAkey /etc/ssl/private/cakey.pem -CAcreateserial -out server.crt
     ```
 4) Copy the key and crt you genterated from steps 2 and 3 (not the files from step 1) to folder that pytomation can access and name them server.key and server.crt.
 
