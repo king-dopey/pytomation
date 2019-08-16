@@ -666,7 +666,7 @@ class InsteonPLM(HAInterface):
         if (isGrpCleanupAck or isGrpBroadcast) and command1 != 0x13 and command1 !=0x11 and command1 != 0x19:
             if command1 != 0x06 and command1 != 0x17: #don't ask for status on a heartbeat or the start of a manual change
                 self._logger.debug("Running status request:{0}:{1}:{2}:..........".format(isGrpCleanupAck, isGrpBroadcast, isGrpCleanupDirect))
-                self.lightStatusRequest(destDeviceId, async=True)
+                self.lightStatusRequest(destDeviceId, p_async=True)
             else:
                 self._logger.debug("Ignoring command:{0}:{1}:{2}:{3}:..........".format(command1,isGrpCleanupAck, isGrpBroadcast, isGrpCleanupDirect))
         else: # direct command
@@ -687,7 +687,7 @@ class InsteonPLM(HAInterface):
                             if d.state != State.ON:
                                 if d.verify_on_level:
                                     self._logger.debug('Received "On" command and "Verify On Level" set, sending status request for: {0}..........'.format(destDeviceId))
-                                    self.lightStatusRequest(destDeviceId, async=True)
+                                    self.lightStatusRequest(destDeviceId, p_async=True)
                                 else:
                                     self._onCommand(address=destDeviceId, command=State.ON)
                         elif d.state != (State.LEVEL, command2):
@@ -803,10 +803,10 @@ class InsteonPLM(HAInterface):
         # X10 device,  command not supported,  just return
         return
 
-    def lightStatusRequest(self, deviceId, timeout=None, async=False):
+    def lightStatusRequest(self, deviceId, timeout=None, p_async=False):
         if len(deviceId) != 2:  # insteon device address
             commandExecutionDetails = self._sendStandardP2PInsteonCommand(deviceId, '19', '00')
-            if not async:
+            if not p_async:
                 return self._waitForCommandToFinish(commandExecutionDetails, timeout=timeout)
         # X10 device,  command not supported,  just return
         return
@@ -891,7 +891,7 @@ class InsteonPLM(HAInterface):
 
     def status(self, deviceId, timeout=None):
         if len(deviceId) != 2: #insteon device address
-            return self.lightStatusRequest(deviceId, timeout, async=True)
+            return self.lightStatusRequest(deviceId, timeout, p_async=True)
         # X10 device,  command not supported,  just return
         return
 
@@ -914,7 +914,7 @@ class InsteonPLM(HAInterface):
         for d in self._devices:
             if len(d.address) == 8:  # real address not scene
                 print("Getting status for ", d.address)
-                self.lightStatusRequest(d.address,async=False)
+                self.lightStatusRequest(d.address,p_async=False)
 
     def update_scene(self, address, devices):
         # we are passed a scene number to update and a bunch of objects to update
