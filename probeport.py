@@ -63,8 +63,13 @@ import serial
 
 #PROBE_DEVICES = ['test']
 # make sure we probe the arduino first
-PROBE_DEVICES = ['probe_plm', 'probe_wtdio', 'probe_w800', 'probe_uno']
-SERIAL_PORTS = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyR1','/dev/ttyR2']
+#PROBE_DEVICES = ['probe_plm', 'probe_wtdio', 'probe_w800', 'probe_uno']
+#PROBE_DEVICES = ['probe_plm', 'probe_wtdio', 'probe_w800']
+PROBE_DEVICES = ['probe_plm','probe_w800']
+#SERIAL_PORTS = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyR0','/dev/ttyR1','/dev/ttyR2']
+#SERIAL_PORTS = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2','/dev/ttyR0','/dev/ttyR1','/dev/ttyR2']
+SERIAL_PORTS = ['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2']
+#SERIAL_PORTS = ['/dev/ttyR0','/dev/ttyR1','/dev/ttyR2']
 INSTEON_PLM_BAUD_RATE = 19200
 WEEDER_IO_BAUD_RATE = 9600
 WEEDER_BOARD_ADDRESS = "A"
