@@ -403,6 +403,7 @@ function reload_device_grid() {
             var mode = 'off';
             var temp = 0;
             var tempTransitionLabel = 'to';
+            var rgb = '';
             if (values['type_name'] === 'Thermostat') {
                 if (state === 'unknown')
                     buttonLabel = 'N/A';
@@ -441,7 +442,18 @@ function reload_device_grid() {
                     tempTransitionLabel = '';
                 }
                 else {
-                    sliderValue = state[1];
+                    try {
+                        if (state[1].indexOf(':') !== -1) 
+                        {
+                            var stateValues = state[1].split(':');
+                            if (stateValues[1].indexOf('#') !== -1)
+                                rgb = stateValues[1].substr(0,7);
+                            sliderValue = stateValues[0];
+                        }
+                    }
+                    catch(err) {
+                        sliderValue = state[1];
+                    }
                 } // slider level
             }
             
@@ -483,11 +495,17 @@ function reload_device_grid() {
                 rowData += '<td style="width:3em"><button data-mini="true" data-role="button" class="thermSetpoint" deviceId="' + deviceID + '">' + buttonLabel + "</button></td>";
                 rowData += '<td style="width:2em"><a href="#" deviceId="' + deviceID + '" class="incrementSetpoint" data-iconpos="notext" data-role="button" data-icon="plus"></a></div></td></tr></table></tr>';
             } else {
-                rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
-                if (values['type_name'] === 'Light') 
+                if (values['type_name'] === 'Light') {
+                    if (rgb !== '' && rgb !== '#000000') 
+                        rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' style='background-color:" + rgb + "' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
+                    else 
+                        rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
                     rowData += "<input deviceId='" + deviceID + "' id='slider"  + deviceID + "' value=" + sliderValue + "  data-highlight='true' class='ui-hidden-accessible sliderlevel' type='range' name='points' min='0' max='100'></div></td>";
-                else
+                }
+                else {
+                    rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
                     rowData += "</div></div></td>";
+                }
             }
             
             if (values['type_name'] === 'Thermostat'){
@@ -555,6 +573,8 @@ function update_device_state(data) {
     var setpoint = 0;
     var mode = 'off';
     var temp = 0;
+    var sliderValue =-0;
+    var rgb = '';
     deviceData[id]['state'] = state;
     if (data['type_name'] === 'Thermostat') {
         $.each(state, function(stateIndex, statePart) {
@@ -578,7 +598,6 @@ function update_device_state(data) {
 
             }
         }
-            
     } else {
         if (name.length > 18) {
             $.each(name.split(' '), function(nameIndex,namepart) {
@@ -605,9 +624,22 @@ function update_device_state(data) {
         else if (state === 'off')
             sliderValue = 0;
         else{
-            sliderValue = state[1];
+            try {
+                if (state[1].indexOf(':') !== -1) {
+                    var stateValues = state[1].split(':');
+                    if (stateValues[1].indexOf('#') !== -1)
+                        rgb = stateValues[1].substr(0,7);
+                    sliderValue = stateValues[0];
+                }
+            }
+            catch(err) {
+                sliderValue = state[1];
+            }
         } // slider level
-        $('div[data-id="' + id + '"] button.toggle').html(buttonLabel);
+        var el = $('div[data-id="' + id + '"] button.toggle');
+        el.html(buttonLabel);
+        el.css('background-color', '');
+        if (rgb !== '' && rgb !== '#000000') el.css('background-color', rgb);
         if (data['type_name'] === 'Room') {
             buttonLabel = data['state'];
             if (buttonLabel === 'unknown') buttonLabel = "Occupancy Unknown";

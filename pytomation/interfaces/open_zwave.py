@@ -57,11 +57,14 @@ class Open_zwave(HAInterface):
                     self._logger.debug('>>>>>>> Hello from level : {} {}'.format(level, self.dimmer_polled_value[val]))
                     if level == self.dimmer_polled_value[val]:
                         del self.dimmer_polled_value[val]
-                        if level < 2:
-                            self._onCommand(address=str(node.node_id), command=Command.OFF)
-                        elif level > 98:
-                            self._onCommand(address=str(node.node_id), command=Command.ON)
-                        else:
+                        try:
+                            if level < 2:
+                                self._onCommand(address=str(node.node_id), command=Command.OFF)
+                            elif level > 98:
+                                self._onCommand(address=str(node.node_id), command=Command.ON)
+                            else:
+                                self._onCommand(address=str(node.node_id), command=(Command.LEVEL,level))
+                        except:
                             self._onCommand(address=str(node.node_id), command=(Command.LEVEL,level))
                     else:
                         self.dimmer_polled_value[val] = level
@@ -191,13 +194,28 @@ class Open_zwave(HAInterface):
 
     def level(self, address, level):
         node = int(address)
-        for val in self._network.nodes[node].get_dimmers() :
-            self._logger.debug("Set dimmer : {}".format(self._network.nodes[node]))
-            self._network.nodes[node].set_dimmer(val, level)
+        if (isinstance(level, str)):
+            level = level.split(":")
+            
+        if (isinstance(level, list)):
+            if (level[0] == "rgb"):
+                self._logger.critical("level: rgb")
+                for val in self._network.nodes[node].get_rgbbulbs():
+                    self._network.nodes[node].set_rgbw(val,level[1])
+                for val in self._network.nodes[node].get_dimmers() :
+                    bri = self._network.nodes[node].get_dimmer_level(val)
+                self._onState(address=address, state=(State.LEVEL,str(bri) + ':' + level[1]))
+        else:
+            for val in self._network.nodes[node].get_dimmers() :
+                self._logger.debug("Set dimmer : {}".format(self._network.nodes[node]))
+                self._network.nodes[node].set_dimmer(val, level)
 
     def status(self, address):
         node = int(address)
-        for val in self._network.nodes[node].get_switches() :
+        rgb = ''
+        for val in self._network.nodes[node].get_rgbbulbs():
+            rgb = self._network.nodes[node].get_rgbw(val)
+        for val in self._network.nodes[node].get_switches():
             level = self._network.nodes[node].get_switch_state(val)
             if level:
                 self._onState(address=address, state=State.ON)
@@ -205,12 +223,17 @@ class Open_zwave(HAInterface):
                 self._onState(address=address, state=State.OFF)
         for val in self._network.nodes[node].get_dimmers() :
             level = self._network.nodes[node].get_dimmer_level(val)
-            if level < 2:
-                self._onState(address=address, state=State.OFF)
-            elif level > 98:
-                self._onState(address=address, state=State.ON)
-            else:
-                self._onState(address=address, state=(State.LEVEL,level))
+            try:
+                if rgb != '':
+                    self._onState(address=address, state=(State.LEVEL,str(level) + ':' + rgb))
+                elif level < 2:
+                    self._onState(address=address, state=State.OFF)
+                elif level > 98:
+                    self._onState(address=address, state=State.ON)
+                else:
+                    self._onState(address=address, state=(State.LEVEL,level))
+            except:
+                    self._onState(address=address, state=(State.LEVEL,level))
         for value in list(self.get_door_locks(node).values()):
             if value.data:
                 self._onState(address=address, state=State.LOCKED)
