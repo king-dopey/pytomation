@@ -101,25 +101,12 @@ The gevent-websocket server is pretty fast, but can be accelerated further by in
     sudo pip install wsaccel ujson
 
 #### Website encryption (SSL)
-1) Follow steps 1-5 from:
-https://help.ubuntu.com/lts/serverguide/certificates-and-security.html#certificate-authority
+1) Utilize the scrit created by Dobes Vandermeer at https://gist.github.com/dobesv/13d4cb3cbd0fc4710fa55f89d1ef69be
 
-2) Then follow the steps from:
-https://help.ubuntu.com/lts/serverguide/certificates-and-security.html#generating-a-csr
-
-3) Now generate server.crt, with the Subject Alternative Names specified (Ubuntu steps no longer work in Chrome/Android)
-    ```
-    echo "\n[SAN]\nsubjectAltName=pytomation.yourdomain.net,DNS:pytomation" > extfile
-    openssl x509 -req -extfile ./extfile -days 365 -in server.csr -CA /etc/ssl/certs/cacert.pem -CAkey /etc/ssl/private/cakey.pem -CAcreateserial -out server.crt
-    ```
-4) Copy the key and crt you genterated from steps 2 and 3 (not the files from step 1) to folder that pytomation can access and name them server.key and server.crt.
-
-5) Set ssl_path, in pytomation/common/config.py, to the folder you created.
-
-6) To import the root CA, on your client devices, so all your generated certificates work on your devices follow the steps from:
+2) To import the root CA, on your client devices, so all your generated certificates work on your devices follow the steps from:
 https://thomas-leister.de/en/how-to-import-ca-root-certificate/
 
-7) To create a cert that can be imported into the android system, using root privelege:
+3) To create a cert that can be imported into the android system, using root privelege (does not work with the latst android 11):
 https://blog.jeroenhd.nl/article/android-7-nougat-and-certificate-authorities#howto-install
 
     ```
@@ -133,6 +120,10 @@ https://blog.jeroenhd.nl/article/android-7-nougat-and-certificate-authorities#ho
     openssl x509 -inform PEM -text -in /etc/ssl/certs/cacert.pem -out /dev/null >> 5ed36f99.0
     ```
     Resulting file must be copied to /system/etc/security/cacerts/ on android system.
+
+4) For the latests Android you must secure your device with pin/patern/etc, copy to your sdcard with the .crt extension, and open it. Android will prompt you to import as a "user" cert. (you can no longer add system cert, unless you roll your own rom or use a Magisk trick.
+
+5) For Firefox Mobile save the cert to your sdcard and browse to it in firefox like file:///storage/emulated/0. Once you click on your cert it will prompt you to import.
 
 Build openzwave and python-openzwave
 ====================================
