@@ -38,14 +38,12 @@ class Light(InterfaceDevice):
                                                             name=self.name,
                                                             source=source.name if source else str(source)
                                                                                     ))
-        except AttributeError, ex:
+        except AttributeError as ex:
             pass
         super(Light, self).command(command, *args, **kwargs)
 
     def _command_state_map(self, command, *args, **kwargs):
         source = kwargs.get('source', None)
-        if command == Command.ON:
-            a = 1
         (m_state, m_command) = super(Light, self)._command_state_map(command, *args, **kwargs)
         primary_command = m_command
         if isinstance(m_command, tuple):
@@ -54,24 +52,24 @@ class Light(InterfaceDevice):
             if source and (primary_command in [Command.ON, Command.LEVEL]):
                 if self.restricted and source not in self._interfaces and not source.unrestricted:
                     m_command = None
-                    m_state = None 
+                    m_state = None
                     self._logger.info("{name} is restricted. Ignoring command {command} from {source}".format(
                                                                                          name=self.name,
                                                                                          command=command,
                                                                                          source=source.name,
                                                                                                                ))
-        except AttributeError, ex:
+        except AttributeError as ex:
             pass #source is not a state device
         return (m_state, m_command)
-        
+
     @property
     def restricted(self):
         return self._restricted
-    
+
     @restricted.setter
     def restricted(self, value):
         self._restricted = value
         return self._restricted
-    
+
     def level(self, value):
         self.command((Command.LEVEL, value))

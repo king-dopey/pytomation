@@ -2,7 +2,7 @@ import time
 
 from unittest import TestCase, main
 from mock import Mock
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from pytomation.utility import CronTimer, AllMatch
 
@@ -14,7 +14,7 @@ class CronTimerTests(TestCase):
 
     def test_2_sec_callback(self):
         m = Mock()
-        
+
         t = datetime.now().timetuple()[5]
         t += 2
         self.ct.interval(secs=t)

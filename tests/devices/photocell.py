@@ -6,7 +6,7 @@ from pytomation.devices import Photocell, State
 from pytomation.interfaces import Command
 
 class PhotocellTests(TestCase):
-    
+
     def setUp(self):
         self.interface = Mock()
         self.interface.state = State.UNKNOWN
@@ -25,4 +25,4 @@ class PhotocellTests(TestCase):
 
 
 if __name__ == '__main__':
-    main() 
+    main()

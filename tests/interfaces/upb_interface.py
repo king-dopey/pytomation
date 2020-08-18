@@ -83,13 +83,13 @@ class UPBInterfaceTests(TestCase):
         0018   30 33 31 31 32 31 45 32    031121E2
         0020   32 30 30 36 35 0D          20065.
         """
-        
+
     def test_incoming_on(self):
         """
         UBP New: PU0804310006860037:0000   50 55 30 38 30 34 33 31    PU080431
         0008   30 30 30 36 38 36 30 30    00068600
         0010   33 37                      37
-        
+
         UBP New: PU0805310006860036:0000   50 55 30 38 30 35 33 31    PU080531
         0008   30 30 30 36 38 36 30 30    00068600
         0010   33 36                      36
@@ -102,7 +102,7 @@ class UPBInterfaceTests(TestCase):
         m_interface.read.return_value = 'PU0805310006860036'
 #        time.sleep(4000)
         time.sleep(2)
-        m_interface.callback.assert_called_with(address=(49,6), command=State.OFF, source=upb)  
+        m_interface.callback.assert_called_with(address=(49,6), command=State.OFF, source=upb)
         m_interface.read.return_value = ''
 
     def test_incoming_link(self):
@@ -118,9 +118,9 @@ class UPBInterfaceTests(TestCase):
         m_interface.read.return_value = 'PU8A0431260F20FFFFFFEF'
 #        time.sleep(4000)
         time.sleep(2)
-        m_interface.callback.assert_called_with(address=(49,38,'L'), command=State.ON, source=upb)  
+        m_interface.callback.assert_called_with(address=(49,38,'L'), command=State.ON, source=upb)
         m_interface.read.return_value = ''
-        
+
     def test_incoming_k(self):
         """
 0000   50 55 30 37 31 34 31 36    PU071416
@@ -137,23 +137,23 @@ class UPBInterfaceTests(TestCase):
         m_interface.read.return_value = "PU07141610FF3090\x0DPU07151610FF308F\x0D"
 #        time.sleep(4000)
         time.sleep(2)
-        m_interface.callback.assert_called_with(address=(22,255), command='status', source=upb)  
+        m_interface.callback.assert_called_with(address=(22,255), command='status', source=upb)
         m_interface.read.return_value = ''
-            
-        
+
+
     def test_level(self):
-        response = self.upb.l40((39, 4))
+        self.upb.l40((39, 4))
         self.assertTrue(True)
-        
+
     def test_level2(self):
-        response = self.upb.level((39, 4), 40)
+        self.upb.level((39, 4), 40)
         self.assertTrue(True)
 
     def test_link_activate(self):
         """
         """#        self.ms.add_response({'\x14081031031E226410\x0D': 'PA\x0D'})
         self.ms.add_response({'\x14871031031E20F7\x0D': 'PA\x0D'})
-        # Network / Device ID 
+        # Network / Device ID
         response = self.upb.on((49, 3, "L"))
         self.assertTrue(response)
 

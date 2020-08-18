@@ -5,28 +5,26 @@ File:
 Description:
 
 
-Author(s): 
+Author(s):
          Pyjamasam@github <>
          Jason Sharpee <jason@sharpee.com>  http://www.sharpee.com
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
 
 
-Example: 
+Example:
 
 Notes:
 
 
 Created on Mar 26, 2011
 '''
-import hashlib
 import threading
 import time
 import binascii
-import sys
 from collections import deque
 
 from .common import *
@@ -36,7 +34,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
     "Base protocol interface"
 
     MODEM_PREFIX = '\x02'
-    
+
     def __init__(self, interface, *args, **kwargs):
         kwargs.update({'interface': interface})
         #self._po_common(*args, **kwargs)
@@ -81,9 +79,9 @@ class HAInterface(AsynchronousInterface, PytomationObject):
             try:
                 self._readInterface(self._lastPacketHash)
                 self._writeInterface()
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.error("Problem with interface: " + str(ex))
-                
+
         self._interfaceRunningEvent.clear()
 
     def onCommand(self, callback=None, address=None, device=None):
@@ -100,7 +98,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         # Received command from interface and this will delegate to subscribers
         self._logger.debug("Received Command:" + str(address) + ":" + str(command))
         self._logger.debug('Delegates for Command: ' + str(self._commandDelegates))
-        
+
         addressC = address
         try:
             addressC = addressC.lower()
@@ -114,11 +112,11 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 pass
             if commandDelegate['address'] == None or \
                 addressD == addressC:
-                    commandDelegate['callback'](
-                                                command=command,
-                                                address=address,
-                                                source=self
-                                                )
+                commandDelegate['callback'](
+                                            command=command,
+                                            address=address,
+                                            source=self
+                                            )
         self._logger.debug('Devices for Command: ' + str(self._devices))
         for device in self._devices:
             if device.addressMatches(address):
@@ -128,7 +126,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                                        address=address,
                                        source=self,
                                        )
-                except Exception, ex:
+                except Exception as ex:
                     device.command(
                                    command=command,
                                    source=self,
@@ -143,31 +141,29 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                                        address=address,
                                        source=self,
                                        )
-                except Exception, ex:
+                except Exception as ex:
                     self._logger.debug('Could not set state for device: {device}'.format(device=device.name))
-                    
-                    
+
+
     def _sendInterfaceCommand(self, modemCommand,
                           commandDataString=None,
                           extraCommandDetails=None, modemCommandPrefix=None):
-
         returnValue = False
         try:
             if self._interface.disabled == True:
                 return returnValue
-        except AttributeError, ex:
+        except AttributeError as ex:
             pass
 
         try:
-#            bytesToSend = self.MODEM_PREFIX + binascii.unhexlify(modemCommand)
             if modemCommandPrefix:
                 bytesToSend = modemCommandPrefix + modemCommand
             else:
                 bytesToSend = modemCommand
             if commandDataString != None:
                 bytesToSend += commandDataString
-            commandHash = hashPacket(bytesToSend)
 
+            commandHash = hashPacket(bytesToSend)
             self._commandLock.acquire()
             if commandHash in self._outboundCommandDetails:
                 #duplicate command.  Ignore
@@ -182,8 +178,8 @@ class HAInterface(AsynchronousInterface, PytomationObject):
 
                 if extraCommandDetails != None:
                     basicCommandDetails = dict(
-                                       basicCommandDetails.items() + \
-                                       extraCommandDetails.items())
+                                       list(basicCommandDetails.items()) + \
+                                       list(extraCommandDetails.items()))
 
                 self._outboundCommandDetails[commandHash] = basicCommandDetails
 
@@ -197,8 +193,8 @@ class HAInterface(AsynchronousInterface, PytomationObject):
 
             self._commandLock.release()
 
-        except Exception, ex:
-            print traceback.format_exc()
+        except Exception as ex:
+            print(traceback.format_exc())
 
         finally:
 
@@ -218,7 +214,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
 
             try:
                 commandExecutionDetails = self._outboundCommandDetails[commandHash]
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.error('Could not find execution details: {command} {error}'.format(
                                                                                                 command=commandHash,
                                                                                                 error=str(ex))
@@ -237,7 +233,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 del self._outboundCommandDetails[commandHash]
         try:
             self._commandLock.release()
-        except Exception, te:
+        except Exception as te:
             self._logger.debug("Error trying to release unlocked lock %s" % (str(te)))
 
     def _writeInterfaceFinal(self, data):
@@ -249,9 +245,9 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         if self._interface:
             try:
                 response = self._interface.read()
-            except Exception, ex:
+            except Exception as ex:
                 self._logger.debug("Error reading from interface {interface} exception: {ex}".format(
-                                                                                     interaface=str(self._interface),
+                                                                                     interface=str(self._interface),
                                                                                      ex=str(ex)
                                                                                      )
                                    )
@@ -265,7 +261,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 #X10 is slow.  Need to adjust based on protocol sent.  Or pay attention to NAK and auto adjust
                 #time.sleep(0.1)
                 time.sleep(0.5)
-        except TypeError, ex:
+        except TypeError as ex:
             pass
 
     def _resend_failed_command(self, commandHash, commandDetails):
@@ -307,6 +303,8 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         if type(commandExecutionDetails) != type(dict()):
             self._logger.error("Unable to wait without a valid commandExecutionDetails parameter")
             return False
+        # commandExecutionDetails
+        # {'commandHash': '3f15d2889dcdb1ee72c9dee08ea2c895', 'waitEvent': <threading.Event object at 0x7feab411cc88>}
 
         waitEvent = commandExecutionDetails['waitEvent']
         commandHash = commandExecutionDetails['commandHash']
@@ -315,21 +313,12 @@ class HAInterface(AsynchronousInterface, PytomationObject):
         if timeout:
             realTimeout = timeout
 
-        timeoutOccured = False
+        timeoutOccured = not waitEvent.wait(realTimeout)
 
-        if sys.version_info[:2] > (2, 6):
-            #python 2.7 and above waits correctly on events
-            timeoutOccured = not waitEvent.wait(realTimeout)
-        else:
-            #< then python 2.7 and we need to do the waiting manually
-            while not waitEvent.isSet() and realTimeout > 0:
-                time.sleep(0.1)
-                realTimeout -= 0.1
-
-            if realTimeout == 0:
-                timeoutOccured = True
-
+        # print("timeout", timeoutOccured)
         if not timeoutOccured:
+            # print("commandhash  --  self._commandReturnData", commandHash, self._commandReturnData)
+
             if commandHash in self._commandReturnData:
                 return self._commandReturnData[commandHash]
             else:
@@ -365,7 +354,7 @@ class HAInterface(AsynchronousInterface, PytomationObject):
                 self._commandLock.release()
             except:
                 self._logger.error("Could not release Lock! " + str(self._commandLock))
-                
+
             if requiresRetry:
                 return self._waitForCommandToFinish(commandExecutionDetails,
                                                     timeout=timeout)
@@ -375,15 +364,15 @@ class HAInterface(AsynchronousInterface, PytomationObject):
     @property
     def name(self):
         return self.name_ex
-    
+
     @name.setter
     def name(self, value):
         self.name_ex = value
         return self.name_ex
-    
+
     def update_status(self):
         for d in self._devices:
             self.status(d.address)
-            
+
     def status(self, address=None):
         return None

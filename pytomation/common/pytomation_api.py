@@ -1,8 +1,7 @@
 from .pytomation_object import PytomationObject
-#from .pytomation_system import *
-import pytomation_system
+from . import pytomation_system
 import json
-import urllib
+import urllib.parse
 #from collections import OrderedDict
 
 class PytomationAPI(PytomationObject):
@@ -20,8 +19,19 @@ class PytomationAPI(PytomationObject):
                    ('post', 'device'): self.update_device,
                    ('post', 'voice'): self.run_voice_command
         }
-        
-    def run_voice_command(self, levels, data, source):
+    
+    @staticmethod
+    def has_security(user, device, command=None):
+        if user.is_admin:
+            return True
+        elif device in user.accessible_devices:
+            if command == None:
+                return True
+            elif command in user.accessible_commands[device]:
+                return True
+        return False
+
+    def run_voice_command(self, levels, data, source, user):
         for command in data:
             command =  command.lower()
             for dev_name in self.sorted_names_by_length:
@@ -34,68 +44,86 @@ class PytomationAPI(PytomationObject):
                     levels = ['device', dev_id]
                     for device_command in device.COMMANDS:
                         if command.find(device_command) != -1:
-                            command = command.replace(device_command,'')
-                            try:
-                                numeric_command = ''.join(ele for ele in command if ele.isdigit())
-                                if numeric_command:
-                                    device_command = device_command + ',' + numeric_command
-                            except:
-                                pass
-                            return self.update_device(levels, 'command=' + device_command, source)
+                            if self.has_security(user,dev_id):
+                                command = command.replace(device_command,'')
+                                try:
+                                    numeric_command = ''.join(ele for ele in command if ele.isdigit())
+                                    if numeric_command:
+                                        device_command = device_command + ',' + numeric_command
+                                except:
+                                    pass
+                                return self.update_device(levels, 'command=' + device_command, source, user=user)
+                            else:
+                                return 'access denied'
                     try:
                         numeric_command = ''.join(ele for ele in command if ele.isdigit())
                         if numeric_command:
                             device_command = device.DEFAULT_NUMERIC_COMMAND + ',' + numeric_command
-                            return self.update_device(levels, 'command=' + device_command, source)
+                            if self.has_security(user,dev_id):
+                                return self.update_device(levels, 'command=' + device_command, source, user=user)
+                            else:
+                                return 'access denied'
                         else:
-                            return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source)
+                            if self.has_security(user,dev_id):
+                                return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source, user=user)
+                            else:
+                                return 'access denied'
                     except:
-                        return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source)
+                        if self.has_security(user,dev_id):
+                            return self.update_device(levels, 'command=' + device.DEFAULT_COMMAND, source, user=user)
+                        else:
+                            return 'access denied'
         #Maybe we should ask the internet from here?
-        return json.dumps("I'm sorry, can you please repeat that?") 
+        return json.dumps("I'm sorry, can you please repeat that?")
 
-    def get_response(self, method="GET", path=None, type=None, data=None, source=None):
+    def get_response(self, method="GET", path=None, type=None, data=None, source=None, user=None):
         response = None
         type = type.lower() if type else self.JSON
         if type == self.WEBSOCKET:
             try:
                 data = json.loads(data)
-            except Exception, ex:
+            except Exception as ex:
                 pass
-            
+
             path = data['path']
-            
+
             try:
                 data = data['command']
                 if path != 'voice':
                     data = 'command=' + data if data else None
-            except Exception, ex:
+            except Exception as ex:
                 #If no command just send back data being requested
                 data = None
                 type = self.JSON
             method = "post" if data else "get"
         elif path == 'voice':
-            data = urllib.unquote(data).replace('&', '').replace('+', ' ').split("command[]=")
-            
+            data = urllib.parse.unquote(data.decode()).replace('&', '').replace('+', ' ').split("command[]=")
+
         method = method.lower()
         levels = path.split('/')
-        
+
         if data:
             if isinstance(data, list):
                 tdata = []
                 for i in data:
-                    tdata.append(urllib.unquote(i).decode('utf8'))
+                    tdata.append(urllib.parse.unquote(i))
                 data = tdata
             else:
-                data = urllib.unquote(data).decode('utf8')
+                try:
+                    data = urllib.parse.unquote(data)
+                except:
+                    data = urllib.parse.unquote(data.decode())
 
         f = self.get_map().get((method, levels[0]), None)
         if f:
-            response = f(levels, data=data, source=source)
+            response = f(levels, data=data, source=source, user=user)
         elif levels[0].lower() == 'device':
             try:
-                response = self.update_device(command=method, levels=levels, source=source)
-            except Exception, ex:
+                if self.has_security(user,levels[1]):
+                    response = self.update_device(command=method, levels=levels, source=source, user=user)
+                else:
+                    return 'access denied'
+            except Exception as ex:
                 pass
         if type == self.JSON:
             return json.dumps(response)
@@ -106,51 +134,56 @@ class PytomationAPI(PytomationObject):
                 return json.dumps("success")
         return None
 
-    def get_state_changed_message(self, state, source, prev, device):
-        return json.dumps({
-            'id': device.type_id,
-            'name': device.name,
-            'type_name': device.type_name,
-            'state': state,
-            'previous_state': prev
-        })
+    def get_state_changed_message(self, state, source, prev, device, user):
+        if self.has_security(user,device.type_id):
+            return json.dumps({
+                'id': device.type_id,
+                'name': device.name,
+                'type_name': device.type_name,
+                'state': state,
+                'previous_state': prev
+            })
+        else:
+            return "access denied"
 
     @staticmethod
-    def get_devices(path=None, *args, **kwargs):
+    def get_devices(path=None, user=None, *args, **kwargs):
         """
         Returns all devices and status in JSON.
         """
         devices = []
-        for (k, v) in pytomation_system.get_instances_detail().iteritems():
+        for (k, v) in pytomation_system.get_instances_detail(user).items():
             try:
                 v.update({'id': k})
                 a = v['instance']
-                b = a.state
+                a.state #Ensure this is a state device
                 del v['instance']
-#                devices.append({k: v})
                 devices.append(v)
-            except Exception, ex:
+            except Exception as ex:
                 pass
-#        f = OrderedDict(sorted(devices.items()))
-#        odevices = OrderedDict(sorted(f.items(), key=lambda k: k[1]['type_name'])
-#                            )
         return devices
 
     @staticmethod
-    def get_device(levels, *args, **kwargs):
+    def get_device(levels, user, *args, **kwargs):
         """
         Returns one device's status in JSON.
         """
-        id = levels[1]
-        detail = pytomation_system.get_instance_detail(id)
-        detail.update({'id': id})
-        del detail['instance']
-        return detail
-    
-    def update_device(self, levels, data=None, source=None, *args, **kwargs):
+        dev_id = levels[1]
+        if PytomationAPI.has_security(user,dev_id):
+            detail = pytomation_system.get_instance_detail(dev_id, user)
+            detail.update({'id': dev_id})
+            del detail['instance']
+            return detail
+        else:
+            return 'access denied'
+
+    def update_device(self, levels, data=None, source=None, user=None, *args, **kwargs):
         """
         Issues command in POST from JSON format.
         """
+        dev_id = levels[1]
+        if not PytomationAPI.has_security(user,dev_id):
+            return 'access denied'
         command = None
         response = None
         if not source:
@@ -159,16 +192,13 @@ class PytomationAPI(PytomationObject):
         if data:
             if isinstance(data, list):
                 for d in data:
-#                    print 'ff' + str(d)
                     e = d.split('=')
-#                    print 'eee' + str(e)
                     if e[0] == 'command':
                         command = e[1]
             else:
                 e = data.split('=')
                 command = e[1]
-#        print 'Set Device' + str(command) + ":::" + str(levels)
-        id = levels[1]
+
         # look for tuples in the command and make it a tuple
         if ',' in command:
             e = command.split(',')
@@ -183,11 +213,13 @@ class PytomationAPI(PytomationObject):
                 l.append(t)
             command = tuple(l)
         try:
-            detail = pytomation_system.get_instances_detail()[id]
-            device = detail['instance']
-            device.command(command=command, source=source)
-            response = PytomationAPI.get_device(levels)
-        except Exception, ex:
+            if user.is_admin or PytomationAPI.has_security(user,dev_id,command):
+                detail = pytomation_system.get_instance_detail(dev_id, user)
+                device = detail['instance']
+                device.command(command=command, source=source)
+                response = PytomationAPI.get_device(levels, user)
+            else:
+                response = 'access denied'
+        except Exception as ex:
             pass
-#        print 'res['+ str(response)
         return response

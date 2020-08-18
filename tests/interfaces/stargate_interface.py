@@ -74,7 +74,7 @@ class StargateInterfaceTests(TestCase):
 
 
     def _digital_input_callback(self, *args, **kwargs):
-        print "Args:" + str(args) + " Kwargs:" + str(kwargs)
+        print("Args:" + str(args) + " Kwargs:" + str(kwargs))
         self.__digital_input_params = {'args': args, 'kwargs': kwargs}
 
         #response = self.sg.get_register(2, 2)

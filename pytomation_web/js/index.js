@@ -46,7 +46,7 @@ function init() {
     }); //resizeTimer
     
     // Voice Command pulldown
-    if((window.isAndroid && isCordovaApp) || (window.chrome && !isMobile)) {
+    if((window.isAndroid && isCordovaApp) || (window.chrome)) {
         $(".iscroll-wrapper", $('#main')).bind( {
             iscroll_onpulldown : doVoice
         } );
@@ -54,6 +54,8 @@ function init() {
     else {
         $(".iscroll-wrapper").data("mobileIscrollview").destroy();
         $(".iscroll-pulldown").remove();
+        //ToDo: Add button for chrome/firefox speech recognition
+        //      Pull Down Doesn't work that great on a desktop, all the time
     } // Voice Command pulldown
     get_device_data_ajax();
 }; // init
@@ -247,8 +249,11 @@ function setup_ws_connection() {
         }
         ws.onmessage = function(e) {
             data = e.data;
-            data = $.parseJSON(data);
-            if (data !== 'success') { //just an ack from command
+            if (data === 'Unauthorized') {
+                ws.send("Basic " + btoa(userName + ":" + password));
+            }
+            else if (data !== 'success') { //just an ack from command
+                data = $.parseJSON(data);
                 if(typeof data.previous_state === "undefined"){
                     //this isn't a device state update, so it's a device list update
                     get_device_data_callback(data);
@@ -271,6 +276,7 @@ function setup_ws_connection() {
             wsAttempts = 0;
             if (wsRetrying) {
                 wsRetrying = false;
+                ws.send("Basic " + btoa(userName + ":" + password));
                 ws.send(JSON.stringify({
                     path: "devices"
                 }));
@@ -336,7 +342,7 @@ function get_device_data_ajax() {
             context: document.body,
             type: 'GET',
             error: function(jqXHR, status, errorThrown){
-                if (currentServer !== serverName2) {
+                if (currentServer !== serverName2 && serverName2 !== '') {
                     currentServer = serverName2;
                     get_device_data_ajax();
                 } else {
@@ -397,12 +403,16 @@ function reload_device_grid() {
             var mode = 'off';
             var temp = 0;
             var tempTransitionLabel = 'to';
+            var rgb = '';
             if (values['type_name'] === 'Thermostat') {
-                $.each(state, function(stateIndex, statePart) {
-                    if (statePart[0] === 'temp') temp = statePart[1] + '°';
-                    if (statePart[0] === 'mode') mode = statePart[1];
-                    if (statePart[0] === 'setpoint') {setpoint = statePart[1]; buttonLabel=setpoint + '°';}
-                }); //each
+                if (state === 'unknown')
+                    buttonLabel = 'N/A';
+                else
+                    $.each(state, function(stateIndex, statePart) {
+                        if (statePart[0] === 'temp') temp = statePart[1] + '°';
+                        if (statePart[0] === 'mode') mode = statePart[1];
+                        if (statePart[0] === 'setpoint') {setpoint = statePart[1]; buttonLabel=setpoint + '°';}
+                    }); //each
             } else {
                 if (name.length > 18) {
                     $.each(name.split(' '), function(nameIndex,namepart) {
@@ -432,7 +442,18 @@ function reload_device_grid() {
                     tempTransitionLabel = '';
                 }
                 else {
-                    sliderValue = state[1];
+                    try {
+                        if (state[1].indexOf(':') !== -1) 
+                        {
+                            var stateValues = state[1].split(':');
+                            if (stateValues[1].indexOf('#') !== -1)
+                                rgb = stateValues[1].substr(0,7);
+                            sliderValue = stateValues[0];
+                        }
+                    }
+                    catch(err) {
+                        sliderValue = state[1];
+                    }
                 } // slider level
             }
             
@@ -474,11 +495,17 @@ function reload_device_grid() {
                 rowData += '<td style="width:3em"><button data-mini="true" data-role="button" class="thermSetpoint" deviceId="' + deviceID + '">' + buttonLabel + "</button></td>";
                 rowData += '<td style="width:2em"><a href="#" deviceId="' + deviceID + '" class="incrementSetpoint" data-iconpos="notext" data-role="button" data-icon="plus"></a></div></td></tr></table></tr>';
             } else {
-                rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
-                if (values['type_name'] === 'Light') 
+                if (values['type_name'] === 'Light') {
+                    if (rgb !== '' && rgb !== '#000000') 
+                        rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' style='background-color:" + rgb + "' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
+                    else 
+                        rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
                     rowData += "<input deviceId='" + deviceID + "' id='slider"  + deviceID + "' value=" + sliderValue + "  data-highlight='true' class='ui-hidden-accessible sliderlevel' type='range' name='points' min='0' max='100'></div></td>";
-                else
+                }
+                else {
+                    rowData += "<button data-mini='true' data-role='button' class='toggle' command='toggle' deviceId='" + deviceID + "'>" + buttonLabel + "</button>";
                     rowData += "</div></div></td>";
+                }
             }
             
             if (values['type_name'] === 'Thermostat'){
@@ -546,6 +573,8 @@ function update_device_state(data) {
     var setpoint = 0;
     var mode = 'off';
     var temp = 0;
+    var sliderValue =-0;
+    var rgb = '';
     deviceData[id]['state'] = state;
     if (data['type_name'] === 'Thermostat') {
         $.each(state, function(stateIndex, statePart) {
@@ -554,7 +583,7 @@ function update_device_state(data) {
             if (statePart[0] === 'setpoint') {setpoint = statePart[1]; buttonLabel=setpoint + '°';}
         }); //each
         $('div[data-id="' + id + '"] .temperature').html(temp);
-        $('div[data-id="' + id + '"] button.toggle').html(buttonLabel);
+        $('div[data-id="' + id + '"] button.thermSetpoint').html(buttonLabel);
         var element = $('div[data-id="' + id + '"] .thermostatMode ');
         element.val(mode);
 
@@ -569,7 +598,6 @@ function update_device_state(data) {
 
             }
         }
-            
     } else {
         if (name.length > 18) {
             $.each(name.split(' '), function(nameIndex,namepart) {
@@ -596,9 +624,22 @@ function update_device_state(data) {
         else if (state === 'off')
             sliderValue = 0;
         else{
-            sliderValue = state[1];
+            try {
+                if (state[1].indexOf(':') !== -1) {
+                    var stateValues = state[1].split(':');
+                    if (stateValues[1].indexOf('#') !== -1)
+                        rgb = stateValues[1].substr(0,7);
+                    sliderValue = stateValues[0];
+                }
+            }
+            catch(err) {
+                sliderValue = state[1];
+            }
         } // slider level
-        $('div[data-id="' + id + '"] button.toggle').html(buttonLabel);
+        var el = $('div[data-id="' + id + '"] button.toggle');
+        el.html(buttonLabel);
+        el.css('background-color', '');
+        if (rgb !== '' && rgb !== '#000000') el.css('background-color', rgb);
         if (data['type_name'] === 'Room') {
             buttonLabel = data['state'];
             if (buttonLabel === 'unknown') buttonLabel = "Occupancy Unknown";
@@ -658,10 +699,10 @@ function send_command_ajax(deviceID, command) {
 
 function doVoice(event, data) {
     var maxMatches = 3;
-    if (window.chrome) {
-        var recognizer = new webkitSpeechRecognition();
+    if (window.chrome || navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+        var recognizer = new SpeechRecognition();
         recognizer.onresult = function(event) {
-            //var command = [event.results[0][0].transcript];
             send_voice_command([event.results[0][0].transcript]);
             data.iscrollview.refresh();
         };
@@ -671,13 +712,41 @@ function doVoice(event, data) {
         };
         recognizer.start();
     } else {
-        window.plugins.speechrecognizer.startRecognize(function(result){
+        // Verify if recognition is available
+        window.plugins.speechRecognition.isRecognitionAvailable(function(available){
+            if(!available){
+                console.log("Sorry, not available");
+            }
+
+            // Check if has permission to use the microphone
+            window.plugins.speechRecognition.hasPermission(function (isGranted){
+                if(isGranted){
+                    startRecognition();
+                }else{
+                    // Request the permission
+                    window.plugins.speechRecognition.requestPermission(function (){
+                        // Request accepted, start recognition
+                        startRecognition();
+                    }, function (err){
+                        console.log(err);
+                    });
+                }
+            }, function(err){
+                console.log(err);
+            });
+        }, function(err){
+            console.log(err);
+        });
+        window.plugins.speechRecognition.startListening(function(result){
             send_voice_command(result);
             data.iscrollview.refresh();
         }, function(errorMessage){
             alert("Error message: " + errorMessage);
             data.iscrollview.refresh();
-        }, maxMatches, 'Speak now');
+        }, {
+            language: "en-US",
+            showPopup: true
+        });
     }
 };
 

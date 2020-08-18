@@ -6,12 +6,12 @@ from pytomation.interfaces import Command
 from pytomation.common import config
 
 class InterfaceDevice(StateDevice):
-    
+
     def __init__(self, address=None, *args, **kwargs):
         self._address = address
         super(InterfaceDevice, self).__init__(*args, **kwargs)
-        
-        
+
+
     def _initial_vars(self, *args, **kwargs):
         super(InterfaceDevice, self)._initial_vars(*args, **kwargs)
         self._interfaces=[]
@@ -20,7 +20,7 @@ class InterfaceDevice(StateDevice):
         self._read_only = False
         self._send_always = config.device_send_always
         self._previous_interface_command = None
-        
+
     @property
     def address(self):
         return self._address
@@ -29,16 +29,16 @@ class InterfaceDevice(StateDevice):
     def address(self, value):
         self._address = value
         return self._address
-    
+
     def addressMatches(self, address):
         match = self.address == None or self.address == address
         if not match:
             try:
                 match = self.address.lower() == address.lower()
-            except Exception, ex:
+            except Exception as ex:
                 pass
         return match
-            
+
     def _add_device(self, device):
         try:
             device.onCommand(device=self) # Register with the interface to receive events
@@ -50,7 +50,7 @@ class InterfaceDevice(StateDevice):
                                                                                interface=device.name,
                                                                                ))
             return True
-        except Exception, ex:
+        except Exception as ex:
             return super(InterfaceDevice, self)._add_device(device)
 
     def _delegate_command(self, command, *args, **kwargs):
@@ -76,7 +76,7 @@ class InterfaceDevice(StateDevice):
 #                             else:
 # #                                getattr(interface, command)(self._address)
 #                                 self._send_command_to_interface(interface, self._address, command)
-                        except Exception, ex:
+                        except Exception as ex:
                             self._logger.error("{name} Could not send command '{command}' to interface '{interface}.  Exception: {exc}'".format(
                                                                                                 name=self.name,
                                                                                                 command=command,
@@ -106,8 +106,8 @@ class InterfaceDevice(StateDevice):
             getattr(interface, command[0])(self._address, *command[1:])
         else:
             getattr(interface, command)(self._address)
-            
-    
+
+
     def sync(self, value):
         self._sync = value
         if value:
@@ -115,27 +115,27 @@ class InterfaceDevice(StateDevice):
         else:
             self._stop_sync()
         return self._sync
-    
+
     def _start_sync(self):
         # get a random number of secs from 30 minutes to an hour
-        offset = random.randint(0, 30 * 60) + (30 * 60) 
+        offset = random.randint(0, 30 * 60) + (30 * 60)
         self._sync_timer = CTimer(offset)
         self._sync_timer.action(self._run_sync, ())
-        self._sync_timer.start()        
+        self._sync_timer.start()
 
     def _stop_sync(self):
         self._sync_timer.stop()
-        
+
     def _run_sync(self):
         if self.interface:
             getattr(self.interface, self._state)()
         self._start_sync()
-        
+
     def read_only(self, value=None):
         if value:
             self._read_only=value
         return self._read_only
-    
+
     def send_always(self, value=False):
         if value:
             self._send_always = value

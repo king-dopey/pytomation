@@ -27,7 +27,7 @@ wtdio.setChannel('ASG')
 
 ###################### DEVICE CONFIG #########################
 
-# ______ REMOTES ____________________________________________________ 
+# ______ REMOTES ____________________________________________________
 
 # X10 Slimline RF wall switch in living room
 sl_sofa = Generic('A1', w800, name='Sofa Switch')
@@ -72,16 +72,16 @@ x4 = Generic('E4', w800)
 
 
 
-# ______ MOTION SENSORS _____________________________________________ 
+# ______ MOTION SENSORS _____________________________________________
 
 m_kitchen = Motion(address='AC', devices=wtdio, name='Kitchen Motion')
 m_laundry = Motion(address='AD', devices=wtdio, name='Laundry Room Motion')
 m_hallway = Motion(address='AE', devices=wtdio, name='Hallway Motion')
 
 # Don't allow this to trigger ON again for 20 seconds
-m_stairs  = Motion(address='H1', devices=w800, 
+m_stairs  = Motion(address='H1', devices=w800,
         retrigger_delay = {
-            Attribute.SECS: 20    
+            Attribute.SECS: 20
         },
         name='Stair Motion')
 m_recroom = Motion(address='I1', devices=w800, name='Recroom Motion')
@@ -89,26 +89,26 @@ m_backdoor = Motion(address='J1', devices=w800, name='Backdoor Motion')
 
 
 
-# ______ DOOR CONTACTS ______________________________________________ 
+# ______ DOOR CONTACTS ______________________________________________
 d_back = Door(address='AG', devices=wtdio, name='Backdoor Contact')
 
 
 
-# ______ LOCATION ___________________________________________________ 
+# ______ LOCATION ___________________________________________________
 #
 ph_standard = Location('48.9008', '-119.8463',      #moved this east a bit
                        tz='America/Vancouver',
-                       mode=Location.MODE.STANDARD, 
+                       mode=Location.MODE.STANDARD,
                        is_dst=True,
                        name='Standard Photocell')
 
 
 
-# ______ GENERICS ___________________________________________________ 
+# ______ GENERICS ___________________________________________________
 #
-# Use this for a oneshot at dark.  
-on_at_night = Generic(devices=ph_standard, 
-                    ignore=({Attribute.COMMAND: Command.LIGHT}), 
+# Use this for a oneshot at dark.
+on_at_night = Generic(devices=ph_standard,
+                    ignore=({Attribute.COMMAND: Command.LIGHT}),
                     name='Dark oneshot')
 
 # Cheap way to say some one is in the house
@@ -119,11 +119,11 @@ home = Generic(devices=(m_kitchen,m_stairs,m_hallway),
                 name='Someone is home')
 
 
-            
-# ______ HALLWAY ____________________________________________________ 
+
+# ______ HALLWAY ____________________________________________________
 
 # LampLinc
-l_piano = Light(address='0E.7C.6C', 
+l_piano = Light(address='0E.7C.6C',
             devices=(insteon, sl_sofa, sl_xmas, ph_standard, pp_piano, all_lights),
             time={
                 Attribute.TIME: '10:25pm',
@@ -136,7 +136,7 @@ l_piano = Light(address='0E.7C.6C',
 # Don't turn it on when it's DARK
 # This device has additional code in mainloop to handle PREVIOUS levels
 # SwitchLinc 2476D V5.4
-l_hallway =  Light(address='17.C0.7C', 
+l_hallway =  Light(address='17.C0.7C',
             devices=(insteon, ph_standard, d_back, all_lights),
             ignore=({Attribute.COMMAND: Command.DARK}),
             mapped={
@@ -151,11 +151,11 @@ l_hallway =  Light(address='17.C0.7C',
             name="Hallway Lights",)
 
 
-# ______ LIVING ROOM ________________________________________________ 
+# ______ LIVING ROOM ________________________________________________
 
 # LampLinc
 # Additional rule in mainloop
-l_sofa = Light(address='12.07.1F', 
+l_sofa = Light(address='12.07.1F',
             devices=(insteon, sl_sofa, pp_sofa, pp_sofa60, all_lights, web),
             send_always=True,
             mapped={
@@ -174,7 +174,7 @@ l_sofa = Light(address='12.07.1F',
             name='Sofa Lamps')
 
 # LampLinc
-l_buffet = Light(address='0F.81.88', 
+l_buffet = Light(address='0F.81.88',
             devices=(insteon, sl_sofa, sl_xmas, pp_buffet, on_at_night, all_lights),
             send_always=True,
             time={
@@ -184,7 +184,7 @@ l_buffet = Light(address='0F.81.88',
             name='Buffet Lamp')
 
 # LampLinc
-l_fireplace = Light(address='12.06.58', 
+l_fireplace = Light(address='12.06.58',
             devices=(insteon, sl_xmas, sl_sofa, on_at_night, pp_fireplace, all_lights),
             send_always=True,
             time={
@@ -194,7 +194,7 @@ l_fireplace = Light(address='12.06.58',
             name='Fireplace Lamp')
 
 # LampLinc
-l_stereo = Light(address='12.09.02', 
+l_stereo = Light(address='12.09.02',
             devices=(insteon,sl_stereo, sl_xmas, pp_stereo, all_lights),
             send_always=True,
             time={
@@ -204,30 +204,30 @@ l_stereo = Light(address='12.09.02',
             name='Stereo Lamp')
 
 
-# ______ BEDROOM ROOM _______________________________________________ 
+# ______ BEDROOM ROOM _______________________________________________
 #SwitchLinc
-l_bedroom = Light(address='1A.58.E8', 
+l_bedroom = Light(address='1A.58.E8',
             devices=(insteon, bedroom_onoff,pp_bedroom),
             send_always=True,
             name='Master Bedroom Light')
 
 
-# ______ BATHROOM UP ________________________________________________ 
+# ______ BATHROOM UP ________________________________________________
 #SwitchLinc dim v4.35
-l_bathroom = Light(address='12.20.B0', 
+l_bathroom = Light(address='12.20.B0',
             devices=(insteon,pp_bathroom, all_lights),
             send_always=True,
             name='Bathroom Lights')
 
-# ______ STAIRS _____________________________________________________ 
+# ______ STAIRS _____________________________________________________
 
-# This has 2 motion detectors one at the top of the stairs and one in the 
-# Laundry room at the bottom.  Go to the top of the stairs and the light 
+# This has 2 motion detectors one at the top of the stairs and one in the
+# Laundry room at the bottom.  Go to the top of the stairs and the light
 # turns on, don't go down, it turns off 15 seconds later.  Go down and laundry
-# motion keeps it on while in the room, come up the stairs and the laundry 
+# motion keeps it on while in the room, come up the stairs and the laundry
 # timers cancels and the 15 second time turns off the light.  Nice!
 #SwitchLinc 2477S V6.0
-l_stair_up = Light(address='1E.39.5C', 
+l_stair_up = Light(address='1E.39.5C',
             devices=(insteon, m_stairs, m_laundry),
             trigger=({
                 'command': Command.ON,
@@ -244,20 +244,20 @@ l_stair_up = Light(address='1E.39.5C',
                 'command': Command.STILL,
             },
             name='Stair Lights up')
-        
+
 
 
 #SwitchLinc 2477S V6.2 Dualband
-l_stair_down = Light(address='1F.A9.86', 
+l_stair_down = Light(address='1F.A9.86',
             devices=(insteon),
             name='Stairs Lights Down')
 
 
 
-# ______ RECROOM ____________________________________________________ 
+# ______ RECROOM ____________________________________________________
 
 # LampLinc
-l_recroom_lamp = Light(address='18.A1.D3', 
+l_recroom_lamp = Light(address='18.A1.D3',
             devices=(insteon, sl_recroom_lamp, m_recroom),
             send_always=True,
             delay={
@@ -267,7 +267,7 @@ l_recroom_lamp = Light(address='18.A1.D3',
             name='Recroom Lamp')
 
 #SwitchLinc Relay V5.2
-l_recroom_light = Light(address='12.DB.5D', 
+l_recroom_light = Light(address='12.DB.5D',
             devices=(insteon, sl_recroom_light,pp_rroom),
             send_always=True,
             time={
@@ -278,7 +278,7 @@ l_recroom_light = Light(address='12.DB.5D',
 
 
 
-# ______ BATHROOM DOWN ______________________________________________ 
+# ______ BATHROOM DOWN ______________________________________________
 
 #SwitchLinc Relay
 f_bathroom = Light(address='12.E3.54',devices=(insteon),
@@ -291,13 +291,13 @@ f_bathroom = Light(address='12.E3.54',devices=(insteon),
 
 
 
-# ______ OUTSIDE _______________________________________________ 
+# ______ OUTSIDE _______________________________________________
 
 #SwitchLinc
-l_carport = Light(address='0F.45.9F', 
+l_carport = Light(address='0F.45.9F',
             devices=(insteon, sl_xmas, ph_standard, m_backdoor),
             # don't come on when dark but restrict until dark
-            ignore={Attribute.COMMAND: Command.DARK},  
+            ignore={Attribute.COMMAND: Command.DARK},
             send_always=True,
             trigger={
                     Attribute.COMMAND: Command.ON,
@@ -315,8 +315,8 @@ l_carport = Light(address='0F.45.9F',
 #KeypadLinc
 # On at sunset, drop back to 40% 60 seconds later
 # Door open or motion, light at 100%, then idle
-# Light off at 10:30 
-l_backdoor = Light(address='12.B8.73', 
+# Light off at 10:30
+l_backdoor = Light(address='12.B8.73',
             devices=(insteon, sl_outside, ph_standard, d_back, all_lights, m_backdoor),
             send_always=True,
 #            ignore=({Attribute.COMMAND: Command.DARK},
@@ -333,8 +333,8 @@ l_backdoor = Light(address='12.B8.73',
 
 
 
-print "Current daylight state is -> ", ph_standard.state
-print "Updating status..."
+print("Current daylight state is -> ", ph_standard.state)
+print("Updating status...")
 insteon.update_status()
 
 # My mainloop is set at 30 seconds
@@ -343,10 +343,10 @@ def MainLoop(startup=False,*args, **kwargs):
     if startup:
         global ticcount
         global sofaOn
-        
+
         ticcount = 0
         sofaOn = True
-        print "Startup..."
+        print("Startup...")
 
     ticcount += 1   # right now every 30 seconds
 
@@ -371,22 +371,21 @@ def MainLoop(startup=False,*args, **kwargs):
         l_hallway._previous_state = (State.LEVEL,40)
     else:
         l_hallway._previous_state = (State.LEVEL, 0)
-        
+
 
     # Sometimes I run from console and print stuff while testing.
-        
+
     #print "Recroom Lamp   -> ", l_recroom_lamp.state
     #print "Recroom Light  -> ", l_recroom_light.state
-    print (time.strftime('%H:%M:%S'))
+    print((time.strftime('%H:%M:%S')))
     #print "Ticcount ----> ", ticcount
     #print "Here --------> ", here.state
     #print "Bathroom Light -> ", l_bathroom.state
-    print "Hallway Light  -> ", l_hallway.state
+    print("Hallway Light  -> ", l_hallway.state)
     #print "Carport outlet -> ", l_carport.state
     #print "Bedroom Light  -> ", l_bedroom.state
     #print "Stair Light    -> ", l_stair_up.state
     #print "Test Light     -> ", test.state
     #print "Spin Time -> ",insteon.spinTime
-    print "Status Request -> ",insteon.statusRequest
-    print '--------------------------'
-    
+    print("Status Request -> ",insteon.statusRequest)
+    print('--------------------------')

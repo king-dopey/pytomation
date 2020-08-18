@@ -5,9 +5,7 @@
 # references:
 # http://docs.python.org/library/sched.html
 
-import time
-from datetime import datetime, timedelta
-from threading import Timer, Event
+from datetime import datetime
 
 from .periodic_timer import PeriodicTimer
 
@@ -19,7 +17,7 @@ class AllMatch(set):
 allMatch = AllMatch()
 
 def conv_to_set(obj):  # Allow single integer to be provided
-    if isinstance(obj, (int,long)):
+    if isinstance(obj, int):
         return set([obj])  # Single item
     if not isinstance(obj, set):
         obj = set(obj)
@@ -95,15 +93,15 @@ class CronTimer(object):
                     self._action(self._action_args)
                 else:
                     self._action()
-                
+
     @staticmethod
     def to_cron(string):
         if string == None:
             return None
-            
+
         if isinstance(string, tuple):
             return string
-            
+
         date_object = None
         try: # Hours / Minutes
             try:
@@ -112,7 +110,7 @@ class CronTimer(object):
                 try:
                     date_object = datetime.strptime(string, '%I:%M %p')
                 except:
-                        date_object = datetime.strptime(string, '%H:%M')
+                    date_object = datetime.strptime(string, '%H:%M')
             return (
                 0,
                 date_object.minute,
@@ -121,8 +119,8 @@ class CronTimer(object):
                 '*',
                 '*',
                 )
-        
-        except Exception, e:
+
+        except Exception as e:
             try: # Hours / Minutes / Seconds
                 try:
                     date_object = datetime.strptime(string, '%I:%M:%S%p')
@@ -139,8 +137,8 @@ class CronTimer(object):
                     '*',
                     '*',
                     )
-            except Exception, ex:
-                print '\nError in to_cron, check your date formats...\n'
+            except Exception as ex:
+                print('\nError in to_cron, check your date formats...\n')
                 raise ex
-                
+
         return None

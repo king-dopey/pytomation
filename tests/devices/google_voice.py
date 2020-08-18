@@ -1,4 +1,4 @@
-from unittest import TestCase, main
+from unittest import TestCase
 from mock import Mock
 
 from pytomation.devices import State, Google_Voice, StateDevice
@@ -7,7 +7,7 @@ from pytomation.interfaces import Command
 class Google_VoiceTests(TestCase):
     def setUp(self):
         self.gv = Google_Voice(user='jason@sharpee.com', password='password')
-    
+
     def test_instantiation(self):
         self.assertIsInstance(self.gv, Google_Voice)
 

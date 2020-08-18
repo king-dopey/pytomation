@@ -7,7 +7,7 @@ exec 2>&1
 # It's possible PYHOME in /usr/bin has been changed by the install.sh script
 PYHOME="/home/pytomation"
 cd $PYHOME
-PROGRAM='python ./pytomation.py'
+PROGRAM='python3 ./pytomation.py'
 
 # Put a flag into the logs so we can find when pytomation was restarted
 echo "=========RESTART==========" >> ./pylog.log

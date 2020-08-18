@@ -5,15 +5,15 @@ File:
 Description:
     A set of classes supporting Insteon communication
 
-Author(s): 
+Author(s):
     Chris Van Orman
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
 
-Example: 
+Example:
 
 Notes:
 
@@ -22,19 +22,19 @@ Created on Mar 11, 2013
 class InsteonCommand(object):
     def __init__(self, data, *args, **kwargs):
         self._data = data
-        
+
     def setAddress(self,data):
         pass
-        
+
     def setFlags(self, data):
         pass
-    
+
     def setSecondary(self,data):
-        pass 
+        pass
 
     def getBytes(self):
         return str(bytearray(self._data))
-    
+
 class InsteonStandardCommand(InsteonCommand):
     def __init__(self, data, *args, **kwargs):
         super(InsteonStandardCommand, self).__init__(data, *args, **kwargs)
@@ -45,16 +45,16 @@ class InsteonStandardCommand(InsteonCommand):
 
     def _getAddress(self, data):
         return data[1:4]
-        
+
     def setAddress(self,data):
         self._data[1:4] = data
-        
+
     def setFlags(self, data):
         self._data[4] = data
-    
+
     def setPrimaryData(self, data):
         self._data[5:] = data
-    
+
     def setSecondaryData(self,data):
         self._data[6:] = data
 
@@ -73,7 +73,7 @@ class InsteonExtendedCommand(InsteonStandardCommand):
         #The extended response is 0x51, but the actual ACK from the device is still 0x50.
         self._ackCommand = 0x50
         self.setFlags(0x1F)
-    
+
 class InsteonAllLinkCommand(InsteonStandardCommand):
     def __init__(self, data, *args, **kwargs):
         super(InsteonAllLinkCommand, self).__init__(data, *args, **kwargs)
@@ -83,13 +83,12 @@ class InsteonAllLinkCommand(InsteonStandardCommand):
 
     def _getAddress(self, data):
         return data[1]
-        
+
     def setAddress(self,data):
         self._data[1] = data[2] if len(data) == 3 else data
-        
+
     def setFlags(self, data):
         pass
-        
+
     def setSecondary(self,data):
         self._data[3] = data
-        

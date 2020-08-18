@@ -5,11 +5,11 @@ from pytomation.devices import Room, Motion, Light, StateDevice, State
 class RoomTests(TestCase):
     def setUp(self):
         pass
-    
+
     def test_init(self):
         r = Room()
         self.assertIsNotNone(r)
-        
+
     def test_room_occupied(self):
         m = Motion()
         r = Room(devices=m)
@@ -17,7 +17,7 @@ class RoomTests(TestCase):
         self.assertEqual(r.state, State.VACANT)
         m.motion()
         self.assertEqual(r.state, State.OCCUPIED)
-        
+
     def test_room_to_room_vacate(self):
         m1 = Motion(name='m1')
         m2 = Motion(name='m2')
@@ -48,5 +48,3 @@ class RoomTests(TestCase):
         self.assertEqual(r1.state, State.VACANT)
         self.assertEqual(r2.state, State.OCCUPIED)
         self.assertEqual(r3.state, State.VACANT)
-        
-        

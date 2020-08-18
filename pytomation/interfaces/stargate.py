@@ -31,9 +31,7 @@ Versions and changes:
     2012/11/30 - 1.3 - Unify Command and State magic strings across the system
     2012/12/09 - 1.4 - Bump version number
 """
-import threading
 import time
-from Queue import Queue
 from binascii import unhexlify
 
 from .common import *
@@ -51,7 +49,7 @@ class Stargate(HAInterface):
         super(Stargate, self)._init(*args, **kwargs)
 
         self.version()
-        
+
         self._last_input_map_low = None
         self._last_input_map_high = None
 
@@ -63,9 +61,9 @@ class Stargate(HAInterface):
 
         self._modemResponse = {
                                }
-        self.d_inverted = [False for x in xrange(16)]
+        self.d_inverted = [False for x in range(16)]
         self.echoMode()
-	self._logger.error('Startgggg')
+        self._logger.error('Startgggg')
 
     def _readInterface(self, lastPacketHash):
         #check to see if there is anyting we need to read
@@ -93,8 +91,8 @@ class Stargate(HAInterface):
 
         last_input_map = self._last_input_map_low
 
-        if response[-1] == 'f':
-            a=1
+        #if response[-1] == 'f':
+        #    a=1
         range = self._decode_echo_mode_activity(response)['j']
         io_map = Conversions.ascii_to_int( Conversions.hex_to_ascii(
                 self._decode_echo_mode_activity(response)['l'] + \
@@ -103,10 +101,10 @@ class Stargate(HAInterface):
 
         if range == 'c': # High side of 16bit registers
             offset = 8
-            last_input_map = self._last_input_map_high 
-        
+            last_input_map = self._last_input_map_high
 
-        for i in xrange(8):
+
+        for i in range(8):
             i_value = io_map & (2 ** i)
             i_prev_value = last_input_map & (2 ** i)
             if i_value != i_prev_value or first_time:
@@ -114,9 +112,9 @@ class Stargate(HAInterface):
                     state = Command.ON
                 else:
                     state = Command.OFF
-		self._logger.info("Digital Input #{input} to state {state}".format(
-				input=str(offset + i + 1),
-				state=state))
+                self._logger.info("Digital Input #{input} to state {state}".format(
+                                input=str(offset + i + 1),
+                                state=state))
                 self._onCommand(command=state,
                                 address='D' + str(offset + i + 1))
 
@@ -124,7 +122,7 @@ class Stargate(HAInterface):
             self._last_input_map_high = io_map
         else:
             self._last_input_map_low = io_map
-	
+
         self._logger.debug("Process digital input {iomap} {offset} {last_inputl} {last_inputh}".format(
                                              iomap=Conversions.int_to_hex(io_map),
                                              offset=offset,
@@ -148,7 +146,7 @@ class Stargate(HAInterface):
         foundCommandHash = None
 
         #find our pending command in the list so we can say that we're done (if we are running in syncronous mode - if not well then the caller didn't care)
-        for (commandHash, commandDetails) in self._pendingCommandDetails.items():
+        for (commandHash, commandDetails) in list(self._pendingCommandDetails.items()):
             if commandDetails['modemCommand'] == self._modemCommands['read_register']:
                 #Looks like this is our command.  Lets deal with it
                 self._commandReturnData[commandHash] = response[4:]

@@ -2,7 +2,6 @@ import time
 
 from mock import Mock
 from unittest import TestCase, main
-from datetime import datetime, timedelta
 
 from pytomation.utility.timer import Timer as CTimer
 
@@ -43,14 +42,14 @@ class TimerTests(TestCase):
         self.assertFalse(callback.test.called)
         time.sleep(4)
         self.assertFalse(callback.test.called)
-        
+
     def test_isAlive(self):
         rt = CTimer()
         rt.interval = 2
         rt.start()
         self.assertTrue(rt.isAlive())
         time.sleep(3)
-        self.assertFalse(rt.isAlive())        
+        self.assertFalse(rt.isAlive())
 
 if __name__ == '__main__':
     main()

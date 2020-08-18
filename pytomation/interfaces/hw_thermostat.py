@@ -15,7 +15,6 @@ reuse from:
  George Farris <farrisg@gmsys.com>
 """
 import json
-import re
 import time
 
 from .ha_interface import HAInterface
@@ -23,7 +22,7 @@ from .common import *
 
 class HW_Thermostat(HAInterface):
     VERSION = '1.0.0'
-    
+
     def _init(self, *args, **kwargs):
         super(HW_Thermostat, self)._init(*args, **kwargs)
         self._last_temp = None
@@ -31,15 +30,15 @@ class HW_Thermostat(HAInterface):
         self._hold = None
         self._fan = None
         self._set_point = None
-        
+
         self._iteration = 0
         self._poll_secs = kwargs.get('poll', 60)
 
         try:
             self._host = self._interface.host
-        except Exception, ex:
+        except Exception as ex:
             self._logger.debug('[HW Thermostat] Could not find host address: ' + str(ex))
-        
+
     def _readInterface(self, lastPacketHash):
         # We need to dial back how often we check the thermostat.. Lets not bombard it!
         if not self._iteration < self._poll_secs:
@@ -53,13 +52,13 @@ class HW_Thermostat(HAInterface):
                     status = []
                     try:
                         status = json.loads(response)
-                    except Exception, ex:
+                    except Exception as ex:
                         self._logger.error('Could not decode status request' + str(ex))
                     self._process_mode(status)
         else:
             self._iteration+=1
             time.sleep(1) # one sec iteration
-    
+
     def heat(self, *args, **kwargs):
         self._mode = Command.HEAT
         return self._send_state()
@@ -84,24 +83,24 @@ class HW_Thermostat(HAInterface):
     def still(self, *args, **kwargs):
         self._fan = False
         return self._send_state()
-    
+
     def off(self, *args, **kwargs):
         self._mode = Command.OFF
         return self._send_state()
-    
+
     def setpoint(self, address, level, timeout=2.0):
         self._set_point = level
         return self._send_state()
-    
+
     def version(self):
         self._logger.info("HW Thermostat Pytomation driver version " + self.VERSION + '\n')
-        
+
     def _process_current_temp(self, response):
         temp = None
         try:
             status = json.loads(response)
             temp = status['temp']
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('HW Thermostat couldnt decode status json: ' + str(ex))
         if temp and temp != self._last_temp:
             self._onCommand(command=(Command.LEVEL, temp),address=self._host)
@@ -124,27 +123,27 @@ class HW_Thermostat(HAInterface):
             self._onCommand(command=command,address=self._host)
 
     def _send_state(self):
-        modes = dict(zip([Command.OFF, Command.HEAT, Command.COOL, Command.SCHEDULE],
-                         range(0,4)))
+        modes = dict(list(zip([Command.OFF, Command.HEAT, Command.COOL, Command.SCHEDULE],
+                         list(range(0,4)))))
         try:
             attributes = {}
-            if self._set_point <> None:
+            if self._set_point != None:
                 if self._mode == Command.HEAT or self._mode == None:
                     attributes['t_heat'] = self._set_point
                 elif self._mode == Command.COOL:
                     attributes['t_cool'] = self._set_point
-            if self._fan <> None:
+            if self._fan != None:
                 attributes['fmode'] = 2 if self._fan else 1
-            if self._mode <> None:
+            if self._mode != None:
                 attributes['tmode'] = modes[self._mode]
-            if self._hold <> None:
+            if self._hold != None:
                 attributes['hold'] = 1 if self._hold or self._mode != Command.SCHEDULE else 0
-                
+
             command = ('tstat', json.dumps(attributes),
                     )
-        except Exception, ex:
+        except Exception as ex:
             self._logger.error('Could not formulate command to send: ' + str(ex))
 
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        self._sendInterfaceCommand(command)
         return True
         #return self._waitForCommandToFinish(commandExecutionDetails, timeout=2.0)

@@ -49,16 +49,16 @@ class InsteonInterface2Tests(TestCase):
 #        self.ms.add_response({Conversions.hex_to_ascii('026219057B0F11FF'):
 #                              Conversions.hex_to_ascii('026219057B0F11FF06') + \
 #                              Conversions.hex_to_ascii('025019057B16F9EC2B11FF')})
-        response = self.insteon.on('19.05.7b')
+        self.insteon.on('19.05.7b')
         self.assertIn(Conversions.hex_to_ascii('026219057B0F11FF'), self.ms.query_write_data())
         self.ms.put_read_data(Conversions.hex_to_ascii('026219057B0F11FF06'))
         self.ms.put_read_data(Conversions.hex_to_ascii('025019057B16F9EC2B11FF'))
         #time.sleep(2)
         #self.assertEqual(response, True)
-        
+
     def test_insteon_level2(self):
         self.ms.disabled = False
-        
+
         self.insteon.level('12.20.B0', 50)
         #todo: figure out how to really deal with this race condition
         time.sleep(3)
@@ -69,8 +69,8 @@ class InsteonInterface2Tests(TestCase):
         """
         [2013/09/07 15:24:51] [DEBUG] [InsteonPLM] Receive< 0000   02 50 23 D2 BE 00 00 01 CB 11 00    .P#........
         d395e51a11bb096e20f9ae84b47f8884
-        
-        [2013/09/07 15:24:51] [WARNING] [InsteonPLM] Unhandled packet (couldn't find any pending command to deal with it) 
+
+        [2013/09/07 15:24:51] [WARNING] [InsteonPLM] Unhandled packet (couldn't find any pending command to deal with it)
         [2013/09/07 15:24:51] [WARNING] [InsteonPLM] This could be a status message from a broadcast
         [2013/09/07 15:24:51] [DEBUG] [InsteonPLM] Running status request..........
         [2013/09/07 15:24:51] [DEBUG] [InsteonPLM] Command: 23.D2.BE 19 00
@@ -81,12 +81,12 @@ class InsteonInterface2Tests(TestCase):
         [2013/09/07 15:24:53] [DEBUG] [InsteonPLM] Transmit>026223d2be0f1900
         [2013/09/07 15:24:53] [DEBUG] [InsteonPLM] Receive< 0000   02 50 23 D2 BE 22 FF 5B 41 11 01    .P#..".[A..
         4996cf7dd3a4b4722f120dc9c0fe5b17
-        
+
         [2013/09/07 15:24:53] [WARNING] [InsteonPLM] Unhandled packet (couldn't find any pending command to deal with it)
         [2013/09/07 15:24:53] [WARNING] [InsteonPLM] This could be a status message from a broadcast
         [2013/09/07 15:24:53] [DEBUG] [InsteonPLM] Running status request..........
         [2013/09/07 15:24:53] [DEBUG] [InsteonPLM] Command: 23.D2.BE 19 00
-        
+
         """
         global logging_default_level
         ## Default logging level
@@ -102,7 +102,7 @@ class InsteonInterface2Tests(TestCase):
 
     def _insteon_receive_status_callback(self, *args, **kwargs):
         command = kwargs.get('command', None)
-        print 'command:' + command
+        print('command:' + command)
         if command == Command.ON:
             self._result = True
 

@@ -11,13 +11,13 @@ which was reused from:
  George Farris <farrisg@gmsys.com>
 """
 
-import json,urllib,time
+import json,urllib.parse,time
 
 from .ha_interface import HAInterface
 from .common import Interface, Command
 
 class VenstarThermostat(HAInterface):
-    VERSION = '1.0.1'
+    VERSION = '1.0.2'
 
     def _init(self, *args, **kwargs):
         super(VenstarThermostat, self)._init(*args, **kwargs)
@@ -39,7 +39,7 @@ class VenstarThermostat(HAInterface):
         else:
             try:
                 responses = self._interface.read()
-                self._logger.debug("[Venstar Thermostat] API> " + str(responses))
+                self._logger.debug("API> " + str(responses))
                 if json.loads(responses)['type'] == "commercial":
                     self._away_type = "holiday"
                 else:
@@ -50,24 +50,9 @@ class VenstarThermostat(HAInterface):
         #the delay to poll the thermostat
         self._poll_secs = kwargs.get('poll', 5)
         self._iteration = self._poll_secs + 1
-        
-        try:
-            self._host = self._interface.host
-        except Exception, ex:
-            self._logger.debug('[Venstar Thermostat] Could not find host address: ' + str(ex))
-
-
-    def _process_current_temp(self, response):
-        temp = None
-        try:
-            status = json.loads(response)
-
-        except Exception, ex:
-            self._logger.error("Venstar Thermostat couldn't decode status json: " + str(ex))
-
 
     def _process_mode(self, response):
-        self._logger.debug("Venstar - process mode" + str(response))
+        self._logger.debug("process mode" + str(response))
 
 
     def _readInterface(self, lastPacketHash):
@@ -77,18 +62,19 @@ class VenstarThermostat(HAInterface):
             #check to see if there is anything we need to read
             try:
                 responses = self._interface.read('query/info')
-            except:
+            except Exception as ex:
+                self._logger.error(ex)
                 responses = ''
-                
+
             if len(responses) != 0:
                 status = []
                 try:
                     status = json.loads(responses)
-                    self._logger.debug("[Venstar Thermostat] Response> " + str(responses))
+                    self._logger.debug("Response> " + str(responses))
                     mode = status['mode']
                     command = None
                     state = status['state']
-                    self._away = status['holiday']
+                    self._away = status[self._away_type]
                     self._schedule = status['schedule']
                     self._CoolSetpoint = status['cooltemp']
                     self._HeatSetpoint = status['heattemp']
@@ -112,14 +98,15 @@ class VenstarThermostat(HAInterface):
                             elif self._last_state==2: #cooling
                                 self._set_point = self._CoolSetpoint
                         else: #hasn't turned on yet, try and guess
-                            if self._last_temp > self._CoolSetpoint:
-                                self._set_point = self._CoolSetpoint
-                            if self._last_temp < self._HeatSetpoint:
-                                self._set_point = self._CoolSetpoint
-                            else:
-                                self._set_point = self._HeatSetpoint
+                            if self._last_temp:
+                                if self._last_temp > self._CoolSetpoint:
+                                    self._set_point = self._CoolSetpoint
+                                if self._last_temp < self._HeatSetpoint:
+                                    self._set_point = self._CoolSetpoint
+                                else:
+                                    self._set_point = self._HeatSetpoint
 
-                    self._logger.debug('Venstar Status mode = ' + str(command))
+                    self._logger.debug('Status mode = ' + str(command))
 
                     if self._set_point != self._last_set_point:
                         self._last_set_point = self._set_point
@@ -136,37 +123,37 @@ class VenstarThermostat(HAInterface):
 
                     fan = status['fan']
                     if fan and int(fan) != self._fan:
-                        _fan = int(fan)
+                        self._fan = int(fan)
 
-                except Exception, ex:
+                except Exception as ex:
                     self._logger.error('Could not decode status request' + str(ex))
             else:
                 self._logger.debug("No response")
         else:
             self._iteration+=1
             time.sleep(1) # one sec iteration
-            
+
     def _writeInterfaceFinal(self, data):
         return self._interface.read(data)
 
     def _send_state(self):
-        modes = dict(zip([Command.OFF, Command.HEAT, Command.COOL, Command.AUTOMATIC],
-                         range(0,4)))
+        modes = dict(list(zip([Command.OFF, Command.HEAT, Command.COOL, Command.AUTOMATIC],
+                         list(range(0,4)))))
         try:
             attributes = {}
-            if self._mode <> None:
+            if self._mode != None:
                 attributes['mode'] = modes[self._mode]
-            if self._fan <> None:
+            if self._fan != None:
                 attributes['fan'] = 1 if self._fan else 0
-            if self._set_point <> None:
-                    attributes['heattemp'] = self._HeatSetpoint
-                    attributes['cooltemp'] = self._CoolSetpoint
+            if self._set_point != None:
+                attributes['heattemp'] = self._HeatSetpoint
+                attributes['cooltemp'] = self._CoolSetpoint
 
-            command = ('control', urllib.urlencode(attributes),)
-        except Exception, ex:
+            command = ('control', urllib.parse.urlencode(attributes),)
+        except Exception as ex:
             self._logger.error('Could not formulate command to send: ' + str(ex))
 
-        commandExecutionDetails = self._sendInterfaceCommand(command)
+        self._sendInterfaceCommand(command)
         return True
 
     def send_settings(self):
@@ -177,12 +164,11 @@ class VenstarThermostat(HAInterface):
               self._away_type: self._away,
               'schedule': self._schedule
             }
-            command = ('settings', urllib.urlencode(attributes),)
-        except:
+            command = ('settings', urllib.parse.urlencode(attributes),)
+        except Exception as ex:
             self._logger.error('Could not formulate command to send: ' + str(ex))
 
-        commandExecutionDetails = self._sendInterfaceCommand(command)
-        return True
+        return self._sendInterfaceCommand(command)
 
     def warmer(self):
         self._last_set_point = self._set_point
@@ -190,14 +176,14 @@ class VenstarThermostat(HAInterface):
         self._CoolSetpoint += 1
         self._HeatSetpoint += 1
         return self._send_state()
-    
+
     def cooler(self):
         self._last_set_point = self._set_point
         self._set_point -= 1
         self._CoolSetpoint -= 1
         self._HeatSetpoint -= 1
         return self._send_state()
-    
+
     def heat(self, *args, **kwargs):
         self._mode = Command.HEAT
         self._last_state = 1
@@ -240,11 +226,11 @@ class VenstarThermostat(HAInterface):
         self._mode = Command.OFF
         return self._send_state()
 
-    def setpoint(self, address, level, timeout=2.0):
+    def setpoint(self, address, level):
         setpoint_change = level - self._set_point
         self._set_point = level
         self._CoolSetpoint += setpoint_change
-        self._HeatSetpoint += setpoint_change    
+        self._HeatSetpoint += setpoint_change
         return self._send_state()
 
     def version(self):

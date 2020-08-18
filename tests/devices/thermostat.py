@@ -37,13 +37,13 @@ class ThermostatTests(TestCase):
         self.device.level(72)
         self.assertEqual(self.device.state, (State.LEVEL, 72))
         self.interface.level.assert_called_with('192.168.1.3', 72)
-        
+
     def test_circulate(self):
         self.assertEqual(self.device.state, State.UNKNOWN)
         self.device.circulate()
         self.assertEqual(self.device.state, State.CIRCULATE)
         self.interface.circulate.assert_called_with('192.168.1.3')
-        
+
     def test_automatic_mode_for_device_that_does_not(self):
         #Oddly enough the homewerks thermostat doesnt have an auto mode
         self.interface.automatic = None
@@ -81,7 +81,7 @@ class ThermostatTests(TestCase):
         assert not self.interface.level.called
         self.device.command(command=(Command.SETPOINT, 70), source=self.interface, address='192.168.1.3')
         self.interface.heat.assert_called_with('192.168.1.3')
-        
+
     def test_automatic_delta(self):
         self.device = Thermostat(
                        address='192.168.1.3',
@@ -101,8 +101,8 @@ class ThermostatTests(TestCase):
         self.interface.level.reset_mock()
         self.device.command(command=(Command.SETPOINT, 71), source=self.interface, address='192.168.1.3')
         assert not self.interface.heat.called
-        
-        
+
+
     def test_automatic_delta_setpoint_switchover(self):
         self.device = Thermostat(
                        address='a',
@@ -131,7 +131,7 @@ class ThermostatTests(TestCase):
         assert not self.interface.hold.called
         self.device.command(Command.HOLD)
         self.interface.hold.assert_called_with('192.168.1.3')
-        
+
     def test_away_mode(self):
         self.device = Thermostat(
                        address='a',
@@ -155,7 +155,7 @@ class ThermostatTests(TestCase):
         self.device.command(command=(Command.SETPOINT, 61), source=self.interface, address='a')
         self.interface.heat.assert_called_with('a')
 
-                
+
         self.interface.heat.reset_mock()
         self.interface.cool.reset_mock()
         self.device.command(command=(Command.SETPOINT, 68), source=self.interface, address='a')
@@ -164,9 +164,3 @@ class ThermostatTests(TestCase):
         self.device.command(command=(Command.SETPOINT, 68), source=self.interface, address='a')
         self.interface.occupy.assert_called_with('a')
         self.interface.heat.assert_called_with('a')
-
-        
-        
-        
-        
-        

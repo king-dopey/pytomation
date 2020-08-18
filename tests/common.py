@@ -8,4 +8,3 @@ class DelegateTester(object):
 
     def get_delegate_params(self):
         return (self._args, self._kwargs)
-

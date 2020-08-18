@@ -7,18 +7,18 @@ Description:
         Library of Home Automation code for Python
 
 
-Author(s): 
+Author(s):
          Jason Sharpee <jason@sharpee.com>  http://www.sharpee.com
         Pyjamasam <>
 
 License:
-    This free software is licensed under the terms of the GNU public license, Version 1     
+    This free software is licensed under the terms of the GNU public license, Version 1
 
 Usage:
-    - 
+    -
 
 
-Example: (see bottom of file) 
+Example: (see bottom of file)
 
 
 Notes:
@@ -30,16 +30,14 @@ Created on Apr 3, 2011
 '''
 
 import threading
-import traceback
 import socket
 import binascii
 import serial
 import hashlib
-import sys
-import urllib, urllib2
 import requests
 
 from pytomation.common.pytomation_object import PytomationObject
+from functools import reduce
 
 
 class Lookup(dict):
@@ -54,14 +52,14 @@ class Lookup(dict):
     def get_key(self, value):
         """find the key as a list given a value"""
         if type(value) == type(dict()):
-            items = [item[0] for item in self.items() if item[1][value.items()[0][0]] == value.items()[0][1]]
+            items = [item[0] for item in list(self.items()) if item[1][list(value.items())[0][0]] == list(value.items())[0][1]]
         else:
-            items = [item[0] for item in self.items() if item[1] == value]
+            items = [item[0] for item in list(self.items()) if item[1] == value]
         return items[0]
 
     def get_keys(self, value):
         """find the key(s) as a list given a value"""
-        return [item[0] for item in self.items() if item[1] == value]
+        return [item[0] for item in list(self.items()) if item[1] == value]
 
     def get_value(self, key):
         """find the value given a key"""
@@ -130,7 +128,7 @@ class AsynchronousInterface(Interface):
         #threading.Thread.__init__(self)
         #print 'AAAA' + str(args) + " : " + str(kwargs)
         super(AsynchronousInterface,self).__init__()
-        
+
         self._logger.debug('Starting thread: ' + self.name)
 #        self._main_thread = threading.Thread(target=self.run, args=(None,))
         self._main_thread = threading.Thread(target=self.run)
@@ -150,17 +148,17 @@ class AsynchronousInterface(Interface):
 
     def run(self, *args, **kwargs):
         pass
-    
+
 class TCP(Interface):
     def __init__(self, host, port):
         super(TCP, self).__init__()
         self.__s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print "connect %s:%s" % (host, port)
+        print("connect %s:%s" % (host, port))
         self.__s.connect((host, port))
 
     def write(self,data):
         "Send raw binary"
-        self.__s.send(data) 
+        self.__s.send(data)
         return None
 
     def read(self, bufferSize=4096):
@@ -168,11 +166,10 @@ class TCP(Interface):
         data = ''
         try:
             data = self.__s.recv(bufferSize, socket.MSG_DONTWAIT)
-        except socket.error, ex:
+        except socket.error as ex:
             pass
-        except Exception, ex:
-            print "Exception:", type(ex) 
-            pass
+        except Exception as ex:
+            print("Exception:", type(ex))
 #            print traceback.format_exc()
         return data
 
@@ -185,13 +182,13 @@ class TCP_old(Interface):
     def __init__(self, host, port):
         super(TCP_old, self).__init__()
         self.__s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print"connect %s:%s" % (host, port)
+        print("connect %s:%s" % (host, port))
         self.__s.connect((host, port))
         self.start()
 
     def send(self, dataString):
         "Send raw HEX encoded String"
-        print "Data Sent=>" + dataString
+        print("Data Sent=>" + dataString)
         data = binascii.unhexlify(dataString)
         self.__s.send(data)
         return None
@@ -228,7 +225,7 @@ class UDP(AsynchronousInterface):
         while 1:
 #            data = self.__srecv.recv(2048)
             data = self.__ssend.recv(2048)
-            print "received stuff", data
+            print("received stuff", data)
             if self.c != None:
                 self.c(data)
 
@@ -239,19 +236,19 @@ class UDP(AsynchronousInterface):
 class Serial(Interface):
     def __init__(self, serialDevicePath, serialSpeed=19200, serialTimeout=0.1, xonxoff=True, rtscts=False, dsrdtr=True):
         super(Serial, self).__init__()
-        print "Using %s for serial communication" % serialDevicePath
-#       self.__serialDevice = serial.Serial(serialDevicePath, 19200, timeout = 0.1) 
+        print("Using %s for serial communication" % serialDevicePath)
+#       self.__serialDevice = serial.Serial(serialDevicePath, 19200, timeout = 0.1)
         try:
             self.__serialDevice = serial.Serial(serialDevicePath, serialSpeed, timeout = serialTimeout)
             self.__serialDevice._writeTimeout = serialTimeout
-        except serial.serialutil.SerialException, ex:
+        except serial.serialutil.SerialException as ex:
             self._disabled = True
             self.__serialDevice = None
             self._logger.critical("{name} Could not open serial port.  Interface disabled".format(
                                                                                     name=self.name
                                                                                                   ))
-        
-    
+
+
     def read(self, bufferSize=1024):
         if self.__serialDevice:
             return self.__serialDevice.read(bufferSize)
@@ -310,9 +307,9 @@ class HTTP(Interface):
             url = self._protocol + "://" + self._host + ":" + self._port + "/" + _path
         else:
             url = self._protocol + "://" + self._host + "/" + _path
-            
+
         r = getattr(requests, _verb.lower())
-        
+
         response = False
         if self._username:
             response = r(url,
@@ -322,12 +319,12 @@ class HTTP(Interface):
             response = r(url,
               data=_data,
               )
-            
+
         return response.text
 
     def read(self, path="", data=None, verb='GET', *args, **kwargs):
         return self.request(path, data, verb)
-        
+
     def write(self, path="", data=None, verb="POST", *args, **kwargs):
         if isinstance(path, tuple):
             _path = path[0]
@@ -341,7 +338,7 @@ class HTTP(Interface):
 
     def inWaiting(self):
         return True
-    
+
     @property
     def host(self):
         return self._host
@@ -377,7 +374,7 @@ class HACommand(Lookup):
                                                     'insteon':0x11,
                                                     'x10':0x02,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0xff,
                                                     'x10':None,
@@ -388,7 +385,7 @@ class HACommand(Lookup):
                                                     'insteon':0x12,
                                                     'x10':0x02,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0xff,
                                                     'x10':None,
@@ -399,7 +396,7 @@ class HACommand(Lookup):
                                                     'insteon':0x13,
                                                     'x10':0x03,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0x00,
                                                     'x10':None,
@@ -411,7 +408,7 @@ class HACommand(Lookup):
                                                     'insteon':0x14,
                                                     'x10':0x03,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0x00,
                                                     'x10':None,
@@ -422,7 +419,7 @@ class HACommand(Lookup):
                                                     'insteon':0x11,
                                                     'x10':0x0a,
                                                     'upb':0x00
-                                                  }, 
+                                                  },
                                      'secondary' : {
                                                     'insteon':0x88,
                                                     'x10':None,
@@ -431,7 +428,6 @@ class HACommand(Lookup):
                                      },
                        }
                       )
-        pass
 
 
 import time
@@ -450,8 +446,8 @@ def hex_dump(src, length=8):
             s = s.translate(FILTER)
             result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
             N+=length
-    except Exception, ex:
-        print 'Exception in Hexdump: ' + str(ex)
+    except Exception as ex:
+        print('Exception in Hexdump: ' + str(ex))
         result = src
     return result
 
@@ -469,10 +465,10 @@ def interruptibleSleep(sleepTime, interuptEvent):
 
 
 def sort_nicely( l ):
-    """ Sort the given list in the way that humans expect. 
-    """ 
-    convert = lambda text: int(text) if text.isdigit() else text 
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    """ Sort the given list in the way that humans expect.
+    """
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
     l.sort( key=alphanum_key )
 
     return l
@@ -494,12 +490,12 @@ def convertStringFrequencyToSeconds(textFrequency):
 
 
 def hashPacket(packetData):
-    hash = None
+    myHash = None
     try:
-        hash = hashlib.md5(packetData).hexdigest()
+        myHash = hashlib.md5(packetData.encode('utf-8')).hexdigest()
     except:
-        hash = hashlib.md5(str(packetData)).hexdigest()
-    return hash
+        myHash = hashlib.md5(str(packetData).encode('utf-8')).hexdigest()
+    return myHash
 
 # pylog replaces the "print" keyword to enable debugging and logging
 def pylog(src, s):
@@ -512,8 +508,8 @@ def pylog(src, s):
                 fp = open(logfile, "a")
             else:
                 fp = open(logfile, "w")
-        except Exception, ex:
-            print "Log:" + t+ s + "\n"
+        except Exception as ex:
+            print("Log:" + t+ s + "\n")
 #            print "ERROR Can't open log file..." + str(ex) + "=>"
 #            try:
 #                fp = open("/tmp/pylog.txt", "a")
@@ -524,7 +520,7 @@ def pylog(src, s):
             fp.write(t + s + "\n")
             fp.close()
     else:
-        print t + s
+        print(t + s)
 
 
 class Conversions(object):
@@ -542,19 +538,19 @@ class Conversions(object):
         Convert a string hex byte values into a byte string. The Hex Byte values may
         or may not be space separated.
         """
-        # The list comprehension implementation is fractionally slower in this case    
+        # The list comprehension implementation is fractionally slower in this case
         #
         #    hexStr = ''.join( hexStr.split(" ") )
         #    return ''.join( ["%c" % chr( int ( hexStr[i:i+2],16 ) ) \
         #                                   for i in range(0, len( hexStr ), 2) ] )
-     
+
         bytes = []
-    
+
         hexStr = ''.join( hexStr.split(" ") )
-    
+
         for i in range(0, len(hexStr), 2):
             bytes.append( chr( int (hexStr[i:i+2], 16 ) ) )
-    
+
         return ''.join( bytes )
 
     @staticmethod
@@ -562,11 +558,11 @@ class Conversions(object):
 #        ascii = str(unichr(integer))
         ascii = chr(integer)
         return ascii
-    
+
     @staticmethod
     def hex_to_int(char):
         return Conversions.ascii_to_int(Conversions.hex_to_bytes(char))
-    
+
     @staticmethod
     def int_to_hex(integer):
         return "%0.2X" % integer
@@ -587,13 +583,13 @@ class Conversions(object):
                 s = s.translate(FILTER)
                 result += "%04X   %-*s   %s\n" % (N, length*3, hexa, s)
                 N+=length
-        except Exception, ex:
+        except Exception as ex:
             pass
         return result
 
     @staticmethod
     def checksum2(data):
-        return reduce(lambda x,y:x+y, map(ord, data)) % 256    
+        return reduce(lambda x,y:x+y, list(map(ord, data))) % 256
 
     @staticmethod
     def checksum(data):
@@ -604,4 +600,3 @@ class Conversions(object):
         cs = cs + 1
         cs = cs & 255
         return cs
-        

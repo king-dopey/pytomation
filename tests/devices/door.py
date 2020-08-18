@@ -6,7 +6,7 @@ from pytomation.devices import Door, State
 from pytomation.interfaces import Command
 
 class DoorTests(TestCase):
-    
+
     def setUp(self):
         self.interface = Mock()
         self.interface.state = State.UNKNOWN
@@ -20,7 +20,7 @@ class DoorTests(TestCase):
         self.assertEqual(self.device.state, State.UNKNOWN)
         self.device.command(Command.ON)
         self.assertEqual(self.device.state, State.OPEN)
-        
+
     def test_door_closed(self):
         door = Door('D1', devices=(self.interface))
 #        self.device._on_command('D1', State.ON, self.interface)
@@ -31,4 +31,4 @@ class DoorTests(TestCase):
         self.assertEqual(self.device.state, State.CLOSED)
 
 if __name__ == '__main__':
-    main() 
+    main()

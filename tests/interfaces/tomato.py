@@ -40,9 +40,8 @@ f_block_http:
 _http_id:
 """
         self.interface.restriction('Roku', True)
-        
+
         time.sleep(2)
         #data = self.i.query_write_data()
         #self.assertIn(("f_desc", "Roku"), data[0].items())
         self.i.clear_write_data()
-        

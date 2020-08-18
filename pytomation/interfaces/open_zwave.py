@@ -15,13 +15,16 @@ try:
     from openzwave.option import ZWaveOption
     from openzwave.network import ZWaveNetwork
     #from openzwave.node import ZWaveNode
-    from louie import dispatcher, All
 except:
     print ("Error importing Openzwave and/or Python-Openzwave")
-
+import sys
+if sys.hexversion >= 0x3000000:
+    from pydispatch import dispatcher
+else:
+    from louie import dispatcher
 
 class Open_zwave(HAInterface):
-    VERSION = '0.0.4'
+    VERSION = '0.1.0'
 
     def louie_network_ready(self, network):
         self._logger.info(">>>>>>> Hello from network : I'm ready : %d nodes were found.".format(self._network.nodes_count))
@@ -34,7 +37,7 @@ class Open_zwave(HAInterface):
 
     def louie_value_update(self, network, node, value):
         self._logger.debug('>>>>>>> Hello from value : {}'.format(value))
-        for lockvalue in self.get_door_locks(node.node_id).values():
+        for lockvalue in list(self.get_door_locks(node.node_id).values()):
             if lockvalue.value_id == value.value_id:
                 if value.data:
                     self._onCommand(address=str(node.node_id), command=Command.LOCK)
@@ -50,15 +53,18 @@ class Open_zwave(HAInterface):
             if val == value.value_id:
                 #Poll dimmer to ensure ramp up/down completes
                 level = value.data
-                if self.dimmer_polled_value.has_key(val):
+                if val in self.dimmer_polled_value:
                     self._logger.debug('>>>>>>> Hello from level : {} {}'.format(level, self.dimmer_polled_value[val]))
                     if level == self.dimmer_polled_value[val]:
                         del self.dimmer_polled_value[val]
-                        if level < 2:
-                            self._onCommand(address=str(node.node_id), command=Command.OFF)
-                        elif level > 98:
-                            self._onCommand(address=str(node.node_id), command=Command.ON)
-                        else:
+                        try:
+                            if level < 2:
+                                self._onCommand(address=str(node.node_id), command=Command.OFF)
+                            elif level > 98:
+                                self._onCommand(address=str(node.node_id), command=Command.ON)
+                            else:
+                                self._onCommand(address=str(node.node_id), command=(Command.LEVEL,level))
+                        except:
                             self._onCommand(address=str(node.node_id), command=(Command.LEVEL,level))
                     else:
                         self.dimmer_polled_value[val] = level
@@ -120,7 +126,7 @@ class Open_zwave(HAInterface):
             node.neighbors))
         self._logger.info("{} - Can sleep : {}".format(node.node_id,
             node.can_wake_up()))
-        for value in self.get_door_locks(node.node_id, 'All').values():
+        for value in list(self.get_door_locks(node.node_id, 'All').values()):
             self._logger.debug("{} - {} : {}".format(node.node_id,value.label,value.data))
 
     def _readInterface(self, lastPacketHash):
@@ -149,20 +155,20 @@ class Open_zwave(HAInterface):
         self._logger.info("Use openzwave library : {}".format(self._network.controller.ozw_library_version))
         self._logger.info("Use python library : {}".format(self._network.controller.python_library_version))
         self._logger.info("Use ZWave library : {}".format(self._network.controller.library_description))
-        
+
     def get_door_locks(self, node, datatype = 'Bool'):
         return self._network.nodes[node].get_values(class_id=0x62, genre='User', \
             type=datatype, readonly=False, writeonly=False)
-        
+
     def lock(self, address):
         node = int(address)
-        for value in self.get_door_locks(node).values():
+        for value in list(self.get_door_locks(node).values()):
             self._logger.debug("Lock")
             value.data = True
-    
+
     def unlock(self, address):
         node = int(address)
-        for value in self.get_door_locks(node).values():
+        for value in list(self.get_door_locks(node).values()):
             self._logger.debug("Unlock")
             value.data = False
 
@@ -188,13 +194,28 @@ class Open_zwave(HAInterface):
 
     def level(self, address, level):
         node = int(address)
-        for val in self._network.nodes[node].get_dimmers() :
-            self._logger.debug("Set dimmer : {}".format(self._network.nodes[node]))
-            self._network.nodes[node].set_dimmer(val, level)
+        if (isinstance(level, str)):
+            level = level.split(":")
+            
+        if (isinstance(level, list)):
+            if (level[0] == "rgb"):
+                self._logger.critical("level: rgb")
+                for val in self._network.nodes[node].get_rgbbulbs():
+                    self._network.nodes[node].set_rgbw(val,level[1])
+                for val in self._network.nodes[node].get_dimmers() :
+                    bri = self._network.nodes[node].get_dimmer_level(val)
+                self._onState(address=address, state=(State.LEVEL,str(bri) + ':' + level[1]))
+        else:
+            for val in self._network.nodes[node].get_dimmers() :
+                self._logger.debug("Set dimmer : {}".format(self._network.nodes[node]))
+                self._network.nodes[node].set_dimmer(val, level)
 
     def status(self, address):
         node = int(address)
-        for val in self._network.nodes[node].get_switches() :
+        rgb = ''
+        for val in self._network.nodes[node].get_rgbbulbs():
+            rgb = self._network.nodes[node].get_rgbw(val)
+        for val in self._network.nodes[node].get_switches():
             level = self._network.nodes[node].get_switch_state(val)
             if level:
                 self._onState(address=address, state=State.ON)
@@ -202,13 +223,18 @@ class Open_zwave(HAInterface):
                 self._onState(address=address, state=State.OFF)
         for val in self._network.nodes[node].get_dimmers() :
             level = self._network.nodes[node].get_dimmer_level(val)
-            if level < 2:
-                self._onState(address=address, state=State.OFF)
-            elif level > 98:
-                self._onState(address=address, state=State.ON)
-            else:
-                self._onState(address=address, state=(State.LEVEL,level))
-        for value in self.get_door_locks(node).values():
+            try:
+                if rgb != '':
+                    self._onState(address=address, state=(State.LEVEL,str(level) + ':' + rgb))
+                elif level < 2:
+                    self._onState(address=address, state=State.OFF)
+                elif level > 98:
+                    self._onState(address=address, state=State.ON)
+                else:
+                    self._onState(address=address, state=(State.LEVEL,level))
+            except:
+                    self._onState(address=address, state=(State.LEVEL,level))
+        for value in list(self.get_door_locks(node).values()):
             if value.data:
                 self._onState(address=address, state=State.LOCKED)
             else:

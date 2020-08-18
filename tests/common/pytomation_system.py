@@ -1,4 +1,4 @@
-from unittest import TestCase, main
+from unittest import TestCase
 from mock import Mock
 
 from pytomation.common.pytomation_system import *
@@ -16,9 +16,9 @@ class SystemTests(TestCase):
         a = get_instances()
         self.assertIsNotNone(a)
         self.assertEqual(len(a), len(before))
-        
+
     def test_get_instances_detail(self):
-        l = len(get_instances())
+        #l = len(get_instances())
         mint = Mock()
         mint.read.return_value = ''
         int = HAInterface(mint, name='Int1')
@@ -28,4 +28,3 @@ class SystemTests(TestCase):
 #        self.assertEqual(len(a), l+2)
         self.assertEqual(a[dev.type_id]['name'], 'Dev1')
         self.assertEqual(a[dev.type_id]['type_name'], 'StateDevice')
-        

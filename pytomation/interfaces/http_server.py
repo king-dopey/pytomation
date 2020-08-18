@@ -1,13 +1,12 @@
-import BaseHTTPServer
-import base64
-import threading
-from SocketServer import ThreadingMixIn
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+import http.server
+from socketserver import ThreadingMixIn
+from http.server import SimpleHTTPRequestHandler
 from pytomation.common import config
-#import pytomation.common.config 
+#import pytomation.common.config
 from pytomation.common.pyto_logging import PytoLogging
 from pytomation.common.pytomation_api import PytomationAPI
-from .ha_interface import HAInterface
+from pytomation.interfaces import HAInterface
+from pytomation.common import PytomationObject
 
 file_path = "/tmp"
 
@@ -27,17 +26,32 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
         global file_path
         path = file_path + path
         return path
+    
+    def authenticate(self):
+        auth = self.headers.get('Authorization')
+        if config.auth_enabled == 'Y' and auth == None:
+            self.do_AUTHHEAD()
+            self.wfile.write('no auth header received'.encode())
+            return None
+        elif config.auth_enabled != 'Y' or auth in PytomationObject.users:
+            return PytomationObject.users[auth]
+        else:
+            self.do_AUTHHEAD()
+            self.wfile.write(self.headers.getheader('Authorization'))
+            self.wfile.write('Not authenticated'.encode())
+            self.wfile.write(('<br />AuthConfig :' + config.auth_enabled).encode())
+            return None
 
     def do_HEAD(self):
-        print "send header"
+        print("send header")
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
     def do_AUTHHEAD(self):
-        print "send header"
+        print("send header")
         self.send_response(401)
-        self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
+        self.send_header('WWW-Authenticate', 'Basic realm=\"Pytomation\"')
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
@@ -51,23 +65,6 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, ON, OFF, DELETE, PUT, HEAD')
 
     def do_GET(self):
-        auth_credentials = base64.b64encode(config.admin_user + ":" + config.admin_password)
-        
-        if config.auth_enabled == 'Y' and self.headers.getheader('Authorization') == None:
-            self.do_AUTHHEAD()
-            self.wfile.write('no auth header received')
-            return
-        elif config.auth_enabled != 'Y' or self.headers.getheader('Authorization') == 'Basic ' + auth_credentials:
-#            self.do_HEAD()
-#            self.wfile.write(self.headers.getheader('Authorization'))
-#            self.wfile.write('authenticated!')
-            pass
-        else:
-            self.do_AUTHHEAD()
-            self.wfile.write(self.headers.getheader('Authorization'))
-            self.wfile.write('Not authenticated')
-            self.wfile.write('<br />AuthConfig :' + config.auth_enabled)
-            return
         self.route()
 
     def do_POST(self):
@@ -75,28 +72,29 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
 
     def do_PUT(self):
         self.route()
-        
+
     def do_DELETE(self):
         self.route()
 
     def do_ON(self):
         self.route()
-        
+
     def do_OFF(self):
         self.route()
 
     def route(self):
+        user = self.authenticate()
+        if not user or self.path == '/api/bridge':
+            return
         p = self.path.split('/')
         method = self.command
-#        print "pd:" + self.path + ":" + str(p[1:])
         if p[1].lower() == "api":
             data = None
             if method.lower() == 'post':
-                length = int(self.headers.getheader('content-length'))
+                length = int(self.headers.get('content-length'))
                 data = self.rfile.read(length)
-#                print 'rrrrr' + str(length) + ":" + str(data) + 'fffff' + str(self._server)
                 self.rfile.close()
-            response = self._api.get_response(method=method, path="/".join(p[2:]), type=None, data=data, source=PytoHandlerClass.server)
+            response = self._api.get_response(method=method, path="/".join(p[2:]), type=None, data=data, source=PytoHandlerClass.server, user=user)
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             if config.auth_enabled == 'Y':
@@ -107,22 +105,27 @@ class PytoHandlerClass(SimpleHTTPRequestHandler):
             self.send_header("Content-length", len(response))
             self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(response)
-            self.finish()
+            self.wfile.write(response.encode())
         else:
             getattr(SimpleHTTPRequestHandler, "do_" + self.command.upper())(self)
 
-class ThreadedHTTPServer(ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class ThreadedHTTPServer(ThreadingMixIn, http.server.HTTPServer):
     '''
     classdocs
     '''
 
 class HTTPServer(HAInterface):
     def __init__(self, address=None, port=None, path=None, *args, **kwargs):
+        if not address:
+            address = config.http_address
+        if not port:
+            port = config.http_port
+        if not path:
+            path = config.http_path
         super(HTTPServer, self).__init__(address, *args, **kwargs)
         self._handler_instances = []
         self.unrestricted = True # To override light object restrictions
-    
+
     def _init(self, *args, **kwargs):
         super(HTTPServer, self)._init(*args, **kwargs)
         global file_path
@@ -131,16 +134,15 @@ class HTTPServer(HAInterface):
         self._protocol = "HTTP/1.0"
         self._path = kwargs.get('path', config.http_path)
         file_path = self._path
-        
+
     def run(self):
         server_address = (self._address, self._port)
-        
+
         PytoHandlerClass.protocol_version = self._protocol
         PytoHandlerClass.server = self
         httpd = ThreadedHTTPServer(server_address, PytoHandlerClass)
-        
+
         sa = httpd.socket.getsockname()
-        print "Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "..."
+        print("Serving HTTP files at ", self._path, " on", sa[0], "port", sa[1], "...")
         httpd.serve_forever()
         #BaseHTTPServer.test(HandlerClass, ServerClass, protocol)
-
