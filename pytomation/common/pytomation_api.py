@@ -97,7 +97,7 @@ class PytomationAPI(PytomationObject):
                 type = self.JSON
             method = "post" if data else "get"
         elif path == 'voice':
-            data = urllib.parse.unquote(data).replace('&', '').replace('+', ' ').split("command[]=")
+            data = urllib.parse.unquote(data.decode()).replace('&', '').replace('+', ' ').split("command[]=")
 
         method = method.lower()
         levels = path.split('/')
