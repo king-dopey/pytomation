@@ -1,5 +1,5 @@
 # Use latest Python runtime as parent image
-FROM python:latest
+FROM python:3.8
 #Add user
 RUN useradd -m -d /home/pytomation pyto
 
